@@ -13,8 +13,15 @@ from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
+import razorpay
+from datetime import datetime
+from django.contrib import auth, messages
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+razorpay_api = razorpay.Client(
+    auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_KEY_SECRET)
+)
 
 def item_list(request):
     categories = ExamCategory.objects.all()
@@ -41,18 +48,33 @@ def view_cart(request):
 @login_required
 def checkout(request):
     order = get_object_or_404(Order, user=request.user, payment_status=False)
-    if request.method == 'POST':
-        stripe_charge = stripe.Charge.create(
-            amount=int(order.total_price * 100),  # Amount in cents
-            currency='usd',
-            description=f'Order {order.id}',
-            source=request.POST['stripeToken']
-        )
-        if stripe_charge['paid']:
-            order.payment_status = True
-            order.save()
-            return redirect('order_success', order_id=order.id)
-    return render(request, 'store/checkout.html', {'order': order, 'stripe_key': settings.STRIPE_PUBLISHABLE_KEY})
+    request_data = {
+    "amount": int(order.total_price * 100),
+    "currency": "INR",
+    "receipt": order.sid,
+    }
+    razorpay_response = razorpay_api.order.create(data=request_data)
+    order.razorpay_order_id = razorpay_response["id"]
+    order.save()
+
+    return render(request, 'store/checkout.html', 
+                  {'order': order,"razorpay_order_id": razorpay_response["id"],
+                   "razorpay_key_id": settings.RAZORPAY_API_KEY})
+
+@login_required()
+def razorpay_success_redirect(request):
+    razorpay_order_id = request.GET.get("razorpay_order_id")
+    razorpay_payment_id = request.GET.get("razorpay_payment_id")
+    if request.user:
+        order = Order.objects.get(user=request.user, payment_status=False)
+
+        order.payment_status = True
+        order.razorpay_payment_id = razorpay_payment_id
+        order.save()
+
+    messages.success(request, "Your order was successful!")
+    return redirect("ordersummary", pk=order.id)
+
 
 @login_required
 def view_pdf(request, item_id):
@@ -133,8 +155,9 @@ class CartView(generics.GenericAPIView):
 
 class CheckoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = OrderSerializer
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             # Get the user's current order
             order = Order.objects.get(user=request.user, payment_status=False)
@@ -145,25 +168,19 @@ class CheckoutView(generics.GenericAPIView):
                     'message': 'Your cart is empty. Add items to proceed to checkout.'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Process payment (this would usually involve integration with a payment gateway)
-            # For now, we'll assume the payment is successful
-            payment_success = True  # Simulating successful payment for this example
+            request_data = {
+            "amount": int(order.total_price * 100),
+            "currency": "INR",
+            "receipt": order.sid,
+            }
+            razorpay_response = razorpay_api.order.create(data=request_data)
+            order.razorpay_order_id = razorpay_response["id"]
+            order.save()
+            serializer = self.get_serializer(order)
 
-            if payment_success:
-                # Update the order status after successful payment
-                order.payment_status = True
-                order.save()
-
-                return Response({
-                    'message': 'Payment successful! Your order has been placed.',
-                    'order_id': order.id,
-                    'total_price': order.total_price,
-                    'item_count': order.items.count()
-                }, status=status.HTTP_200_OK)
-            else:
-                return Response({
-                    'message': 'Payment failed. Please try again.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            return Response({'order': serializer.data ,"razorpay_order_id": razorpay_response["id"],
+                   "razorpay_key_id": settings.RAZORPAY_API_KEY}, status=status.HTTP_200_OK)
 
         except Order.DoesNotExist:
             return Response({

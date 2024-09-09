@@ -147,3 +147,8 @@ REST_FRAMEWORK = {
 }
 
 APPEND_SLASH = False
+
+
+# razorpay test mode
+RAZORPAY_API_KEY = "rzp_test_JxyNEhaWwH97JY"
+RAZORPAY_API_KEY_SECRET = "vOOKcQWX2cAZ7Yj1eV0TtOXk"

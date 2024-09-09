@@ -39,6 +39,7 @@ urlpatterns = [
     path('cart/', views.view_cart, name='view_cart'),
     path('checkout/', views.checkout, name='checkout'),
     path('pdf/<int:item_id>/', views.view_pdf, name='view_pdf'),
+    path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
     path( API_URL +'search', views.SearchAPI.as_view()),
     path( API_URL +'cart/', views.CartView.as_view()),
     path( API_URL +'list-items', views.FilterItemsView.as_view()),
