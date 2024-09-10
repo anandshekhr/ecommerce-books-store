@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'django_filters',
     'main',
     'corsheaders',
+    'drf_yasg',
+
 ]
 
 MIDDLEWARE = [
@@ -148,7 +150,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20
 }
 
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 
 # razorpay test mode
