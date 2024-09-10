@@ -41,11 +41,13 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'main',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -152,3 +154,4 @@ APPEND_SLASH = False
 # razorpay test mode
 RAZORPAY_API_KEY = "rzp_test_JxyNEhaWwH97JY"
 RAZORPAY_API_KEY_SECRET = "vOOKcQWX2cAZ7Yj1eV0TtOXk"
+CORS_ALLOW_ALL_ORIGINS = True
