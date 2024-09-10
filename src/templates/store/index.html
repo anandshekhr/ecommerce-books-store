@@ -38,7 +38,12 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{ product.title }}</h5>
                                 <p class="card-text">{{ product.description }}</p>
-                                <p class="card-text text-primary">₹{{ product.price }}</p>
+                                <p class="card-text">
+                                    {% if product.og_price %}
+                                        <span class="text-muted original-price">₹{{ product.og_price }}</span><br>
+                                    {% endif %}
+                                    <span class="text-primary">₹{{ product.price }}</span>
+                                </p>
                                 <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
                             </div>
                         </div>

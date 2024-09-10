@@ -28,6 +28,10 @@
             padding: 20px;
             background-color: #f8f9fa;
         }
+        .original-price {
+            text-decoration: line-through;
+            color: #6c757d; /* Bootstrap's text-muted color */
+        }
     </style>
 </head>
 
@@ -45,6 +49,7 @@
                     <li class="nav-item"><a class="nav-link" href="{% url "home" %}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url "home" %}">Products</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url "view_cart" %}">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url "order-history" %}">Order History</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url "logout" %}">Logout</a></li>
                 </ul>
             </div>

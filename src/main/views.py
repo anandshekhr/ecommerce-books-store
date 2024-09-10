@@ -59,10 +59,33 @@ def view_cart(request):
     try:
         # Try to get the user's active order (unpaid)
         order = Order.objects.get(user=request.user, payment_status=False)
+        request_data = {
+            "amount": int(order.total_price * 100),
+            "currency": "INR",
+            "receipt": order.sid,
+            }
+        razorpay_response = razorpay_api.order.create(data=request_data)
+        order.razorpay_order_id = razorpay_response["id"]
+        order.save()
+        return render(request, 'store/cart.html', {'order': order,"razorpay_order_id": razorpay_response["id"],
+                    "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
     except Order.DoesNotExist:
         # If no order exists, set order to None or an empty order object
         order = None  # You can customize this to fit your template logic
-    return render(request, 'store/cart.html', {'order': order})
+        return render(request, 'store/cart.html', {'order': order})
+
+@login_required(login_url='login')
+def order_summary(request, pk=None):
+    if pk:
+        orders = Order.objects.filter(user=request.user, payment_status=True,pk=pk)
+    else:
+        orders = None
+    return render(request, 'store/orders.html', {'orders': orders})
+
+@login_required(login_url='login')
+def order_history(request):
+    orders = Order.objects.filter(user=request.user, payment_status=True)
+    return render(request, 'store/orders.html', {'orders': orders})
 
 @login_required(login_url='login')
 def checkout(request):
@@ -78,21 +101,21 @@ def checkout(request):
 
     return render(request, 'store/checkout.html', 
                   {'order': order,"razorpay_order_id": razorpay_response["id"],
-                   "razorpay_key_id": settings.RAZORPAY_API_KEY})
+                   "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
 
 @login_required(login_url='login')
 def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
-    if request.user:
-        order = Order.objects.get(user=request.user, payment_status=False)
-
+    order_id = request.GET.get('order_id')
+    if request.user and order_id:
+        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
         order.payment_status = True
         order.razorpay_payment_id = razorpay_payment_id
         order.save()
 
     messages.success(request, "Your order was successful!")
-    return redirect("ordersummary", pk=order.id)
+    return redirect("order-summary", pk=order.id)
 
 
 @login_required(login_url='login')

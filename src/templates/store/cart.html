@@ -1,105 +1,143 @@
 {% extends "base.html" %}
+{% load static %}       
 {% block title %}Cart{% endblock title %}
 
 {% block content %}
-    <!-- Cart Items -->
-    <div class="container mt-4">
-        <h2>Your Cart</h2>
-        {% if order %}
-        <table class="table cart-table">
-            <thead>
-                <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody id="cartItems">
-                {% for item in order.items.all %}
-                <tr data-id="{{ item.id }}">
-                    <td>{{ item.title }}</td>
-                    <td>₹{{ item.price }}</td>
-                    <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
-                    <td>₹{{ item.price }}</td>
-                    <td>
-                        <button class="btn btn-danger remove-item">Remove</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- Cart Items -->
+<div class="container mt-4">
+    <h2>Your Cart</h2>
+    {% if order %}
+    <table class="table cart-table">
+        <thead>
+            <tr>
+                <th scope="col">Image</th>
+                <th scope="col">Product</th>
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Total</th>
+                <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody id="cartItems">
+            {% for item in order.items.all %}
+            <tr data-id="{{ item.id }}">
+                <td>{% if item.thumbnail %}
+                    <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}" class="img-thumbnail"
+                        style="width: 100px; height: auto;"><br>
+                    {% else %}
+                    No image available<br>
+                    {% endif %}
+                </td>
+                <td>{{ item.title }}</td>
+                <td>₹{{ item.price }}</td>
+                <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
+                <td>₹{{ item.price }}</td>
+                <td>
+                    <button class="btn btn-danger remove-item">Remove</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-        <!-- Cart Summary -->
-        <div class="cart-summary">
-            <h5>Cart Summary</h5>
-            <p>Subtotal: ₹{{ order.total_price }}</p>
-            <button class="btn btn-primary" id="checkoutButton">Proceed to Checkout</button>
-        </div>
-        {% else %}
-            <!-- No items in the cart -->
-            <p>Your cart is empty.</p>
-        {% endif %}
+    <!-- Cart Summary -->
+    <div class="cart-summary">
+        <h5>Cart Summary</h5>
+        <p>Subtotal: ₹{{ order.total_price }}</p>
+        <button class="btn btn-primary" id="rzp-button1">Proceed to Checkout</button>
     </div>
+    {% else %}
+    <!-- No items in the cart -->
+    <p>Your cart is empty.</p>
+    {% endif %}
+</div>
 
-    <!-- Checkout and Payment Section -->
-    <div class="container checkout-section">
-        <h2 class="d-none" id="checkoutlabel">Checkout</h2>
-        <div class="alert alert-success d-none" id="paymentSuccessMsg">Payment Successful! You can now download your purchased PDF below.</div>
-        <div class="alert alert-danger d-none" id="paymentErrorMsg">Payment Failed! Please try again.</div>
+<!-- Checkout and Payment Section -->
+<div class="container checkout-section">
+    <h2 class="d-none" id="checkoutlabel">Checkout</h2>
+    <div class="alert alert-success d-none" id="paymentSuccessMsg">Payment Successful! You can now download your
+        purchased PDF below.</div>
+    <div class="alert alert-danger d-none" id="paymentErrorMsg">Payment Failed! Please try again.</div>
 
-        <!-- PDF Download (Enabled on successful payment) -->
-        <div id="pdfDownloadSection" class="d-none">
-            <h5>Download your PDF:</h5>
-            <a href="{{ pdf_download_url }}" class="btn btn-success">Download PDF</a>
-        </div>
+    <!-- PDF Download (Enabled on successful payment) -->
+    <div id="pdfDownloadSection" class="d-none">
+        <h5>Download your PDF:</h5>
+        <a href="{{ pdf_download_url }}" class="btn btn-success">Download PDF</a>
     </div>
-    {% endblock content %}
-    {% block MoreJs %}
-    <!-- Cart and Checkout JS -->
-    <script>
-        // Handle removing items from the cart
-        $('.remove-item').on('click', function() {
-            const row = $(this).closest('tr');
-            const itemId = row.data('id');
-            const uri = window.location.origin + '/api/v1/cart/remove/' + itemId + '/';
-            // Remove item from cart via AJAX call (or refresh page)
-            $.ajax({
-                url: uri,
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                success: function(response) {
-                    row.remove();  // Remove row from table
-                    alert('Item removed successfully');
-                },
-                error: function(error) {
-                    alert('Failed to remove item');
-                }
-            });
+</div>
+{% endblock content %}
+{% block MoreJs %}
+<!-- Cart and Checkout JS -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    // Handle removing items from the cart
+    $('.remove-item').on('click', function () {
+        const row = $(this).closest('tr');
+        const itemId = row.data('id');
+        const uri = window.location.origin + '/api/v1/cart/remove/' + itemId + '/';
+        // Remove item from cart via AJAX call (or refresh page)
+        $.ajax({
+            url: uri,
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function (response) {
+                row.remove();  // Remove row from table
+                alert('Item removed successfully');
+            },
+            error: function (error) {
+                alert('Failed to remove item');
+            }
         });
+    });
 
-        // Handle checkout and payment
-        $('#checkoutButton').on('click', function() {
-            // Simulate payment process (replace with actual payment integration)
-            $.ajax({
-                url: '/checkout/process-payment/',
-                method: 'POST',
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                success: function(response) {
-                    if (response.payment_success) {
-                        $('#paymentSuccessMsg').removeClass('d-none');
-                        $('#pdfDownloadSection').removeClass('d-none');
-                        $('#checkoutlabel').removeClass('d-none');
-                    } else {
-                        $('#paymentErrorMsg').removeClass('d-none');
-                    }
-                },
-                error: function(error) {
+    // Handle checkout and payment
+    $('#checkoutButton').on('click', function () {
+        // Simulate payment process (replace with actual payment integration)
+        $.ajax({
+            url: '/checkout/process-payment/',
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            success: function (response) {
+                if (response.payment_success) {
+                    $('#paymentSuccessMsg').removeClass('d-none');
+                    $('#pdfDownloadSection').removeClass('d-none');
+                    $('#checkoutlabel').removeClass('d-none');
+                } else {
                     $('#paymentErrorMsg').removeClass('d-none');
                 }
-            });
+            },
+            error: function (error) {
+                $('#paymentErrorMsg').removeClass('d-none');
+            }
         });
-    </script>
-    {% endblock MoreJs %}
-
+    });
+</script>
+<script>
+    var domain = window.location.origin;
+    var razorpay_order_id = "{{ razorpay_order_id }}";
+    var order_id = "{{ order_id }}";
+    var options = {
+        "key": "{{razorpay_key_id}}",
+        "amount": {{ total_amount }} * 100,
+            "currency": "INR",
+                "name": "VAMS Mechatronica Pvt. Ltd.",
+                    "description": "Test Transaction",
+                        "image": "{% static 'assets/img/logo.PNG' %}",
+                            "order_id": "{{razorpay_order_id}}",
+                                "theme": {
+        "color": "#012652"
+    },
+    "handler": function (response) {
+        window.location.href = domain + `/payment/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&order_id=${order_id}`;
+    }
+     };
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response) {
+        window.location.href = domain + `/home/request`;
+    });
+    $(document).ready(function () {
+        rzp1.open();
+        e.preventDefault();
+    });
+</script>
+{% endblock MoreJs %}
