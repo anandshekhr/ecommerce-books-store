@@ -52,19 +52,7 @@
     {% endif %}
 </div>
 
-<!-- Checkout and Payment Section -->
-<div class="container checkout-section">
-    <h2 class="d-none" id="checkoutlabel">Checkout</h2>
-    <div class="alert alert-success d-none" id="paymentSuccessMsg">Payment Successful! You can now download your
-        purchased PDF below.</div>
-    <div class="alert alert-danger d-none" id="paymentErrorMsg">Payment Failed! Please try again.</div>
 
-    <!-- PDF Download (Enabled on successful payment) -->
-    <div id="pdfDownloadSection" class="d-none">
-        <h5>Download your PDF:</h5>
-        <a href="{{ pdf_download_url }}" class="btn btn-success">Download PDF</a>
-    </div>
-</div>
 {% endblock content %}
 {% block MoreJs %}
 <!-- Cart and Checkout JS -->
@@ -135,7 +123,7 @@
     rzp1.on('payment.failed', function (response) {
         window.location.href = domain + `/home/request`;
     });
-    $(document).ready(function () {
+    $(document).on('click',function () {
         rzp1.open();
         e.preventDefault();
     });
