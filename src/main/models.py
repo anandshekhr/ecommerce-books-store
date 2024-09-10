@@ -11,7 +11,7 @@ class ExamCategory(models.Model):
     board = models.CharField(_("Board"), max_length=500,null=True,blank=True)
 
     def __str__(self):
-        return f"{self.name} - {self.board if self.board else ""}"
+        return f"{self.name} - {self.board if self.board else ''}"
 
 class Item(models.Model):
     category = models.ForeignKey(ExamCategory, on_delete=models.CASCADE)

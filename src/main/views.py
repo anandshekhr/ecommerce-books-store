@@ -83,7 +83,13 @@ def view_pdf(request, item_id):
     return render(request, 'store/view_pdf.html', {'pdf_file': item.pdf_file.url})
 
 
-class ItemViewSet(viewsets.ModelViewSet):
+class ItemGetAPI(generics.ListAPIView):
+    permission_classes = (AllowAny,)
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer
+
+class ItemPostAPI(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
 
@@ -92,6 +98,7 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = (AllowAny,)
     queryset = ExamCategory.objects.all()
     serializer_class = ExamCategorySerializer
 

@@ -27,7 +27,6 @@ API_URL = 'api/v1/'
 
 
 router = DefaultRouter()
-router.register(r'items', views.ItemViewSet)
 router.register(r'orders', views.OrderViewSet)
 router.register(r'categories', views.CategoryViewSet)
 
@@ -42,6 +41,8 @@ urlpatterns = [
     path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
     path( API_URL +'search', views.SearchAPI.as_view()),
     path( API_URL +'cart/', views.CartView.as_view()),
+    path( API_URL +'items/', views.ItemGetAPI.as_view()),
+    path( API_URL +'items/add', views.ItemPostAPI.as_view()),
     path( API_URL +'list-items', views.FilterItemsView.as_view()),
     path( API_URL +'checkout/', views.CheckoutView.as_view()),
     path( API_URL +'cart/add/<int:item_id>/', views.AddToCartView.as_view()),
