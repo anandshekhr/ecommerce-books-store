@@ -16,6 +16,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 import razorpay
 from datetime import datetime
 from django.contrib import auth, messages
+from decimal import Decimal
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -116,7 +117,8 @@ class AddToCartView(generics.GenericAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         order.items.add(item)
-        order.total_price += Decimal(item.price)
+        total_price = Decimal(order.total_price) + Decimal(item.price)
+        order.total_price = total_price
         order.save()
         return Response({'message': 'Item added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
 
