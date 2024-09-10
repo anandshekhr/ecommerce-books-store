@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Cart{% endblock title %}
+
+{% block content %}
+    <!-- Cart Items -->
+    <div class="container mt-4">
+        <h2>Your Cart</h2>
+        {% if order %}
+        <table class="table cart-table">
+            <thead>
+                <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="cartItems">
+                {% for item in order.items.all %}
+                <tr data-id="{{ item.id }}">
+                    <td>{{ item.title }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>
+                        <button class="btn btn-danger remove-item">Remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Cart Summary -->
+        <div class="cart-summary">
+            <h5>Cart Summary</h5>
+            <p>Subtotal: ₹{{ order.total_price }}</p>
+            <button class="btn btn-primary" id="checkoutButton">Proceed to Checkout</button>
+        </div>
+        {% else %}
+            <!-- No items in the cart -->
+            <p>Your cart is empty.</p>
+        {% endif %}
+    </div>
+
+    <!-- Checkout and Payment Section -->
+    <div class="container checkout-section">
+        <h2 class="d-none" id="checkoutlabel">Checkout</h2>
+        <div class="alert alert-success d-none" id="paymentSuccessMsg">Payment Successful! You can now download your purchased PDF below.</div>
+        <div class="alert alert-danger d-none" id="paymentErrorMsg">Payment Failed! Please try again.</div>
+
+        <!-- PDF Download (Enabled on successful payment) -->
+        <div id="pdfDownloadSection" class="d-none">
+            <h5>Download your PDF:</h5>
+            <a href="{{ pdf_download_url }}" class="btn btn-success">Download PDF</a>
+        </div>
+    </div>
+    {% endblock content %}
+    {% block MoreJs %}
+    <!-- Cart and Checkout JS -->
+    <script>
+        // Handle removing items from the cart
+        $('.remove-item').on('click', function() {
+            const row = $(this).closest('tr');
+            const itemId = row.data('id');
+            const uri = window.location.origin + '/api/v1/cart/remove/' + itemId + '/';
+            // Remove item from cart via AJAX call (or refresh page)
+            $.ajax({
+                url: uri,
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function(response) {
+                    row.remove();  // Remove row from table
+                    alert('Item removed successfully');
+                },
+                error: function(error) {
+                    alert('Failed to remove item');
+                }
+            });
+        });
+
+        // Handle checkout and payment
+        $('#checkoutButton').on('click', function() {
+            // Simulate payment process (replace with actual payment integration)
+            $.ajax({
+                url: '/checkout/process-payment/',
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function(response) {
+                    if (response.payment_success) {
+                        $('#paymentSuccessMsg').removeClass('d-none');
+                        $('#pdfDownloadSection').removeClass('d-none');
+                        $('#checkoutlabel').removeClass('d-none');
+                    } else {
+                        $('#paymentErrorMsg').removeClass('d-none');
+                    }
+                },
+                error: function(error) {
+                    $('#paymentErrorMsg').removeClass('d-none');
+                }
+            });
+        });
+    </script>
+    {% endblock MoreJs %}
+

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock title %}
+    {% block content %}
+    <!-- Filters and Item List -->
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Filters Section -->
+            <div class="col-md-3 filter-section">
+                <h5>Filters</h5>
+                <form id="filterForm">
+                    <div class="mb-3">
+                        <label for="categoryFilter" class="form-label">Category</label>
+                        <select class="form-select" id="categoryFilter" name="category">
+                            <option value="">All</option>
+                            {% for category in categories %}
+                            <option value="{{category.id}}">{{category.name}}{% if category.board %} - {% endif %}{{category.board}}</option>
+                            {% endfor %}
+                            
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="priceFilter" class="form-label">Price Range</label>
+                        <input type="number" class="form-control" id="minPrice" name="min_price" placeholder="Min Price">
+                        <input type="number" class="form-control mt-2" id="maxPrice" name="max_price" placeholder="Max Price">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                </form>
+            </div>
+
+            <!-- Products Section -->
+            <div class="col-md-9">
+                <div class="row" id="productList">
+                    <!-- Item Cards (Populated via Django or API) -->
+                    {% for product in products %}
+                    <div class="col-md-4 item-card">
+                        <div class="card h-100">
+                            <img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.title }}</h5>
+                                <p class="card-text">{{ product.description }}</p>
+                                <p class="card-text text-primary">₹{{ product.price }}</p>
+                                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if products.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% for num in products.paginator.page_range %}
+                        <li class="page-item {% if products.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endfor %}
+                        {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endblock content %}
+
+    {% block MoreJs %}
+    <script>
+        $(document).ready(function() {
+            $('#filterForm').submit(function(e) {
+                e.preventDefault();
+                const category = $('#categoryFilter').val();
+                const minPrice = $('#minPrice').val();
+                const maxPrice = $('#maxPrice').val();
+
+                // Send filters through AJAX or refresh page with new query params
+                let filterUrl = window.location.origin + '/item/filter/?';
+                if (category) filterUrl += `category=${category}&`;
+                if (minPrice) filterUrl += `min_price=${minPrice}&`;
+                if (maxPrice) filterUrl += `max_price=${maxPrice}`;
+
+                window.location.href = filterUrl; // You can replace this with AJAX call
+            });
+        });
+    </script>
+    {% endblock MoreJs %}
+

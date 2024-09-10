@@ -53,11 +53,15 @@ router.register(r'categories', views.CategoryViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.item_list, name='item_list'),
-    path('add-to-cart/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
+    path('', views.item_list, name='home'),
+    path('item/filter/', views.item_list, name='item-filter'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('signup/', views.signup_view, name='signup'),
     path('cart/', views.view_cart, name='view_cart'),
     path('checkout/', views.checkout, name='checkout'),
     path('pdf/<int:item_id>/', views.view_pdf, name='view_pdf'),
+    path('add-to-cart/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
     path( API_URL +'search', views.SearchAPI.as_view()),
     path( API_URL +'cart/', views.CartView.as_view()),

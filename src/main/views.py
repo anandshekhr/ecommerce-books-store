@@ -17,6 +17,10 @@ import razorpay
 from datetime import datetime
 from django.contrib import auth, messages
 from decimal import Decimal
+from django.contrib.auth import authenticate, login,logout
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib import messages
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -30,23 +34,37 @@ def item_list(request):
     selected_category = request.GET.get('category')
     if selected_category:
         items = items.filter(category_id=selected_category)
-    return render(request, 'store/item_list.html', {'categories': categories, 'items': items})
+    return render(request, 'store/index.html', {'categories': categories, 'products': items})
 
-@login_required
+def item_list_filter(request):
+    category_id = request.GET.get('category')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    category_obj = ExamCategory.objects.get(pk=category_id)
+    items = Item.objects.filter(is_available=True, category = category_obj)
+    categories = ExamCategory.objects.all()
+    return render(request, 'store/index.html', {'categories': categories, 'products': items})
+
+@login_required(login_url='login')
 def add_to_cart(request, item_id):
     item = get_object_or_404(Item, id=item_id)
     order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
     order.items.add(item)
-    order.total_price += item.price
+    order.total_price = Decimal(item.price) + Decimal(order.total_price)
     order.save()
     return redirect('view_cart')
 
-@login_required
+@login_required(login_url='login')
 def view_cart(request):
-    order = get_object_or_404(Order, user=request.user, payment_status=False)
+    try:
+        # Try to get the user's active order (unpaid)
+        order = Order.objects.get(user=request.user, payment_status=False)
+    except Order.DoesNotExist:
+        # If no order exists, set order to None or an empty order object
+        order = None  # You can customize this to fit your template logic
     return render(request, 'store/cart.html', {'order': order})
 
-@login_required
+@login_required(login_url='login')
 def checkout(request):
     order = get_object_or_404(Order, user=request.user, payment_status=False)
     request_data = {
@@ -62,7 +80,7 @@ def checkout(request):
                   {'order': order,"razorpay_order_id": razorpay_response["id"],
                    "razorpay_key_id": settings.RAZORPAY_API_KEY})
 
-@login_required()
+@login_required(login_url='login')
 def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
@@ -77,7 +95,7 @@ def razorpay_success_redirect(request):
     return redirect("ordersummary", pk=order.id)
 
 
-@login_required
+@login_required(login_url='login')
 def view_pdf(request, item_id):
     order = get_object_or_404(Order, user=request.user, payment_status=True)
     item = get_object_or_404(Item, id=item_id, order=order)
@@ -207,7 +225,7 @@ class FilterItemsView(generics.ListAPIView):
         passed in the URL.
         """
         queryset = Item.objects.all()
-        category_id = self.request.query_params.get('category_id', None)
+        category_id = self.request.query_params.get('category', None)
 
         if category_id is not None:
             queryset = queryset.filter(category__id=category_id)
@@ -221,3 +239,39 @@ class SearchAPI(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ['category__name', 'title','price']
     
+
+
+
+def login_view(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid email or password')
+    return render(request, 'accounts/login.html')
+
+def signup_view(request):
+    if request.method == 'POST':
+        first_name = request.POST['first_name']
+        last_name = request.POST['last_name']
+        email = request.POST['email']
+        phone_number = request.POST['phone_number']
+        password = request.POST['password']
+
+        # Create a new user
+        user = User.objects.create_user(username=email, first_name=first_name, last_name=last_name, password=password)
+        messages.success(request, 'Account created successfully! Please log in.')
+        return redirect('login')
+    return render(request, 'accounts/login.html')
+
+login_required(login_url='login')
+def logout_view(request):
+    # Log the user out
+    logout(request)
+    
+    # Redirect to the login page or any other page
+    return redirect('login')
