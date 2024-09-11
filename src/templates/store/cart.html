@@ -72,7 +72,14 @@
                 // Remove the item row from the table
                 row.remove();
                 if (response) {
-                    $('#subTotal').text('Subtotal: ₹' + response.total_price.toFixed(2));  // Update sub-total element
+                    $('#subTotal').text('Subtotal: ₹' + response.total_price.toFixed(2));
+                    if (response.total_price == 0){
+                        var checkoutButton = document.getElementById("rzp-button1");
+                        checkoutButton.disabled = true;
+                    } else {
+                        var checkoutButton = document.getElementById("rzp-button1");
+                        checkoutButton.disabled = false;
+                    }
                 }
                 alert('Item removed successfully');
             },
