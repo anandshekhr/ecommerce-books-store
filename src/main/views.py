@@ -56,6 +56,7 @@ def add_to_cart(request, item_id):
     order.items.add(item)
     order.total_price = Decimal(item.price) + Decimal(order.total_price)
     order.save()
+    messages.info(request,'Item successfully added to cart.')
     return redirect('view_cart')
 
 @login_required(login_url='login')
