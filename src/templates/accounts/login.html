@@ -54,10 +54,10 @@
                             </div>
 
                             <!-- Google Login -->
-                            <div class="text-center mt-3">
+                            {% comment %} <div class="text-center mt-3">
                                 <p>or</p>
-                                <a href="{% provider_login_url 'google' next='home' %}" type="button" class="btn btn-danger">Login with Google</a>
-                            </div>
+                                <a href="{% provider_login_url 'google' next='home' %}" type="button" class="btn btn-danger" disabled>Login with Google</a>
+                            </div> {% endcomment %}
 
                             <!-- Sign Up Link -->
                             <div class="text-center mt-3">
