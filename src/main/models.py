@@ -3,6 +3,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
+from django.urls import reverse
 from datetime import date
 
 from django_quill.fields import QuillField
@@ -34,6 +35,8 @@ class Order(models.Model):
     payment_status = models.BooleanField(default=False)
     razorpay_order_id = models.CharField(_("RazorPay Order Id"), max_length=500, null=True, blank=True)
     razorpay_payment_id = models.CharField(_("RazorPay Payment Id"), max_length=500, null=True, blank=True)
+    phonepe_id = models.CharField(_("PhonePe Payment Id"), max_length=100,null=True,blank=True)
+    phonepe_merchant_transaction_id = models.CharField(_("PhonePe Transaction Id"),max_length=36,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -67,3 +70,28 @@ class LegalContent(models.Model):
 
     def __str__(self):
         return self.title
+
+class PhonePePaymentRequestDetail(models.Model):
+    user = models.ForeignKey(User, verbose_name=_("User"), on_delete=models.SET_NULL, blank=True, null=True)
+    order_id = models.ForeignKey(Order, verbose_name=_("Order id"), on_delete=models.CASCADE,blank=True,null=True)
+    amount = models.CharField(_("amount"), max_length=50,null=True,blank=True)
+    success = models.BooleanField(_("Success"),default=False)
+    code = models.CharField(_("Code"), max_length=50, blank=True, null=True)
+    message = models.TextField(_("Message"))
+    merchant_transaction_id = models.CharField(_("Merchant Transaction Id"), max_length=200,null=True, blank=True)
+    transaction_id = models.CharField(_("Transaction Id"), max_length=200,null=True, blank=True)
+    redirect_url = models.TextField(_("URL"))
+    created_at = models.DateTimeField(_("created at"), auto_now=True, auto_now_add=False)
+
+    class Meta:
+        verbose_name = _("PhonePePaymentRequestDetail")
+        verbose_name_plural = _("PhonePePaymentRequestDetails")
+
+    def __str__(self):
+        return "Order Id: "
+
+    def get_absolute_url(self):
+        return reverse("PhonePePaymentDetail_detail", kwargs={"pk": self.pk})
+    
+    def get_order_sid(self):
+        return self.order_id.sid

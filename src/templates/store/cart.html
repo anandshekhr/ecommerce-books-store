@@ -44,7 +44,7 @@
     <div class="cart-summary">
         <h5>Cart Summary</h5>
         <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
-        <button class="btn btn-primary" id="rzp-button1">Proceed to Checkout</button>
+        <a type="button" href="{% url "checkout" order_id=order.id %}" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a>
     </div>
     {% else %}
     <!-- No items in the cart -->
@@ -113,9 +113,9 @@
     rzp1.on('payment.failed', function (response) {
         window.location.href = domain + `/`;
     });
-    $('#rzp-button1').on('click',function () {
+    {% comment %} $('#rzp-button1').on('click',function () {
         rzp1.open();
         e.preventDefault();
-    });
+    }); {% endcomment %}
 </script>
 {% endblock MoreJs %}

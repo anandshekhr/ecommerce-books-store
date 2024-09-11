@@ -196,3 +196,8 @@ SOCIALACCOUNT_PROVIDERS = {
 # Optional: Account adapter settings
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
 ACCOUNT_EMAIL_REQUIRED = True  # Require email
+
+PHONEPE_MERCHANT_ID ='PGTESTPAYUAT86'
+PAYMENT_SUCCESS_REDIRECT_URL = ""
+PHONEPE_SALT_KEY ='099eb0cd-02cf-4e2a-8aca-3e6c6aff0399'
+PHONEPE_USER_ID = 'M11IAE6S0K0S'
