@@ -43,7 +43,7 @@ razorpay_api = razorpay.Client(
 merchant_id = settings.PHONEPE_MERCHANT_ID
 salt_key = settings.PHONEPE_SALT_KEY
 salt_index = 1
-env = Env.PROD # Change to Env.PROD when you go live
+env = Env.UAT # Change to Env.PROD when you go live
 
 phonepe_client = PhonePePaymentClient(
     merchant_id=merchant_id, salt_key=salt_key, salt_index=salt_index, env=env
@@ -143,7 +143,6 @@ def view_cart(request):
         order = None  # You can customize this to fit your template logic
         return render(request, 'store/cart.html', {'order': order})
 
-@login_required(login_url='login-view')
 def order_summary(request, pk=None):
     if pk:
         orders = Order.objects.filter(user=request.user, payment_status=True,pk=pk)
@@ -219,12 +218,11 @@ def razorpay_success_redirect(request):
     messages.success(request, "Your order was successful!")
     return redirect("order-summary", pk=order.id)
 
-
-@login_required(login_url='login-view')
+@csrf_exempt
 def phonepe_success_redirect(request, order_id):
     # order_id = request.GET.get('order_id')
-    if request.user and order_id:
-        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
+    if order_id:
+        order = Order.objects.get(payment_status=False,pk=order_id)
         order.payment_status = True
         order.save()
 

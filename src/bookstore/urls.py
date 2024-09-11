@@ -17,7 +17,7 @@ Including another URLconf
 # pdf_ecommerce/urls.py
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from main import views
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
@@ -25,6 +25,9 @@ from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from .utils import HashIdConverter
+
+register_converter(HashIdConverter, "hashid")
 
 
 ...
@@ -61,11 +64,11 @@ urlpatterns = [
     path('cart/', views.view_cart, name='view_cart'),
     path('add-to-cart/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('order/history/', views.order_history, name='order-history'),
-    path('order/summary/<int:pk>/', views.order_summary, name='order-summary'),
-    path('checkout/<int:order_id>/', views.checkout, name='checkout'),
+    path('order/summary/<hashid:pk>/', views.order_summary, name='order-summary'),
+    path('checkout/<hashid:order_id>/', views.checkout, name='checkout'),
     path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
-    path('payment/phonepe/success/<int:order_id>/',views.phonepe_success_redirect,name="phonepe-payment-success"),
-    path('pdf/<int:item_id>/', views.view_pdf, name='view_pdf'),
+    path('payment/phonepe/success/<hashid:order_id>/',views.phonepe_success_redirect,name="phonepe-payment-success"),
+    path('pdf/<hashid:item_id>/', views.view_pdf, name='view_pdf'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path( API_URL +'search', views.SearchAPI.as_view()),

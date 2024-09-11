@@ -25,7 +25,11 @@ SECRET_KEY = 'django-insecure-z=_92iza7$y6#aun^$cj=n*c!!4ie825)&27vv0295ffds6%*9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://ashekhar123.pythonanywhere.com',
+    'http://127.0.0.1:8000',  # Add your specific domains and ports here
+]
 
 
 # Application definition
@@ -197,7 +201,11 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
 ACCOUNT_EMAIL_REQUIRED = True  # Require email
 
-PHONEPE_MERCHANT_ID ='M11IAE6S0K0S'
+PHONEPE_MERCHANT_ID ='PGTESTPAYUAT86'
 PAYMENT_SUCCESS_REDIRECT_URL = ""
-PHONEPE_SALT_KEY ='d9bd6308-263a-4c32-8df7-f0391d4c4da1'
+PHONEPE_SALT_KEY ='96434309-7796-489d-8924-ab56988a6076'
 PHONEPE_USER_ID = 'M11IAE6S0K0S'
+
+HASHIDS_SALT = (
+    "jkqbdvaiacobaowr27834691230jnfbqoey92tribhwefq8w9r1@E23jr23r!3hrg81t43r1r"
+)
