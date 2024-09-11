@@ -24,15 +24,15 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
 import uuid
-from phonepe.sdk.pg.payments.v1.models.request.pg_pay_request import PgPayRequest
-from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
-from phonepe.sdk.pg.env import Env
+# from phonepe.sdk.pg.payments.v1.models.request.pg_pay_request import PgPayRequest
+# from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
+# from phonepe.sdk.pg.env import Env
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
 
 
 
-s2s_callback_url = settings.PAYMENT_SUCCESS_REDIRECT_URL
-id_assigned_to_user_by_merchant = settings.PHONEPE_USER_ID
+# s2s_callback_url = settings.PAYMENT_SUCCESS_REDIRECT_URL
+# id_assigned_to_user_by_merchant = settings.PHONEPE_USER_ID
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -40,14 +40,14 @@ razorpay_api = razorpay.Client(
     auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_KEY_SECRET)
 )
 
-merchant_id = settings.PHONEPE_MERCHANT_ID
-salt_key = settings.PHONEPE_SALT_KEY
-salt_index = 1
-env = Env.UAT # Change to Env.PROD when you go live
+# merchant_id = settings.PHONEPE_MERCHANT_ID
+# salt_key = settings.PHONEPE_SALT_KEY
+# salt_index = 1
+# env = Env.UAT # Change to Env.PROD when you go live
 
-phonepe_client = PhonePePaymentClient(
-    merchant_id=merchant_id, salt_key=salt_key, salt_index=salt_index, env=env
-)
+# phonepe_client = PhonePePaymentClient(
+#     merchant_id=merchant_id, salt_key=salt_key, salt_index=salt_index, env=env
+# )
 from django.core.paginator import Paginator
 
 def privacy_policy(request):
@@ -155,54 +155,54 @@ def order_history(request):
     orders = Order.objects.filter(user=request.user, payment_status=True)
     return render(request, 'store/orders.html', {'orders': orders})
 
-@login_required(login_url='login-view')
-def checkout(request,order_id):
-    order = get_object_or_404(Order, user=request.user, payment_status=False, pk=order_id)
-    request_data = {
-    "amount": int(order.total_price * 100),
-    "currency": "INR",
-    "receipt": order.sid,
-    }
-    razorpay_response = razorpay_api.order.create(data=request_data)
-    order.razorpay_order_id = razorpay_response["id"]
-    # Phone pe
-    unique_transaction_id = str(uuid.uuid4())
-    order.phonepe_merchant_transaction_id = unique_transaction_id
-    order.save()
+# @login_required(login_url='login-view')
+# def checkout(request,order_id):
+#     order = get_object_or_404(Order, user=request.user, payment_status=False, pk=order_id)
+#     request_data = {
+#     "amount": int(order.total_price * 100),
+#     "currency": "INR",
+#     "receipt": order.sid,
+#     }
+#     razorpay_response = razorpay_api.order.create(data=request_data)
+#     order.razorpay_order_id = razorpay_response["id"]
+#     # Phone pe
+#     unique_transaction_id = str(uuid.uuid4())
+#     order.phonepe_merchant_transaction_id = unique_transaction_id
+#     order.save()
 
-    pay_page_request = PgPayRequest.pay_page_pay_request_builder(
-        merchant_transaction_id=unique_transaction_id,
-        amount=int(order.total_price * 100),
-        merchant_user_id=id_assigned_to_user_by_merchant,
-        merchant_order_id=order.sid,
-        redirect_mode="POST",
-        callback_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
-        # redirect_mode="REDIRECT",
-        redirect_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
-    )
-    pay_page_response = phonepe_client.pay(pay_page_request)
-    pay_page_url = pay_page_response.data.instrument_response.redirect_info.url
+#     pay_page_request = PgPayRequest.pay_page_pay_request_builder(
+#         merchant_transaction_id=unique_transaction_id,
+#         amount=int(order.total_price * 100),
+#         merchant_user_id=id_assigned_to_user_by_merchant,
+#         merchant_order_id=order.sid,
+#         redirect_mode="POST",
+#         callback_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
+#         # redirect_mode="REDIRECT",
+#         redirect_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
+#     )
+#     pay_page_response = phonepe_client.pay(pay_page_request)
+#     pay_page_url = pay_page_response.data.instrument_response.redirect_info.url
 
-    if pay_page_url:
-        # Add Payment Details
-        phonepe_transaction_record = PhonePePaymentRequestDetail()
-        phonepe_transaction_record.user = request.user
-        phonepe_transaction_record.order_id = order
-        phonepe_transaction_record.amount = order.total_price
-        phonepe_transaction_record.success = pay_page_response.success
-        phonepe_transaction_record.code = pay_page_response.code
-        phonepe_transaction_record.message = pay_page_response.message
-        phonepe_transaction_record.merchant_transaction_id = (
-            pay_page_response.data.merchant_transaction_id
-        )
-        phonepe_transaction_record.transaction_id = (
-            pay_page_response.data.transaction_id
-        )
-        phonepe_transaction_record.redirect_url = pay_page_url
-        phonepe_transaction_record.save()
+#     if pay_page_url:
+#         # Add Payment Details
+#         phonepe_transaction_record = PhonePePaymentRequestDetail()
+#         phonepe_transaction_record.user = request.user
+#         phonepe_transaction_record.order_id = order
+#         phonepe_transaction_record.amount = order.total_price
+#         phonepe_transaction_record.success = pay_page_response.success
+#         phonepe_transaction_record.code = pay_page_response.code
+#         phonepe_transaction_record.message = pay_page_response.message
+#         phonepe_transaction_record.merchant_transaction_id = (
+#             pay_page_response.data.merchant_transaction_id
+#         )
+#         phonepe_transaction_record.transaction_id = (
+#             pay_page_response.data.transaction_id
+#         )
+#         phonepe_transaction_record.redirect_url = pay_page_url
+#         phonepe_transaction_record.save()
 
 
-    return redirect(pay_page_url)
+#     return redirect(pay_page_url)
 
 @login_required(login_url='login-view')
 def razorpay_success_redirect(request):
