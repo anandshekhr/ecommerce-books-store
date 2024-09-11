@@ -76,6 +76,7 @@ urlpatterns = [
     path( API_URL +'cart/add/<int:item_id>/', views.AddToCartView.as_view()),
     path( API_URL +'cart/remove/<int:item_id>/', views.RemoveFromCartView.as_view()),
     path( API_URL, include(router.urls)),
+    path('accounts/', include('allauth.urls')), 
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

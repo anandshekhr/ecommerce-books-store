@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
@@ -44,6 +45,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_quill',
+
+    # Allauth apps
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',  # Add Google provider
 
 ]
 
@@ -56,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'bookstore.urls'
@@ -159,3 +167,21 @@ APPEND_SLASH = True
 RAZORPAY_API_KEY = "rzp_test_JxyNEhaWwH97JY"
 RAZORPAY_API_KEY_SECRET = "vOOKcQWX2cAZ7Yj1eV0TtOXk"
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Site ID for Django sites framework
+SITE_ID = 1
+
+# Optional: Redirect URLs after login/logout
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Optional: Account adapter settings
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
+ACCOUNT_EMAIL_REQUIRED = True  # Require email

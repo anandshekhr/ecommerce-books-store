@@ -16,3 +16,6 @@ urllib3==2.2.2
 django-cors-headers
 drf-yasg
 django-quill-editor
+PyJWT
+django-allauth
+cryptography
