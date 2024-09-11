@@ -49,6 +49,10 @@ def item_list_filter(request):
 def add_to_cart(request, item_id):
     item = get_object_or_404(Item, id=item_id)
     order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
+    if order.items.filter(id=item.id).exists():
+        messages.info(request,'Item already exists in the cart.')
+        return redirect('home')
+        
     order.items.add(item)
     order.total_price = Decimal(item.price) + Decimal(order.total_price)
     order.save()
