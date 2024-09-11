@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from datetime import date
 
+from django_quill.fields import QuillField
 
 class ExamCategory(models.Model):
     name = models.CharField(max_length=100)
@@ -52,3 +53,17 @@ class Order(models.Model):
     @property
     def sid(self):
         return "VAMS/{}/{}".format(date.today().strftime("%Y/%m%d"),self.id)
+
+
+class LegalContent(models.Model):
+    PAGE_CHOICES = [
+        ('privacy_policy', 'Privacy Policy'),
+        ('terms_of_service', 'Terms of Service')
+    ]
+
+    page_type = models.CharField(max_length=50, choices=PAGE_CHOICES, unique=True)
+    title = models.CharField(max_length=100)
+    content = QuillField()
+
+    def __str__(self):
+        return self.title

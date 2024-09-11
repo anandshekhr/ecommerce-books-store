@@ -1,7 +1,7 @@
 # store/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Item, ExamCategory, Order
+from .models import Item, ExamCategory, Order, LegalContent
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import stripe
@@ -29,6 +29,15 @@ razorpay_api = razorpay.Client(
     auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_KEY_SECRET)
 )
 from django.core.paginator import Paginator
+
+def privacy_policy(request):
+    policy = get_object_or_404(LegalContent, page_type='privacy_policy')
+    return render(request, 'policies/legal_content.html', {'content': policy})
+
+def terms_of_service(request):
+    terms = get_object_or_404(LegalContent, page_type='terms_of_service')
+    return render(request, 'policies/legal_content.html', {'content': terms})
+
 
 def item_list(request):
     categories = ExamCategory.objects.all()

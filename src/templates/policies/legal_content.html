@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ content.title }}{% endblock title %}
+{% block style %}
+.content-section {
+    padding: 40px;
+    background-color: white;
+    margin: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.content-section h1 {
+    margin-bottom: 20px;
+}
+.content-section p {
+    line-height: 1.7;
+}
+{% endblock style %}
+{% block content %}
+<div class="content-section">
+    <h1>{{ content.title }}</h1>
+    <p>{{ content.content.html|safe }}</p>
+</div>
+{% endblock content %}
+    
+

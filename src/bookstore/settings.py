@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'main',
     'corsheaders',
     'drf_yasg',
+    'django_quill',
 
 ]
 

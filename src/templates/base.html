@@ -7,6 +7,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock title %} | BookStore</title>
+    <!-- Description for SEO -->
+    <meta name="description" content="BookStore - Find the best books and educational material online.">
+
+    <!-- Open Graph meta tags for social sharing -->
+    {% comment %} <meta property="og:title" content="{% block title %}{% endblock title %} | BookStore"> {% endcomment %}
+    <meta property="og:description" content="Find the best books and educational material online.">
+    <meta property="og:image" content="{% static 'assets/img/bookstore-share-image.png' %}">
+    <meta property="og:url" content="{% url 'home' %}">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    {% comment %} <meta name="twitter:title" content="{% block title %}{% endblock title %} | BookStore"> {% endcomment %}
+    <meta name="twitter:description" content="Find the best books and educational material online.">
+    <meta name="twitter:image" content="{% static 'assets/img/bookstore-share-image.png' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="{% static 'plugins/toastr/toastr.min.css' %}">
@@ -58,6 +73,7 @@
         footer ul a:hover {
             text-decoration: underline;  /* Adds underline on hover */
         }
+        {% block style %}{% endblock style %}
         
     </style>
 </head>
@@ -104,9 +120,9 @@
                     <h5 class="text-uppercase">Customer Support</h5>
                     <ul class="list-unstyled mb-0">
                         <li><a href="#" class="text-white">FAQs</a></li>
-                        {% comment %} <li><a href="#" class="text-white">Shipping & Returns</a></li>
-                        <li><a href="#" class="text-white">Order Tracking</a></li> {% endcomment %}
-                        <li><a href="#" class="text-white">Terms of Service</a></li>
+                        {% comment %} <li><a href="#" class="text-white">Shipping & Returns</a></li> {% endcomment %}
+                        <li><a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a></li>
+                        <li><a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a></li>
                     </ul>
                 </div>
                 
@@ -144,8 +160,8 @@
         <!-- Copyright and Terms -->
         <div class="text-center p-3 bg-secondary">
             <p class="mb-0">&copy; 2024 VAMSCentral. All Rights Reserved. | 
-                <a href="#" class="text-white">Privacy Policy</a> | 
-                <a href="#" class="text-white">Terms of Service</a>
+                <a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a> | 
+                <a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a>
             </p>
         </div>
     </footer>
