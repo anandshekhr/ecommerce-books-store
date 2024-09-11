@@ -40,8 +40,17 @@ def item_list_filter(request):
     category_id = request.GET.get('category')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
-    category_obj = ExamCategory.objects.get(pk=category_id)
-    items = Item.objects.filter(is_available=True, category = category_obj)
+    search_query = request.GET.get('q')
+    if category_id:
+        category_obj = ExamCategory.objects.get(pk=category_id)
+        items = Item.objects.filter(is_available=True, category = category_obj)
+    if search_query:
+        items = Item.objects.filter(is_available=True, title__icontains = search_query)
+    
+    if min_price:
+        items = Item.objects.filter(price__gte=min_price)
+    if max_price:
+        items = Item.objects.filter(price__lte=max_price)
     categories = ExamCategory.objects.all()
     return render(request, 'store/index.html', {'categories': categories, 'products': items})
 
