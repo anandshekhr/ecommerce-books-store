@@ -81,7 +81,7 @@ def item_list_filter(request):
     categories = ExamCategory.objects.all()
     return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def add_to_cart(request, item_id):
     item = get_object_or_404(Item, id=item_id)
     order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
@@ -95,7 +95,7 @@ def add_to_cart(request, item_id):
     messages.info(request,'Item successfully added to cart.')
     return redirect('view_cart')
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def view_cart(request):
     try:
         # Try to get the user's active order (unpaid)
@@ -123,7 +123,7 @@ def view_cart(request):
         order = None  # You can customize this to fit your template logic
         return render(request, 'store/cart.html', {'order': order})
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def order_summary(request, pk=None):
     if pk:
         orders = Order.objects.filter(user=request.user, payment_status=True,pk=pk)
@@ -131,12 +131,12 @@ def order_summary(request, pk=None):
         orders = None
     return render(request, 'store/orders.html', {'orders': orders})
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def order_history(request):
     orders = Order.objects.filter(user=request.user, payment_status=True)
     return render(request, 'store/orders.html', {'orders': orders})
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def checkout(request):
     order = get_object_or_404(Order, user=request.user, payment_status=False)
     request_data = {
@@ -152,7 +152,7 @@ def checkout(request):
                   {'order': order,"razorpay_order_id": razorpay_response["id"],
                    "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
@@ -167,7 +167,7 @@ def razorpay_success_redirect(request):
     return redirect("order-summary", pk=order.id)
 
 
-@login_required(login_url='login')
+@login_required(login_url='login-view')
 def view_pdf(request, item_id):
     order = get_object_or_404(Order, user=request.user, payment_status=True)
     item = get_object_or_404(Item, id=item_id, order=order)
@@ -344,10 +344,10 @@ def signup_view(request):
         # Create a new user
         user = User.objects.create_user(username=email, first_name=first_name, last_name=last_name, password=password)
         messages.success(request, 'Account created successfully! Please log in.')
-        return redirect('login')
+        return redirect('login-view')
     return render(request, 'accounts/login.html')
 
-login_required(login_url='login')
+login_required(login_url='login-view')
 def logout_view(request):
     # Log the user out
     logout(request)

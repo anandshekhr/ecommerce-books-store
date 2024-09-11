@@ -52,9 +52,9 @@ router.register(r'categories', views.CategoryViewSet)
 
 
 urlpatterns = [
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('signup/', views.signup_view, name='signup'),
+    path('login/', views.login_view, name='login-view'),
+    path('logout/', views.logout_view, name='logout-view'),
+    path('signup/', views.signup_view, name='signup-view'),
     path('admin/', admin.site.urls),
     path('', views.item_list, name='home'),
     path('item/filter/', views.item_list_filter, name='item-filter'),
