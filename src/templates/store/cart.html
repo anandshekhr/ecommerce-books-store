@@ -68,10 +68,13 @@
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' },
             success: function (response) {
-                alert('Item removed successfully');
-                if (response.new_sub_total) {
+                //console.log(response);
+                // Remove the item row from the table
+                row.remove();
+                if (response) {
                     $('#subTotal').text('Subtotal: ₹' + response.total_price.toFixed(2));  // Update sub-total element
                 }
+                alert('Item removed successfully');
             },
             error: function (error) {
                 alert('Failed to remove item');
