@@ -12,6 +12,7 @@ from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 import razorpay
 from datetime import datetime
@@ -73,6 +74,14 @@ def view_cart(request):
     try:
         # Try to get the user's active order (unpaid)
         order = Order.objects.get(user=request.user, payment_status=False)
+        # Check if the order has any items
+        if not order.items.exists():
+            # If no items in the cart, display a message
+            messages.warning(request, 'Your cart is empty. Please add items to your cart.')
+            return render(request, 'store/cart.html', {
+                'order': None,  # No active order with items
+                'message': "Your cart is empty. Please add items to your cart."
+            })
         request_data = {
             "amount": int(order.total_price * 100),
             "currency": "INR",
@@ -161,6 +170,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class AddToCartView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
     def post(self, request, item_id):
         item = get_object_or_404(Item, id=item_id)
@@ -179,6 +189,8 @@ class AddToCartView(generics.GenericAPIView):
 
 class RemoveFromCartView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+
 
     def post(self, request, item_id):
         item = get_object_or_404(Item, id=item_id)
@@ -193,6 +205,8 @@ class RemoveFromCartView(generics.GenericAPIView):
 
 class CartView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+
 
     def get(self, request, *args, **kwargs):
         try:
@@ -219,6 +233,8 @@ class CartView(generics.GenericAPIView):
 
 class CheckoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+
     serializer_class = OrderSerializer
 
     def get(self, request, *args, **kwargs):
