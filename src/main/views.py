@@ -28,6 +28,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 razorpay_api = razorpay.Client(
     auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_KEY_SECRET)
 )
+from django.core.paginator import Paginator
 
 def item_list(request):
     categories = ExamCategory.objects.all()
@@ -35,25 +36,41 @@ def item_list(request):
     selected_category = request.GET.get('category')
     if selected_category:
         items = items.filter(category_id=selected_category)
-    return render(request, 'store/index.html', {'categories': categories, 'products': items})
+
+    # Pagination
+    paginator = Paginator(items.order_by('id'), 10)  # Show 10 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
 def item_list_filter(request):
     category_id = request.GET.get('category')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     search_query = request.GET.get('q')
+
+    items = Item.objects.filter(is_available=True)
+    
     if category_id:
         category_obj = ExamCategory.objects.get(pk=category_id)
-        items = Item.objects.filter(is_available=True, category = category_obj)
+        items = items.filter(category=category_obj)
+    
     if search_query:
-        items = Item.objects.filter(is_available=True, title__icontains = search_query)
+        items = items.filter(title__icontains=search_query)
     
     if min_price:
-        items = Item.objects.filter(price__gte=min_price)
+        items = items.filter(price__gte=min_price)
     if max_price:
-        items = Item.objects.filter(price__lte=max_price)
+        items = items.filter(price__lte=max_price)
+
+    # Pagination
+    paginator = Paginator(items.order_by('id'), 10)  # Show 10 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     categories = ExamCategory.objects.all()
-    return render(request, 'store/index.html', {'categories': categories, 'products': items})
+    return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
 @login_required(login_url='login')
 def add_to_cart(request, item_id):
