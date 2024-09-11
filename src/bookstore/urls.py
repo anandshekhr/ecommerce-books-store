@@ -64,6 +64,7 @@ urlpatterns = [
     path('order/summary/<int:pk>/', views.order_summary, name='order-summary'),
     path('checkout/<int:order_id>/', views.checkout, name='checkout'),
     path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
+    path('payment/phonepe/success/<int:order_id>/',views.phonepe_success_redirect,name="phonepe-payment-success"),
     path('pdf/<int:item_id>/', views.view_pdf, name='view_pdf'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),

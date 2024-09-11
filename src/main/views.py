@@ -27,6 +27,8 @@ import uuid
 from phonepe.sdk.pg.payments.v1.models.request.pg_pay_request import PgPayRequest
 from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
 from phonepe.sdk.pg.env import Env
+from django.views.decorators.csrf import csrf_protect,csrf_exempt
+
 
 
 s2s_callback_url = settings.PAYMENT_SUCCESS_REDIRECT_URL
@@ -41,7 +43,7 @@ razorpay_api = razorpay.Client(
 merchant_id = settings.PHONEPE_MERCHANT_ID
 salt_key = settings.PHONEPE_SALT_KEY
 salt_index = 1
-env = Env.UAT  # Change to Env.PROD when you go live
+env = Env.PROD # Change to Env.PROD when you go live
 
 phonepe_client = PhonePePaymentClient(
     merchant_id=merchant_id, salt_key=salt_key, salt_index=salt_index, env=env
@@ -171,13 +173,13 @@ def checkout(request,order_id):
 
     pay_page_request = PgPayRequest.pay_page_pay_request_builder(
         merchant_transaction_id=unique_transaction_id,
-        amount=100,
+        amount=int(order.total_price * 100),
         merchant_user_id=id_assigned_to_user_by_merchant,
         merchant_order_id=order.sid,
         redirect_mode="POST",
-        callback_url=request.build_absolute_uri(reverse('order-summary', kwargs={'pk': order.id})),
+        callback_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
         # redirect_mode="REDIRECT",
-        redirect_url=request.build_absolute_uri(reverse('order-summary', kwargs={'pk': order.id})),
+        redirect_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
     )
     pay_page_response = phonepe_client.pay(pay_page_request)
     pay_page_url = pay_page_response.data.instrument_response.redirect_info.url
@@ -201,7 +203,7 @@ def checkout(request,order_id):
         phonepe_transaction_record.save()
 
 
-    return render(pay_page_url)
+    return redirect(pay_page_url)
 
 @login_required(login_url='login-view')
 def razorpay_success_redirect(request):
@@ -212,6 +214,18 @@ def razorpay_success_redirect(request):
         order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
         order.payment_status = True
         order.razorpay_payment_id = razorpay_payment_id
+        order.save()
+
+    messages.success(request, "Your order was successful!")
+    return redirect("order-summary", pk=order.id)
+
+
+@login_required(login_url='login-view')
+def phonepe_success_redirect(request, order_id):
+    # order_id = request.GET.get('order_id')
+    if request.user and order_id:
+        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
+        order.payment_status = True
         order.save()
 
     messages.success(request, "Your order was successful!")
