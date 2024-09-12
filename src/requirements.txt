@@ -19,4 +19,5 @@ django-quill-editor
 PyJWT
 django-allauth
 cryptography
+django-admin-volt
 hashids

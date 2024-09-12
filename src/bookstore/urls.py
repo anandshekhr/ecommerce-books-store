@@ -53,12 +53,17 @@ router = DefaultRouter()
 router.register(r'orders', views.OrderViewSet)
 router.register(r'categories', views.CategoryViewSet)
 
+admin.site.site_header = "VAMS Book Store"
+admin.site.index_title = "VAMS Book Store"
+admin.site.site_title = "VAMS Book Store"
+
 
 urlpatterns = [
     path('login/', views.login_view, name='login-view'),
     path('logout/', views.logout_view, name='logout-view'),
     path('signup/', views.signup_view, name='signup-view'),
     path('admin/', admin.site.urls),
+    path('', include('admin_volt.urls')),
     path('', views.item_list, name='home'),
     path('item/filter/', views.item_list_filter, name='item-filter'),
     path('item/<int:pk>/', views.product_detail, name='item-details'),
