@@ -84,7 +84,10 @@ class Order(models.Model):
 class LegalContent(models.Model):
     PAGE_CHOICES = [
         ('privacy_policy', 'Privacy Policy'),
-        ('terms_of_service', 'Terms of Service')
+        ('terms_of_service', 'Terms of Service'),
+        ('refund_policy', 'Refund Policy'),
+        ('shipping_policy', 'Shipping Policy'),
+        ('contact_us', 'Contact Us'),
     ]
 
     page_type = models.CharField(max_length=50, choices=PAGE_CHOICES, unique=True)

@@ -58,6 +58,18 @@ def terms_of_service(request):
     terms = get_object_or_404(LegalContent, page_type='terms_of_service')
     return render(request, 'policies/legal_content.html', {'content': terms})
 
+def refund_policy(request):
+    terms = get_object_or_404(LegalContent, page_type='refund_policy')
+    return render(request, 'policies/legal_content.html', {'content': terms})
+
+def shippping_policy(request):
+    terms = get_object_or_404(LegalContent, page_type='shipping_policy')
+    return render(request, 'policies/legal_content.html', {'content': terms})
+
+def contact_us(request):
+    terms = get_object_or_404(LegalContent, page_type='contact_us')
+    return render(request, 'policies/legal_content.html', {'content': terms})
+
 
 def item_list(request):
     categories = ExamCategory.objects.all()

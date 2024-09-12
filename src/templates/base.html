@@ -115,7 +115,7 @@
                         <li><a href="#" class="text-white">About Us</a></li>
                         <li><a href="#" class="text-white">Careers</a></li>
                         <li><a href="#" class="text-white">Blog</a></li>
-                        <li><a href="#" class="text-white">Contact Us</a></li>
+                        <li><a href="{% url "contact_us" %}" class="text-white">Contact Us</a></li>
                     </ul>
                 </div>
                 
@@ -124,9 +124,10 @@
                     <h5 class="text-uppercase">Customer Support</h5>
                     <ul class="list-unstyled mb-0">
                         <li><a href="#" class="text-white">FAQs</a></li>
-                        {% comment %} <li><a href="#" class="text-white">Shipping & Returns</a></li> {% endcomment %}
+                        <li><a href="{% url 'shipping_policy' %}" class="text-white">Shipping & Return</a></li>
                         <li><a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a></li>
                         <li><a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a></li>
+                        <li><a href="{% url 'refund_policy' %}" class="text-white">Refund Policy</a></li>
                     </ul>
                 </div>
                 
