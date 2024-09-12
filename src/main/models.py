@@ -9,11 +9,15 @@ from datetime import date
 from django_quill.fields import QuillField
 
 class ExamCategory(models.Model):
-    name = models.CharField(max_length=100)
-    board = models.CharField(_("Board"), max_length=500,null=True,blank=True)
+    name = models.CharField(verbose_name=_("Category"),max_length=100)
+    board = models.ForeignKey("self", verbose_name=_("Parent Category"), on_delete=models.CASCADE, default=None, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} - {self.board if self.board else ''}"
+        return f"{self.name} { '-' + self.board.name if self.board else ''}"
+    
+    class Meta:
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
 
 class Item(models.Model):
     category = models.ForeignKey(ExamCategory, on_delete=models.CASCADE)
@@ -27,6 +31,10 @@ class Item(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = _("Product")
+        verbose_name_plural = _("Products")
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Item, related_name='images', on_delete=models.CASCADE)
@@ -34,6 +42,10 @@ class ProductImage(models.Model):
 
     def __str__(self):
         return f"{self.product.title} Image"
+    
+    class Meta:
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -46,6 +58,10 @@ class Order(models.Model):
     phonepe_merchant_transaction_id = models.CharField(_("PhonePe Transaction Id"),max_length=36,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _("Order")
+        verbose_name_plural = _("Orders")
 
     def __str__(self):
         return f'Order {self.id} by {self.user.username}'
@@ -91,8 +107,8 @@ class PhonePePaymentRequestDetail(models.Model):
     created_at = models.DateTimeField(_("created at"), auto_now=True, auto_now_add=False)
 
     class Meta:
-        verbose_name = _("PhonePePaymentRequestDetail")
-        verbose_name_plural = _("PhonePePaymentRequestDetails")
+        verbose_name = _("PhonePe Payment Detail")
+        verbose_name_plural = _("PhonePe Payment Details")
 
     def __str__(self):
         return "Order Id: "
@@ -102,3 +118,6 @@ class PhonePePaymentRequestDetail(models.Model):
     
     def get_order_sid(self):
         return self.order_id.sid
+
+
+
