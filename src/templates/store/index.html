@@ -41,7 +41,7 @@
                         <img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}">
                         <div class="card-body">
                             <h5 class="card-title">{{ product.title }}</h5>
-                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
                             <p class="card-text">
                                 {% if product.og_price %}
                                     <span class="text-muted original-price">₹{{ product.og_price }}</span><br>
