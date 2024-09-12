@@ -13,7 +13,7 @@
                     <select class="form-select" id="categoryFilter" name="category">
                         <option value="">All</option>
                         {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}{% if category.board %} - {% endif %}{{ category.board }}</option>
+                        <option value="{{ category.id }}">{{ category.name }}{% if category.board %} - {{ category.board }}{% endif %}</option>
                         {% endfor %}
                     </select>
                 </div>
