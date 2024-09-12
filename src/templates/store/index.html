@@ -38,7 +38,7 @@
                 {% for product in products %}
                 <div class="col-md-4 item-card">
                     <div class="card h-100">
-                        <img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}">
+                        <a href="{% url 'item-details' product.id %}"><img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}"></a>
                         <div class="card-body">
                             <h5 class="card-title">{{ product.title }}</h5>
                             <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
