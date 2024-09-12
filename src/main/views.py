@@ -101,6 +101,10 @@ def item_list_filter(request):
     categories = ExamCategory.objects.all()
     return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
+def product_detail(request, pk):
+    product = get_object_or_404(Item, pk=pk)
+    return render(request, 'store/item.html', {'product': product})
+
 @login_required(login_url='login-view')
 def add_to_cart(request, item_id):
     item = get_object_or_404(Item, id=item_id)

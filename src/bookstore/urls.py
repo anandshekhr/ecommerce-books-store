@@ -61,6 +61,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.item_list, name='home'),
     path('item/filter/', views.item_list_filter, name='item-filter'),
+    path('item/<int:pk>/', views.product_detail, name='item-details'),
     path('cart/', views.view_cart, name='view_cart'),
     path('add-to-cart/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('order/history/', views.order_history, name='order-history'),

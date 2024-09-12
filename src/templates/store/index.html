@@ -48,6 +48,7 @@
                                 {% endif %}
                                 <span class="text-primary">₹{{ product.price }}</span>
                             </p>
+                            <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
                             <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
                         </div>
                     </div>

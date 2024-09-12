@@ -28,6 +28,13 @@ class Item(models.Model):
     def __str__(self):
         return self.title
 
+class ProductImage(models.Model):
+    product = models.ForeignKey(Item, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='item_images/',max_length=500)
+
+    def __str__(self):
+        return f"{self.product.title} Image"
+
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     items = models.ManyToManyField(Item)

@@ -1,11 +1,12 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail
+from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage
 
 admin.site.register(Item)
 admin.site.register(ExamCategory)
 admin.site.register(Order)
+admin.site.register(ProductImage)
 
 
 @admin.register(LegalContent)
