@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% block title %}{{product.title | slice:10}}{% endblock title %}
+{% block html %}
+<!-- Meta Description -->
+<meta name="description" content="{{ product.description|truncatechars:150 }}">
+
+<!-- Open Graph Meta Tags for Social Sharing -->
+<meta property="og:title" content="{{ product.title }}">
+<meta property="og:description" content="{{ product.description|truncatechars:150 }}">
+<meta property="og:image" content="{{ product.thumbnail.url }}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:type" content="product">
+
+<!-- Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ product.title }}">
+<meta name="twitter:description" content="{{ product.description|truncatechars:150 }}">
+<meta name="twitter:image" content="{{ product.thumbnail.url }}">
+
+<!-- Other Meta Tags (SEO, etc.) -->
+<meta name="keywords" content="{{ product.title }}, VAMS Books Store, eBooks, PDF">
+<meta name="author" content="VAMS Books Store">
+
+<!-- Canonical URL -->
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+{% endblock html %}
 {% block style %}
 @media (max-width: 768px) {
     .item {

@@ -1,6 +1,6 @@
 # store/views.py
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -433,3 +433,13 @@ def logout_view(request):
     
     # Redirect to the login page or any other page
     return redirect('home')
+
+
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Disallow: /admin/",
+        "Allow: /",
+        "Sitemap: http://www.vamsbookstore.in/sitemap.xml"
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<url>
+  <loc>http://www.vamsbookstore.in/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/?next=/cart/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/?next=/order/history/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/item/3/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/?next=/add-to-cart/3/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/item/5/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/?next=/add-to-cart/5/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/item/6/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/login/?next=/add-to-cart/6/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/?page=1</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/contact-us/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/shipping-policy/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/privacy-policy/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/terms-of-service/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://www.vamsbookstore.in/refund-policy/</loc>
+  <lastmod>2024-09-13T06:02:58+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+
+
+</urlset>

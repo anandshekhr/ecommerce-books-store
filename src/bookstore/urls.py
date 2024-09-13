@@ -26,6 +26,13 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
 from .utils import HashIdConverter
+from django.contrib.sitemaps.views import sitemap
+from main.sitemaps import ProductSitemap
+
+sitemaps = {
+    'products': ProductSitemap,
+}
+
 
 register_converter(HashIdConverter, "hashid")
 
@@ -59,6 +66,8 @@ admin.site.site_title = "VAMS Book Store"
 
 
 urlpatterns = [
+    path('robots.txt', views.robots_txt),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('login/', views.login_view, name='login-view'),
     path('logout/', views.logout_view, name='logout-view'),
     path('signup/', views.signup_view, name='signup-view'),

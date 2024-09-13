@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /admin/   # Prevent crawlers from indexing admin pages
+Allow: /
+
+Sitemap: http://www.vamsbookstore.in/sitemap.xml

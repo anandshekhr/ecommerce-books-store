@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import date
+from django.utils import timezone
 
 from django_quill.fields import QuillField
 
@@ -28,6 +29,8 @@ class Item(models.Model):
     pdf_file = models.FileField(upload_to='pdfs/', max_length=500)
     thumbnail = models.ImageField(_("thumbnail"), upload_to='thumbnails/',null=True, blank=True)
     is_available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(_("Created at"), auto_now=False, auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
 
     def __str__(self):
         return self.title
@@ -35,6 +38,9 @@ class Item(models.Model):
     class Meta:
         verbose_name = _("Product")
         verbose_name_plural = _("Products")
+    
+    def get_absolute_url(self):
+        return reverse('item-details', kwargs={'pk': self.pk})
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Item, related_name='images', on_delete=models.CASCADE)
