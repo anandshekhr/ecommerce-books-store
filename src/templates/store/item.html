@@ -16,7 +16,7 @@
     <div class="row">
         <!-- Product Images Carousel -->
         <div class="col-md-6">
-            <div id="productImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div id="productImagesCarousel" class="carousel slide">
                 <div class="carousel-inner">
                     {% for image in product.images.all %}
                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -34,6 +34,7 @@
                 </button>
             </div>
         </div>
+        
 
         <!-- Product Details -->
         <div class="col-md-6 item">
