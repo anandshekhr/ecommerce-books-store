@@ -1,9 +1,52 @@
 {% extends "base.html" %}
 {% block title %}Products{% endblock title %}
+{% block style %}
+/* Mobile view: Hide the filter section initially */
+@media (max-width: 768px) {
+    .filter-section {
+        display: none; /* Ensure the element doesn't take up space when hidden */
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease, opacity 0.5s ease;
+    }
+
+    .filter-section.open {
+        display: block; /* Show the element */
+        max-height: 500px; /* Adjust based on your content's height */
+        opacity: 1;
+    }
+
+    .filter-btn {
+        margin: 20px 0;
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Show filter section normally on larger screens */
+@media (min-width: 769px) {
+    .filter-btn {
+        display: none;
+    }
+
+    .filter-section {
+        display: block;
+        max-height: none;
+        opacity: 1;
+    }
+}
+
+
+
+{% endblock style %}
 {% block content %}
 <!-- Filters, Search, and Item List -->
 <div class="container mt-4">
     <div class="row">
+
+        
         <!-- Filters Section -->
         <div class="col-md-3 filter-section">
             <h5>Filters</h5>
@@ -26,8 +69,13 @@
             </form>
         </div>
 
+
         <!-- Products Section -->
         <div class="col-md-9">
+            <!-- Filter Button for Mobile (appears at the top on mobile) -->
+            <button id="filterToggleBtn" class="btn btn-primary filter-btn d-md-none">
+                <i class="fas fa-filter"></i> Filters
+            </button>
             <!-- Search Bar -->
             <div class="mb-4">
                 <input type="text" id="searchInput" class="form-control" placeholder="Search for products...">
@@ -125,5 +173,23 @@
             }
         });
     });
+
+    document.getElementById('filterToggleBtn').addEventListener('click', function() {
+        const filterSection = document.querySelector('.filter-section');
+    
+        // Toggle the 'open' class to animate and show/hide the section
+        if (filterSection.classList.contains('open')) {
+            filterSection.classList.remove('open');
+            setTimeout(() => {
+                filterSection.style.display = 'none'; // Hide after transition
+            }, 500); // Match the transition duration (0.5s)
+        } else {
+            filterSection.style.display = 'block'; // Display before transition starts
+            setTimeout(() => {
+                filterSection.classList.add('open');
+            }, 10); // Small delay to trigger transition smoothly
+        }
+    });
+    
 </script>
 {% endblock MoreJs %}
