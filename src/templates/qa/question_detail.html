@@ -198,21 +198,13 @@ hr {
         var content = document.getElementById('full-content-' + answerId); // Ensure you have a full content element
     
         if (answerElement) {
-            if (content) {
-                if (answerElement.style.display === 'none') {
-                    answerElement.style.display = 'block';
-                    content.style.display = 'block'; // Show the full content
-                    content.classList.add('full-content'); // Apply the scroll class
-                } else {
-                    answerElement.style.display = 'none';
-                    content.style.display = 'none'; // Hide the full content
-                    content.classList.remove('full-content'); // Remove the scroll class
-                }
-            } else {
-                console.error('Content element with ID "full-content-' + answerId + '" not found.');
-            }
+                answerElement.style.display = 'none';
+                content.style.display = 'block'; // Show the full content
+                content.classList.add('full-content'); // Apply the scroll class
         } else {
-            console.error('Answer element with ID "answer-' + answerId + '" not found.');
+            answerElement.style.display = 'block';
+            content.style.display = 'none'; // Hide the full content
+            content.classList.remove('full-content'); // Remove the scroll class
         }
     }
     
