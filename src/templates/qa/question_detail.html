@@ -137,6 +137,9 @@ hr {
                             <p class="answer-preview" id="answer-{{ answer.id }}">
                                 {{ answer.content|truncatewords:20 }}  <!-- Show only 20 words initially -->
                             </p>
+                            <p class="answer-preview" id="full-content-{{ answer.id }}" style="display: None;">
+                                {{ answer.content }}  <!-- Show only 20 words initially -->
+                            </p>
                             <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: None;">View More</span>
                         {% else %}
                             <p class="answer-preview">
