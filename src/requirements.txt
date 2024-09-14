@@ -21,3 +21,4 @@ django-allauth
 cryptography
 django-admin-volt
 hashids
+ua_parser

@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_quill',
+    "middlewares",
 
     # Allauth apps
     'allauth',
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    "middlewares.middleware.RequestDataMiddleware",
 ]
 
 ROOT_URLCONF = 'bookstore.urls'
