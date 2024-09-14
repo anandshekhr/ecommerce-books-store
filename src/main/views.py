@@ -413,6 +413,18 @@ def login_view(request):
             messages.error(request, 'Invalid email or password')
     return render(request, 'accounts/login.html')
 
+def generate_username(first_name, last_name):
+    base_username = f"{first_name.lower()}.{last_name.lower()}"
+    username = base_username
+    while User.objects.filter(username=username).exists():
+        username = f"{base_username}{generate_random_number()}"
+    return username
+
+import random
+import string
+def generate_random_number(length=4):
+    return ''.join(random.choices(string.digits, k=length))
+
 def signup_view(request):
     if request.method == 'POST':
         first_name = request.POST['first_name']
@@ -420,9 +432,12 @@ def signup_view(request):
         email = request.POST['email']
         phone_number = request.POST['phone_number']
         password = request.POST['password']
+        
+        # Generate a unique username
+        username = generate_username(first_name, last_name)
 
         # Create a new user
-        user = User.objects.create_user(username=email, first_name=first_name, last_name=last_name, password=password)
+        user = User.objects.create_user(email=email,username=username, first_name=first_name, last_name=last_name +";"+phone_number , password=password)
         messages.success(request, 'Account created successfully! Please log in.')
         return redirect('login-view')
     return render(request, 'accounts/login.html')
