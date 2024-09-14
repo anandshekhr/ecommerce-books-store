@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}Q & A{% endblock title %}
+{% block head %}
+<!-- Meta Description -->
+<meta name="description" content="Browse and participate in questions and answers related to Your Doubts. Ask questions, get answers, and contribute to discussions.">
+
+<!-- Meta Keywords -->
+<meta name="keywords" content="questions, answers, VAMS Bookstore, student queries, academic questions">
+
+<!-- Meta Robots -->
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph Tags (for social media sharing) -->
+<meta property="og:title" content="Questions and Answers | VAMS Bookstore">
+<meta property="og:description" content="Browse and participate in questions and answers related to VAMS Bookstore. Ask questions, get answers, and contribute to discussions.">
+<meta property="og:image" content="{% static 'images/og-image.jpg' %}">
+<meta property="og:url" content="{% url 'questions_list' %}">
+<meta property="og:type" content="website">
+
+<!-- Twitter Card Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Questions and Answers | VAMS Bookstore">
+<meta name="twitter:description" content="Browse and participate in questions and answers related to VAMS Bookstore. Ask questions, get answers, and contribute to discussions.">
+<meta name="twitter:image" content="{% static 'images/twitter-card.jpg' %}">
+{% endblock head %}
+{% block style %}
+
+.container-filter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; /* Space below the filter section */
+}
+
+.answer-preview {
+    max-height: 60px;
+    overflow: hidden;
+    position: relative;
+}
+.expand-btn {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+.question-block {
+    margin-bottom: 20px;
+}
+
+.answer-block {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+hr {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.answers {
+    margin-left :2%;
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.user-initials {
+    width: 40px;
+    height: 40px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+    text-transform: uppercase;
+}
+.username{
+    font-weight: bold;
+}
+.question-block, .answer-block {
+    padding: 10px;
+    border-bottom: 1px solid #e1e1e1;
+}
+textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dcdcdc;
+}
+.add-answer-section {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.question-answer-date{
+    font-size: 10px;
+    color: grey;
+    font-weight:200;
+    margin-top:0%;
+}
+.ask-question{
+    float:right;
+}
+
+.quick-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adjust spacing as needed */
+    margin-bottom: 20px; /* Add space below the filter section */
+}
+
+.quick-filters p {
+    margin-right: 10px; /* Space between text and first button */
+}
+
+.quick-filters .btn {
+    margin: 0; /* Remove default margin on buttons */
+}
+.search-form {
+    display: flex;
+    align-items: center;
+}
+
+.search-form input {
+    max-width: 200px; /* Adjust size as needed */
+    margin-right: 10px;
+}
+
+.search-form button {
+    margin: 0;
+}
+
+
+
+{% endblock style %}
+{% block content %}
+
+<div class="container">
+    <h1>Q & A Portal</h1>
+
+    <!-- Filter and Search Options -->
+    
+    <div class="container-filter">
+    <div class="quick-filters">
+        <a>Quick filters:</a>
+        <a href="?user=me" >My Questions</a>
+        <a href="?user=">All Questions</a>
+        <a href="{% url "ask_question" %}">Ask Question</a>
+    </div>
+
+    <div class="filters">
+        <form method="get" action="" class="search-form">
+            <input type="text" name="search" placeholder="Search..." value="{{ search_query }}" class="form-control">
+            <button type="submit" class="btn btn-success">Search</button>
+        </form>
+    </div>
+</div>
+    {% for question in questions %}
+    <div class="question-block">
+        <!-- User Info with Initials and Username -->
+        <div class="user-info">
+            <!-- Circular icon with initials -->
+            <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                {{ question.user.first_name.0|upper }}{{ question.user.last_name.0|upper }}
+            </div>
+            <span class="username" style="font-weight: bold;">{{ question.user.username|lower|capfirst }}</span>
+        </div>
+        
+        <!-- Question Content -->
+        <p>Question {{ forloop.counter }}: {{ question.content|safe }}</p>
+        
+        {% if question.image %}
+        <img src="{{ question.image.url }}" alt="Question Image" style="max-width: 30%;">
+        {% endif %}
+        
+        {% if question.document %}
+        <br><a href="{{ question.document.url }}" target="_blank">Download Document</a>
+        {% endif %}
+        <p class="question-answer-date">{{question.created_at}}</p>
+
+        {% if question.answers.count > 0 %}
+            <p>Answers:</p>
+            <div class="answers">
+                {% for answer in question.answers_list %}
+                    <div class="answer-block">
+                        <!-- Answer User Info with Initials and Username -->
+                        <div class="user-info">
+                            <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                                {{ answer.user.first_name.0|upper }}{{ answer.user.last_name.0|upper }}
+                            </div>
+                            <span class="username" style="font-weight: bold;">{{ answer.user.username|lower|capfirst }}</span>
+                        </div>
+                        <!-- Answer Content Preview -->
+                        {% if answer.content|length > 100 %}  <!-- Adjust this threshold based on your needs -->
+                            <p class="answer-preview" id="answer-{{ answer.id }}">
+                                {{ answer.content|truncatewords:20 }}  <!-- Show only 20 words initially -->
+                            </p>
+                            <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: None;">View More</span>
+                        {% else %}
+                            <p class="answer-preview">
+                                {{ answer.content|safe }}
+                            </p>
+                        {% endif %}
+                        <p class="question-answer-date" style="margin-top: 0%">{{answer.created_at}}</p>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- View all answers link if there are more than 5 answers -->
+            {% if question.answers.count > 5 %}
+                <a href="{% url 'question_detail' question.id %}" style="color: #007bff;">View all answers</a>
+            {% endif %}
+        {% else %}
+            <p>No answers yet.</p>
+        {% endif %}
+
+
+        <div class="add-answer-section">
+        <div class="user-info">
+            <!-- Circular icon with initials -->
+            <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                {{ question.user.first_name.0|upper }}{{ question.user.last_name.0|upper }}
+            </div>
+            <span class="username" style="font-weight: bold;">{{ question.user.username|lower|capfirst }}</span>
+        </div>
+        <!-- Form to add a new answer -->
+        <form method="post" action="{% url 'add_answer' question.id %}">
+            {% csrf_token %}
+            
+            <textarea id="add_answer_quill_{{ forloop.counter }}" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
+            {% comment %} <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button> {% endcomment %}
+            <button class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    </div>
+    <hr>
+{% endfor %}
+
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill editors
+        var quillEditors = document.querySelectorAll('textarea[id^="add_answer_quill_"]');
+        quillEditors.forEach(function(textarea) {
+            new Quill(textarea, {
+                theme: 'snow'
+            });
+        });
+    });
+</script>
+
+
+
+{% endblock content %}
+{% block morejs %}
+<script>
+    function expandAnswer(answerId) {
+        var answerElement = document.getElementById('answer-' + answerId);
+        
+        // If already expanded, hide the full content, otherwise expand it.
+        if (answerElement.classList.contains('expanded')) {
+            answerElement.style.maxHeight = '60px'; // Show only preview
+            answerElement.classList.remove('expanded');
+        } else {
+            answerElement.style.maxHeight = 'none'; // Show full content
+            answerElement.classList.add('expanded');
+        }
+    }
+    </script>
+
+    <script>
+        function expandAnswer(answerId) {
+            window.location.href = '/questions/' + answerId;
+        }
+    </script>
+    
+
+
+{% endblock morejs %}

@@ -1,8 +1,20 @@
 # store/serializers.py
 
 from rest_framework import serializers
-from .models import Item, ExamCategory, Order
+from .models import Item, ExamCategory, Order, Question, Answer
 
+
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = '__all__'
+
+class QuestionSerializer(serializers.ModelSerializer):
+    answers = AnswerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Question
+        fields = ['id', 'title', 'content', 'posted_by', 'created_at', 'answers']
 
 
 class ExamCategorySerializer(serializers.ModelSerializer):

@@ -1,7 +1,7 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage
+from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -33,5 +33,17 @@ class LegalContentAdmin(admin.ModelAdmin):
 @admin.register(PhonePePaymentRequestDetail)
 class PhonePePaymentRequestDetailAdmin(admin.ModelAdmin):
     pass
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    pass
+    
+
+    
+
     
 

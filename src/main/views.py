@@ -1,7 +1,8 @@
 # store/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail
+from django.http import HttpResponseRedirect
+from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail, Question, Answer
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import stripe
@@ -443,3 +444,78 @@ def robots_txt(request):
         "Sitemap: http://www.vamsbookstore.in/sitemap.xml"
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+@login_required
+def question_list(request):
+    # Get filter and search parameters
+    user_filter = request.GET.get('user', None)
+    search_query = request.GET.get('search', '')
+
+    questions = Question.objects.all()
+
+    # Filter by logged-in user if user_filter is provided
+    if user_filter == 'me' and request.user.is_authenticated:
+        questions = questions.filter(user=request.user)
+    
+    # Search functionality
+    if search_query:
+        questions = questions.filter(content__icontains=search_query)
+
+    # Limit answers to the most recent 5
+    for question in questions:
+        question.answers_list = question.answers.order_by('-created_at')[:5]
+    
+    context = {
+        'questions': questions,
+        'search_query': search_query,
+    }
+    return render(request, 'qa/questions_list.html', context)
+
+@login_required
+def ask_question(request):
+    if request.method == 'POST':
+        content = request.POST['content']
+        image = request.FILES.get('image')
+        document = request.FILES.get('document')
+
+        question = Question.objects.create(user=request.user, content=content, image=image, document=document)
+        return redirect('question_list')
+    
+    return render(request, 'qa/ask_question.html')
+
+@login_required
+def answer_question(request, question_id):
+    question = Question.objects.get(id=question_id)
+    if request.method == 'POST':
+        content = request.POST['content']
+        image = request.FILES.get('image')
+        document = request.FILES.get('document')
+
+        Answer.objects.create(user=request.user, question=question, content=content, image=image, document=document)
+        return redirect('question_list')
+    
+    return render(request, 'qa/answer_question.html', {'question': question})
+
+
+def question_detail_view(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    answers = question.answers.all()  # All answers
+    context = {
+        'question': question,
+        'answers': answers,
+    }
+    return render(request, 'qa/question_detail.html', context)
+
+# Add new answer to a question
+def add_answer(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        Answer.objects.create(content=content, user=request.user, question=question)
+        # Redirect to the referring page or default to the question detail page
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return HttpResponseRedirect(referer)
+        else:
+            return redirect('question_detail', question_id=question.id)

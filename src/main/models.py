@@ -9,6 +9,38 @@ from django.utils import timezone
 
 from django_quill.fields import QuillField
 
+class Question(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    image = models.ImageField(upload_to='questions/images/', blank=True, null=True)
+    document = models.FileField(upload_to='questions/documents/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
+
+    def __str__(self):
+        return f"Question by {self.user.username}"
+    
+    class Meta:
+        verbose_name = _("Question")
+        verbose_name_plural = _("Questions")
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()  # Text content from Quill
+    image = models.ImageField(upload_to='answers/images/', blank=True, null=True)
+    document = models.FileField(upload_to='answers/documents/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
+
+    def __str__(self):
+        return f"Answer by {self.user.username}"
+    
+    class Meta:
+        verbose_name = _("Answer")
+        verbose_name_plural = _("Answers")
+    
+    
 class ExamCategory(models.Model):
     name = models.CharField(verbose_name=_("Category"),max_length=100)
     board = models.ForeignKey("self", verbose_name=_("Parent Category"), on_delete=models.CASCADE, default=None, null=True, blank=True)

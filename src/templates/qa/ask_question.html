@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Q & A{% endblock title %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+{% endblock head %}
+{% block style %}
+.form-group {
+    {% comment %} display: flex;
+    justify-content: space-between; /* Distributes space evenly between icons */ {% endcomment %}
+    align-items: left; /* Aligns items vertically in the center */
+}
+
+.form-group label {
+    display: flex;
+    align-items: left; /* Aligns icon and file input vertically */
+    cursor: pointer; /* Optional: show a pointer cursor for better UX */
+}
+
+.form-group i {
+    margin-right: 10px; /* Add some space between icon and file input */
+}
+
+.form-group input[type="file"] {
+    display: none; /* Hide the actual file input */
+}
+
+{% endblock style %}
+{% block content %}
+<div class="container">
+    <h2>Ask a Question</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="content">Your Question</label>
+            <textarea id="quillEditor" name="content" class="form-control"></textarea>
+        </div>
+        <div class="form-group mt-3 d-flex">
+            <label for="image-upload" class="d-flex align-items-center">
+                <i class="fa-regular fa-image" title="Upload Image"></i>
+                <input type="file" name="image" class="d-none" id="image-upload">
+            </label>
+            <label for="document-upload" class="d-flex align-items-center">
+                {% comment %} <i class="fas fa-file-alt fa-2x" title="Upload Document"></i> {% endcomment %}
+                <i class="fa-solid fa-paperclip" title="Upload Document"></i>
+                <input type="file" name="document" class="d-none" id="document-upload">
+            </label>
+        </div>
+        
+        
+        
+        <button type="submit" class="btn btn-primary mt-3">Post Question</button>
+    </form>
+</div>
+<script>
+    var quill = new Quill('#quillEditor', {
+        theme: 'snow'
+    });
+</script>
+
+{% endblock content %}
+{% block morejs %}
+<script>
+    document.querySelectorAll('.form-group label').forEach(label => {
+        label.addEventListener('click', function() {
+            const input = document.querySelector(`#${this.getAttribute('for')}`);
+            input.click();
+        });
+    });
+</script>
+
+
+
+{% endblock morejs %}
