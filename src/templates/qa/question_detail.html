@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Questions and Answers{% endblock title %}
 {% block head %}
 <meta charset="UTF-8">
@@ -119,10 +120,10 @@ hr {
         {% endif %}
         <p class="question-answer-date">{{question.created_at}}</p>
 
-        {% if question.answers.count > 0 %}
+        {% if question.answers_list.count > 0 %}
             <p>Answers:</p>
             <div class="answers">
-                {% for answer in question.answers.all %}
+                {% for answer in question.answers_list.all %}
                     <div class="answer-block">
                         <!-- Answer User Info with Initials and Username -->
                         <div class="user-info">
@@ -159,6 +160,7 @@ hr {
             </div>
             <span class="username" style="font-weight: bold;">{{ question.user.username|lower|capfirst }}</span>
         </div>
+        {% if question.is_active %}
         <!-- Form to add a new answer -->
         <form method="post" action="{% url 'add_answer' question.id %}">
             {% csrf_token %}
@@ -166,6 +168,9 @@ hr {
             <textarea id="add_answer_quill" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
             <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button>
         </form>
+        {% else %}
+        <p>This thread has been closed.</p>
+        {% endif %}
     </div>
 </div>
 

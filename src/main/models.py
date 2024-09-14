@@ -14,11 +14,12 @@ class Question(models.Model):
     content = models.TextField()
     image = models.ImageField(upload_to='questions/images/', blank=True, null=True)
     document = models.FileField(upload_to='questions/documents/', blank=True, null=True)
+    is_active = models.BooleanField(_("Is Active"),default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
 
     def __str__(self):
-        return f"Question by {self.user.username}"
+        return f"Question: Id {self.pk}"
     
     class Meta:
         verbose_name = _("Question")
@@ -30,11 +31,12 @@ class Answer(models.Model):
     content = models.TextField()  # Text content from Quill
     image = models.ImageField(upload_to='answers/images/', blank=True, null=True)
     document = models.FileField(upload_to='answers/documents/', blank=True, null=True)
+    is_active = models.BooleanField(_("Is Active"),default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
 
     def __str__(self):
-        return f"Answer by {self.user.username}"
+        return f"Answer Id: {self.pk}"
     
     class Meta:
         verbose_name = _("Answer")

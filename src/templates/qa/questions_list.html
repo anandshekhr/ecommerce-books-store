@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Q & A{% endblock title %}
 {% block head %}
 <!-- Meta Description -->
@@ -14,7 +15,7 @@
 <meta property="og:title" content="Questions and Answers | VAMS Bookstore">
 <meta property="og:description" content="Browse and participate in questions and answers related to VAMS Bookstore. Ask questions, get answers, and contribute to discussions.">
 <meta property="og:image" content="{% static 'images/og-image.jpg' %}">
-<meta property="og:url" content="{% url 'questions_list' %}">
+<meta property="og:url" content="{% url 'question_list' %}">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card Tags -->
@@ -222,22 +223,26 @@ textarea {
 
 
         <div class="add-answer-section">
-        <div class="user-info">
-            <!-- Circular icon with initials -->
-            <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
-                {{ question.user.first_name.0|upper }}{{ question.user.last_name.0|upper }}
+            <div class="user-info">
+                <!-- Circular icon with initials -->
+                <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                    {{ question.user.first_name.0|upper }}{{ question.user.last_name.0|upper }}
+                </div>
+                <span class="username" style="font-weight: bold;">{{ question.user.username|lower|capfirst }}</span>
             </div>
-            <span class="username" style="font-weight: bold;">{{ question.user.username|lower|capfirst }}</span>
+            {% if question.is_active %}
+            <!-- Form to add a new answer -->
+            <form method="post" action="{% url 'add_answer' question.id %}">
+                {% csrf_token %}
+                
+                <textarea id="add_answer_quill_{{ forloop.counter }}" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
+                {% comment %} <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button> {% endcomment %}
+                <button class="btn btn-primary">Submit</button>
+            </form>
+            {% else %}
+            <p>This thread has been closed.</p>
+            {% endif %}
         </div>
-        <!-- Form to add a new answer -->
-        <form method="post" action="{% url 'add_answer' question.id %}">
-            {% csrf_token %}
-            
-            <textarea id="add_answer_quill_{{ forloop.counter }}" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
-            {% comment %} <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button> {% endcomment %}
-            <button class="btn btn-primary">Submit</button>
-        </form>
-    </div>
     </div>
     <hr>
 {% endfor %}

@@ -36,11 +36,13 @@ class PhonePePaymentRequestDetailAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id','is_active','user','created_at','updated_at')
+    search_fields = ('id','is_active','user','created_at','updated_at')
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id','is_active','user','question','created_at','updated_at')
+    search_fields = ('id','is_active','user','question','created_at','updated_at')
     
 
     

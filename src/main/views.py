@@ -464,7 +464,7 @@ def question_list(request):
 
     # Limit answers to the most recent 5
     for question in questions:
-        question.answers_list = question.answers.order_by('-created_at')[:5]
+        question.answers_list = question.answers.filter(is_active=True).order_by('-created_at')[:5]
     
     context = {
         'questions': questions,
@@ -500,10 +500,11 @@ def answer_question(request, question_id):
 
 def question_detail_view(request, question_id):
     question = get_object_or_404(Question, id=question_id)
-    answers = question.answers.all()  # All answers
+    question.answers_list = question.answers.filter(is_active = True)
+    # answers = answers.filter(is_active = True)
     context = {
         'question': question,
-        'answers': answers,
+        # 'answers': answers,
     }
     return render(request, 'qa/question_detail.html', context)
 
