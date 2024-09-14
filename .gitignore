@@ -162,5 +162,5 @@ cython_debug/
 migrations/
 
 #static & media
-static/
 media/
+.DS*

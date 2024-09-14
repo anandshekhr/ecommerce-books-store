@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{product.title | slice:10}}{% endblock title %}
-{% block html %}
+{% block head %}
 <!-- Meta Description -->
 <meta name="description" content="{{ product.description|truncatechars:150 }}">
 
@@ -24,7 +24,7 @@
 <!-- Canonical URL -->
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
 
-{% endblock html %}
+{% endblock head %}
 {% block style %}
 @media (max-width: 768px) {
     .item {

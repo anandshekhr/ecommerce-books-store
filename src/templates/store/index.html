@@ -1,5 +1,25 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Products{% endblock title %}
+{% block head %}
+<!-- Description for SEO -->
+<meta name="description" content="BookStore - Find the best books and educational material online.">
+
+<!-- Open Graph meta tags for social sharing -->
+<meta property="og:title" content="Products | BookStore">
+<meta property="og:description" content="Find the best books and educational material online.">
+<meta property="og:image" content="{% static 'assets/img/meta_image.png' %}">
+<meta property="og:url" content="{% url 'home' %}">
+<meta property="og:type" content="website">
+
+<!-- Twitter Card meta tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Product | BookStore">
+<meta name="twitter:description" content="Find the best books and educational material online.">
+<meta name="twitter:image" content="{% static 'assets/img/meta_image.png' %}">
+
+
+{% endblock head %}
 {% block style %}
 /* Mobile view: Hide the filter section initially */
 @media (max-width: 768px) {
