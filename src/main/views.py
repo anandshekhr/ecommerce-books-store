@@ -435,6 +435,21 @@ def signup_view(request):
         email = request.POST['email']
         phone_number = request.POST['phone_number']
         password = request.POST['password']
+
+        if first_name:
+            first_name = first_name.strip()
+        
+        if last_name:
+            last_name = last_name.strip()
+        
+        if email:
+            email = email.strip()
+        
+        if phone_number:
+            phone_number = phone_number.strip()
+        
+        if password:
+            password = password.strip()
         
         # Generate a unique username
         username = generate_username(first_name, last_name)
