@@ -1,105 +1,100 @@
-
 {% block pdf_view %}
-    <div class="container">
-        <div class="pdf-controls">
-            <button id="prev-page" class="btn btn-secondary">Previous</button>
-            <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
-            {% comment %} <div class="d-flex align-items-center">
-                <input type="number" class="form-control mr-2" id="page-input" min="1" placeholder="Page" style="width: 100px;">
-                <button id="jump-to-page" class="btn btn-primary">Go to Page</button>
-            </div> {% endcomment %}
-            <button id="next-page" class="btn btn-secondary">Next</button>
-        </div>
-        {% comment %} <div class="zoom-controls">
-            <button id="zoom-in" class="btn btn-secondary">Clear In</button>
-            <button id="zoom-out" class="btn btn-secondary">Clear Out</button>
-            <button id="fit-to-screen" class="btn btn-secondary">Fit to Screen</button>
-        </div> {% endcomment %}
-        <canvas id="pdf-render"></canvas>
+<div class="container">
+    <div class="pdf-controls">
+        <button id="prev-page" class="btn btn-secondary">Previous</button>
+        <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
+        <button id="next-page" class="btn btn-secondary">Next</button>
     </div>
+    <canvas id="pdf-render"></canvas>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
-    <script>
-        // URL of the PDF file
-        const url = '{{ pdf_url }}'; // Pass the PDF URL from Django view
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
+<script>
+    // URL of the PDF file
+    const url = '{{ pdf_url }}'; // Pass the PDF URL from Django view
 
+    let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null,
+        scale = 5,
+        canvas = document.getElementById('pdf-render'),
+        ctx = canvas.getContext('2d'),
+        startPage = 1,  // First page to display
+        endPage = 50;   // Limit to 50 pages
 
-        // Send the current page number to the server to store in the session
-{% comment %} const savePageInSession = (pageNum) => {
-    fetch("{% url 'save_pdf_page' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({ page_number: pageNum })
-    });
-}; {% endcomment %}
+    // Function to queue rendering of the page
+    const queueRenderPage = num => {
+        if (pageIsRendering) {
+            pageNumIsPending = num;
+        } else {
+            renderPage(num);
+        }
+    };
 
-// Modify the `renderPage` function to include saving the page number in the session
-        const renderPage = num => {
-            pageIsRendering = true;
+    // Function to render the page
+    const renderPage = num => {
+        pageIsRendering = true;
 
-            // Ensure the page is within the allowed range
-            if (num < startPage || num > endPage) {
-                alert(`This is only for View Purpose. To View Full ebook, Buy Now.`);
-                return;
-            }
+        // Ensure the page is within the allowed range
+        if (num < startPage || num > endPage) {
+            alert(`This is only for view purpose. To view the full ebook, please purchase.`);
+            return;
+        }
 
-            // Get page
-            pdfDoc.getPage(num).then(page => {
-                const viewport = page.getViewport({ scale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+        // Get page
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
 
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport
-                };
+            const renderCtx = {
+                canvasContext: ctx,
+                viewport
+            };
 
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
+            page.render(renderCtx).promise.then(() => {
+                pageIsRendering = false;
 
-                    if (pageNumIsPending !== null) {
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-                });
-
-                // Output current page
-                document.getElementById('page-num').textContent = num;
-
-                // Save current page number in session
-                //savePageInSession(num);
+                if (pageNumIsPending !== null) {
+                    renderPage(pageNumIsPending);
+                    pageNumIsPending = null;
+                }
             });
-        };
 
-
-        // Fit to Screen
-        const fitToScreen = () => {
-            const containerWidth = document.querySelector('.container').clientWidth;
-            pdfDoc.getPage(pageNum).then(page => {
-                const viewport = page.getViewport({ scale: 1 });
-                scale = containerWidth / viewport.width;  // Fit the width of the PDF to the container width
-                queueRenderPage(pageNum);
-            });
-        };
-
-        // Get Document
-        pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-            pdfDoc = pdfDoc_;
-            document.getElementById('page-count').textContent = pdfDoc.numPages;
-
-            renderPage(pageNum);
+            // Output current page number
+            document.getElementById('page-num').textContent = num;
         });
+    };
 
-        // Button events
-        document.getElementById('prev-page').addEventListener('click', showPrevPage);
-        document.getElementById('next-page').addEventListener('click', showNextPage);
-        document.getElementById('jump-to-page').addEventListener('click', jumpToPage);
-        document.getElementById('zoom-in').addEventListener('click', zoomIn);
-        document.getElementById('zoom-out').addEventListener('click', zoomOut);
-        document.getElementById('fit-to-screen').addEventListener('click', fitToScreen);
-    </script>
-    {% endblock pdf_view %}
+    // Previous page
+    const showPrevPage = () => {
+        if (pageNum <= startPage) {
+            return;
+        }
+        pageNum--;
+        queueRenderPage(pageNum);
+    };
 
+    // Next page
+    const showNextPage = () => {
+        if (pageNum >= endPage) {
+            return;
+        }
+        pageNum++;
+        queueRenderPage(pageNum);
+    };
+
+    // Get the document
+    pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+        pdfDoc = pdfDoc_;
+        document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Display total up to 50 pages
+
+        renderPage(pageNum); // Render the first page
+    });
+
+    // Button events
+    document.getElementById('prev-page').addEventListener('click', showPrevPage);
+    document.getElementById('next-page').addEventListener('click', showNextPage);
+</script>
+{% endblock pdf_view %}
