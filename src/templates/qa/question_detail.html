@@ -194,6 +194,17 @@ hr {
             {% csrf_token %}
             
             <textarea id="add_answer_quill" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
+            <div class="form-group mt-3 d-flex">
+                <label for="image-upload" class="d-flex align-items-center">
+                    <i class="fa-regular fa-image" title="Upload Image"></i>
+                    <input type="file" name="image" class="d-none" id="image-upload">
+                </label>
+                <label for="document-upload" class="d-flex align-items-center">
+                    {% comment %} <i class="fas fa-file-alt fa-2x" title="Upload Document"></i> {% endcomment %}
+                    <i class="fa-solid fa-paperclip" title="Upload Document"></i>
+                    <input type="file" name="document" class="d-none" id="document-upload">
+                </label>
+            </div>
             <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button>
         </form>
         {% else %}

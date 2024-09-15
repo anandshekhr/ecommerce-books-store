@@ -28,10 +28,10 @@ class Question(models.Model):
 class Answer(models.Model):
     question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField()  # Text content from Quill
+    content = models.TextField()
     image = models.ImageField(upload_to='answers/images/', blank=True, null=True)
     document = models.FileField(upload_to='answers/documents/', blank=True, null=True)
-    is_active = models.BooleanField(_("Is Active"),default=False)
+    is_active = models.BooleanField(_("Is Active"),default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated at"), auto_now=True, auto_now_add=False)
 

@@ -23,7 +23,7 @@ urlpatterns = [
     path('contact-us/', views.contact_us, name='contact-us'),
     path('questions/', views.question_list, name='question_list'),
     path('ask/', views.ask_question, name='ask_question'),
-    path('answer/<int:question_id>/', views.answer_question, name='answer_question'),
-    path('questions/<int:question_id>/', views.question_detail_view, name='question_detail'),
-    path('questions/<int:question_id>/add_answer/', views.add_answer, name='add_answer'),
+    path('answer/<hashid:question_id>/', views.answer_question, name='answer_question'),
+    path('questions/<hashid:question_id>/', views.question_detail_view, name='question_detail'),
+    path('questions/<hashid:question_id>/add_answer/', views.add_answer, name='add_answer'),
 ]

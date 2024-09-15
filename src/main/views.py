@@ -546,7 +546,9 @@ def add_answer(request, question_id):
     question = get_object_or_404(Question, id=question_id)
     if request.method == 'POST':
         content = request.POST.get('content')
-        Answer.objects.create(content=content, user=request.user, question=question)
+        image = request.FILES.get('image')
+        document = request.FILES.get('document')
+        Answer.objects.create(content=content, user=request.user, image=image, document=document,question=question)
         # Redirect to the referring page or default to the question detail page
         referer = request.META.get('HTTP_REFERER')
         if referer:
