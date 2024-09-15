@@ -88,6 +88,7 @@ def item_list(request):
 
 def item_list_filter(request):
     category_id = request.GET.get('category')
+    pcategory_id = request.GET.get('pcategory')
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     search_query = request.GET.get('q')
@@ -97,6 +98,10 @@ def item_list_filter(request):
     if category_id:
         category_obj = ExamCategory.objects.get(pk=category_id)
         items = items.filter(category=category_obj)
+    
+    if pcategory_id:
+        category_obj = ExamCategory.objects.get(board=pcategory_id)
+        items = items.filter(category__board=category_obj)
     
     if search_query:
         items = items.filter(title__icontains=search_query)
