@@ -100,7 +100,7 @@ def item_list_filter(request):
         items = items.filter(category=category_obj)
     
     if pcategory_id:
-        category_obj = ExamCategory.objects.get(board=pcategory_id)
+        category_obj = ExamCategory.objects.get(pk=pcategory_id)
         items = items.filter(category__board=category_obj)
     
     if search_query:
