@@ -505,7 +505,7 @@ def answer_question(request, question_id):
         image = request.FILES.get('image')
         document = request.FILES.get('document')
 
-        Answer.objects.create(user=request.user, question=question, content=content, image=image, document=document)
+        Answer.objects.create(user=request.user, question=question, content=content, image=image, document=document, is_active=True)
         return redirect('question_list')
     
     return render(request, 'qa/answer_question.html', {'question': question})
