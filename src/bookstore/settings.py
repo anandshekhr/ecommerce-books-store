@@ -52,8 +52,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_quill',
     "middlewares",
-    'crispy_forms',
-    'crispy_bootstrap5',
 
     # Allauth apps
     'allauth',
@@ -218,7 +216,3 @@ HASHIDS_SALT = (
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
-
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
