@@ -399,13 +399,11 @@ class SearchAPI(generics.ListAPIView):
     search_fields = ['category__name', 'title','price']
     
 
-
-
 def login_view(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
-        user = authenticate(request, username=email, password=password)
+        user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
             return redirect('home')
