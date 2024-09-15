@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}PDF Viewer{% endblock title %}
+{% block style %}
+        #pdf-render {
+            width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .pdf-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .pdf-controls input {
+            width: 50px;
+            text-align: center;
+        }
+        .zoom-controls {
+            display: flex;
+            gap: 10px;
+        }
+    {% endblock style %}
+{% block content %}
+    <div class="container">
+        <h2>PDF Viewer</h2>
+        <div class="pdf-controls">
+            <button id="prev-page" class="btn btn-secondary">Previous</button>
+            <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
+            <div class="d-flex align-items-center">
+                <input type="number" class="form-control mr-2" id="page-input" min="1" placeholder="Page" style="width: 100px;">
+                <button id="jump-to-page" class="btn btn-primary">Go to Page</button>
+            </div>
+            <button id="next-page" class="btn btn-secondary">Next</button>
+        </div>
+        {% comment %} <div class="zoom-controls">
+            <button id="zoom-in" class="btn btn-secondary">Clear In</button>
+            <button id="zoom-out" class="btn btn-secondary">Clear Out</button>
+            <button id="fit-to-screen" class="btn btn-secondary">Fit to Screen</button>
+        </div> {% endcomment %}
+        <canvas id="pdf-render"></canvas>
+    </div>
+    {% endblock content %}
+{% block MoreJs %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
+    <script>
+        // URL of the PDF file
+        const url = '{{ pdf_url }}'; // Pass the PDF URL from Django view
+
+        let pdfDoc = null,
+            pageNum = 1,
+            pageIsRendering = false,
+            pageNumIsPending = null,
+            scale = 5.0,  // Initial scale value
+            canvas = document.getElementById('pdf-render'),
+            ctx = canvas.getContext('2d');
+
+        // Render the page
+        const renderPage = num => {
+            pageIsRendering = true;
+
+            // Get page
+            pdfDoc.getPage(num).then(page => {
+                const viewport = page.getViewport({ scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport
+                };
+
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
+                });
+
+                // Output current page
+                document.getElementById('page-num').textContent = num;
+            });
+        };
+
+        // Check for pages rendering
+        const queueRenderPage = num => {
+            if (pageIsRendering) {
+                pageNumIsPending = num;
+            } else {
+                renderPage(num);
+            }
+        };
+
+        // Show Previous page
+        const showPrevPage = () => {
+            if (pageNum <= 1) {
+                return;
+            }
+            pageNum--;
+            queueRenderPage(pageNum);
+        };
+
+        // Show Next page
+        const showNextPage = () => {
+            if (pageNum >= pdfDoc.numPages) {
+                return;
+            }
+            pageNum++;
+            queueRenderPage(pageNum);
+        };
+
+        // Jump to a specific page
+        const jumpToPage = () => {
+            const pageInput = document.getElementById('page-input');
+            const pageNumber = parseInt(pageInput.value);
+
+            if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= pdfDoc.numPages) {
+                pageNum = pageNumber;
+                queueRenderPage(pageNum);
+            } else {
+                alert('Invalid page number');
+            }
+        };
+
+        // Zoom In
+        const zoomIn = () => {
+            scale += 0.2;  // Increase scale by 0.2
+            queueRenderPage(pageNum);
+        };
+
+        // Zoom Out
+        const zoomOut = () => {
+            if (scale > 0.5) {
+                scale -= 0.2;  // Decrease scale by 0.2
+                queueRenderPage(pageNum);
+            }
+        };
+
+        // Fit to Screen
+        const fitToScreen = () => {
+            const containerWidth = document.querySelector('.container').clientWidth;
+            pdfDoc.getPage(pageNum).then(page => {
+                const viewport = page.getViewport({ scale: 1 });
+                scale = containerWidth / viewport.width;  // Fit the width of the PDF to the container width
+                queueRenderPage(pageNum);
+            });
+        };
+
+        // Get Document
+        pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
+            document.getElementById('page-count').textContent = pdfDoc.numPages;
+
+            renderPage(pageNum);
+        });
+
+        // Button events
+        document.getElementById('prev-page').addEventListener('click', showPrevPage);
+        document.getElementById('next-page').addEventListener('click', showNextPage);
+        document.getElementById('jump-to-page').addEventListener('click', jumpToPage);
+        document.getElementById('zoom-in').addEventListener('click', zoomIn);
+        document.getElementById('zoom-out').addEventListener('click', zoomOut);
+        document.getElementById('fit-to-screen').addEventListener('click', fitToScreen);
+    </script>
+    {% endblock MoreJs %}

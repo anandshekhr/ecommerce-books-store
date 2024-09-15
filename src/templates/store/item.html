@@ -35,13 +35,33 @@
 .item {
     margin-top: 5%;
 }
+#pdf-render {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.pdf-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+.pdf-controls input {
+    width: 50px;
+    text-align: center;
+}
+.zoom-controls {
+    display: flex;
+    gap: 10px;
+}
 
 {% endblock style %}
 {% block content %}
     <div class="row">
         <!-- Product Images Carousel -->
         <div class="col-md-6">
-            <div id="productImagesCarousel" class="carousel slide">
+            {% comment %} <div id="productImagesCarousel" class="carousel slide">
                 <div class="carousel-inner">
                     {% for image in product.images.all %}
                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
@@ -57,7 +77,9 @@
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>
-            </div>
+            </div> {% endcomment %}
+            {% include "viewer/pdf_viewer_item.html" %}
+            {% block pdf_view %}{% endblock pdf_view %}
         </div>
         
 

@@ -121,7 +121,7 @@ def item_list_filter(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Item, pk=pk)
-    return render(request, 'store/item.html', {'product': product})
+    return render(request, 'store/item.html', {'product': product,'pdf_url': product.pdf_file.url})
 
 @login_required(login_url='login-view')
 def add_to_cart(request, item_id):
@@ -168,14 +168,21 @@ def view_cart(request):
 def order_summary(request, pk=None):
     if pk:
         orders = Order.objects.filter(user=request.user, payment_status=True,pk=pk)
+        
     else:
         orders = None
-    return render(request, 'store/orders.html', {'orders': orders})
+    return render(request, 'store/orders.html', {'orders': orders,'header':'Order Summary'})
 
 @login_required(login_url='login-view')
 def order_history(request):
-    orders = Order.objects.filter(user=request.user, payment_status=True)
-    return render(request, 'store/orders.html', {'orders': orders})
+    orders = Order.objects.filter(user=request.user,payment_status=True).order_by('-created_at')
+    
+    # Pagination: 10 orders per page
+    paginator = Paginator(orders, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'store/orders.html', {'orders': page_obj,'header':'Order History'})
 
 # @login_required(login_url='login-view')
 # def checkout(request,order_id):
@@ -555,3 +562,21 @@ def add_answer(request, question_id):
             return HttpResponseRedirect(referer)
         else:
             return redirect('question_detail', question_id=question.id)
+
+def pdf_viewer(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    last_page = request.session.get('pdf_last_page', 1)
+
+    # If a new page number is posted (e.g., via AJAX), update the session
+    if request.method == 'POST':
+        page_number = request.POST.get('page_number')
+        request.session['pdf_last_page'] = page_number
+    
+    if item.pdf_file:
+        context = {
+            'pdf_url': item.pdf_file.url,
+            'last_page': last_page
+        }
+        return render(request, 'viewer/pdf_viewer.html', context)
+    else:
+        return render(request, 'error_page.html', {'message': 'PDF not found'})

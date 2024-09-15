@@ -16,6 +16,7 @@ urlpatterns = [
     path('payment/success/',views.razorpay_success_redirect,name="razorpay-payment-success"),
     path('payment/phonepe/success/<hashid:order_id>/',views.phonepe_success_redirect,name="phonepe-payment-success"),
     path('pdf/<hashid:item_id>/', views.view_pdf, name='view_pdf'),
+    path('view-pdf/<hashid:item_id>/', views.pdf_viewer, name='pdf_viewer'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('terms-of-service/', views.terms_of_service, name='terms_of_service'),
     path('refund-policy/', views.refund_policy, name='refund-policy'),
