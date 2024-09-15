@@ -163,4 +163,5 @@ migrations/
 
 #static & media
 media/
+staticfiles/
 .DS*

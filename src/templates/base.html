@@ -98,6 +98,16 @@
             </div>
         </div>
     </nav>
+    <script src="//accounts.google.com/gsi/client" async></script>
+    {% comment %} <div id="g_id_onload"
+        data-client_id="749041874039-0eqc32iejd8bk0m6m8qcgtb0ib4su3j7.apps.googleusercontent.com"
+        data-login_uri="{% url 'google_login_by_token' %}">
+    </div> {% endcomment %}
+    <div id="g_id_onload"
+        data-client_id="749041874039-0eqc32iejd8bk0m6m8qcgtb0ib4su3j7.apps.googleusercontent.com"
+        data-login_uri="{% url 'google_login_by_token' %}"
+        data-auto_select="true">
+    </div>
     <div class="content-wrapper" style="margin-top:5%;">
     {% block content %}{% endblock content %}
     </div>
