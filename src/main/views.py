@@ -129,7 +129,7 @@ def add_to_cart(request, item_id):
     order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
     if order.items.filter(id=item.id).exists():
         messages.info(request,'Item already exists in the cart.')
-        return redirect('home')
+        return redirect('home-1')
         
     order.items.add(item)
     order.total_price = Decimal(item.price) + Decimal(order.total_price)
@@ -411,7 +411,7 @@ def login_view(request):
         user = authenticate(request, email=email, password=password)
         if user is not None:
             login(request, user)
-            return redirect('home')
+            return redirect('home-1')
         else:
             messages.error(request, 'Invalid email or password')
     return render(request, 'accounts/login.html')
@@ -466,7 +466,7 @@ def logout_view(request):
     logout(request)
     
     # Redirect to the login page or any other page
-    return redirect('home')
+    return redirect('home-1')
 
 
 def robots_txt(request):
