@@ -25,10 +25,11 @@ SECRET_KEY = 'django-insecure-z=_92iza7$y6#aun^$cj=n*c!!4ie825)&27vv0295ffds6%*9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in']
 CSRF_TRUSTED_ORIGINS = [
     'https://ashekhar123.pythonanywhere.com',
-    'http://127.0.0.1:8000',  # Add your specific domains and ports here
+    'http://127.0.0.1:8000', 
+    'https://www.vamsbookstore.in'
 ]
 
 
