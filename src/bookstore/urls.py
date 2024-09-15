@@ -73,6 +73,7 @@ urlpatterns = [
     path('signup/', views.signup_view, name='signup-view'),
     path('admin/', admin.site.urls),
     path('', views.item_list, name='home'),
+    path('home/', views.item_list, name='home-redirect'),
     path('volt/', include('admin_volt.urls')),
     path('item/filter/', views.item_list_filter, name='item-filter'),
     path('item/<hashid:pk>/', views.product_detail, name='item-details'),
