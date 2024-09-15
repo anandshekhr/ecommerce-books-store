@@ -187,8 +187,8 @@ AUTHENTICATION_BACKENDS = [
 # Site ID for Django sites framework
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': [
