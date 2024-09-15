@@ -201,9 +201,18 @@ textarea {
                         <!-- Answer User Info with Initials and Username -->
                         <div class="user-info">
                             <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                                {% if answer.user.first_name %}
                                 {{ answer.user.first_name.0|upper }}{{ answer.user.last_name.0|upper }}
+                                {% else %}
+                                {{ answer.user.email.0|upper}}
+                                {% endif %}
                             </div>
+                            {% if answer.user.username %}
                             <span class="username" style="font-weight: bold;">{{ answer.user.username|lower|capfirst }}</span>
+                            {% else %}
+                            <span class="username" style="font-weight: bold;">{{ answer.user.email|lower|capfirst }}</span>
+
+                            {% endif %}
                         </div>
                         <!-- Answer Content Preview -->
                         {% if answer.content|length > 100 %}  <!-- Adjust this threshold based on your needs -->
@@ -236,9 +245,18 @@ textarea {
             <div class="user-info">
                 <!-- Circular icon with initials -->
                 <div class="user-initials" style="width: 40px; height: 40px; border-radius: 50%; background-color: #007bff; color: white; text-align: center; line-height: 40px; font-weight: bold;">
+                    {% if request.user.first_name %}
                     {{ request.user.first_name.0|upper }}{{ request.user.last_name.0|upper }}
+                    {% else %}
+                    {{ request.user.email|upper }}
+                    {% endif %}
                 </div>
+                {% if request.user.username %}
                 <span class="username" style="font-weight: bold;">{{ request.user.username|lower|capfirst }}</span>
+                {% else %}
+                <span class="username" style="font-weight: bold;">{{ request.user.email|lower|capfirst }}</span>
+                
+                {% endif %}
             </div>
             {% if question.is_active %}
             <!-- Form to add a new answer -->
