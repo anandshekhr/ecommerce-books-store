@@ -2,18 +2,21 @@
 <div class="container">
     <div class="pdf-controls">
         <button id="prev-page" class="btn btn-secondary">Previous</button>
-        <span>Page: <span id="page-num"></span><span id="page-count"></span></span>
+        <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
         <button id="next-page" class="btn btn-secondary">Next</button>
     </div>
+
+    <!-- Loader GIF (hidden by default) -->
+    <div id="loader" style="display: none; text-align: center;">
+        <img src="/static/assets/img/loader.gif" alt="Loading..." />
+    </div>
+
+    <!-- Canvas for PDF rendering -->
     <canvas id="pdf-render"></canvas>
 </div>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
 <script>
-
-    // const url = '/pdf/serve/{{ pdf_id }}/';  // Point to the Django view
-
     let pdfDoc = null,
         pageNum = 1,
         pageIsRendering = false,
@@ -24,21 +27,26 @@
         startPage = 1,
         endPage = 50;
 
-    // Function to render a page by calling the server for each page
+    const loader = document.getElementById('loader');
+    const url = '/serve-pdf-page/{{ pdf_id }}?page=';
+
+    // Function to show loader
+    const showLoader = () => {
+        loader.style.display = 'block';
+    };
+
+    // Function to hide loader
+    const hideLoader = () => {
+        loader.style.display = 'none';
+    };
+
+    // Function to render the PDF page
     const renderPage = num => {
         pageIsRendering = true;
+        showLoader(); // Show loader before fetching the page
 
-        // Ensure the page is within the allowed range
-        if (num < startPage || num > endPage) {
-            alert('This is only for view purposes. To view the full ebook, please purchase.');
-            pageIsRendering = false;
-            return;
-        }
-
-        const url = `/serve-pdf-page/{{ pdf_id }}?page=${num}`;  // Django view to serve the specific page
-
-        // Fetch the specific page PDF
-        fetch(url, {
+        // Fetch specific page from the server
+        fetch(`${url}${num}`, {
             method: 'GET',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}'
@@ -52,7 +60,6 @@
             .then(pdfDoc_ => {
                 pdfDoc = pdfDoc_;
 
-                // Get the page from the PDF document
                 pdfDoc.getPage(1).then(page => {
                     const viewport = page.getViewport({ scale });
                     canvas.height = viewport.height;
@@ -65,6 +72,7 @@
 
                     page.render(renderCtx).promise.then(() => {
                         pageIsRendering = false;
+                        hideLoader(); // Hide loader when the page is rendered
 
                         if (pageNumIsPending !== null) {
                             renderPage(pageNumIsPending);
@@ -72,13 +80,13 @@
                         }
                     });
 
-                    // Output current page number
                     document.getElementById('page-num').textContent = num;
                 });
             })
             .catch(error => {
                 console.error('Error loading page:', error);
                 pageIsRendering = false;
+                hideLoader(); // Hide loader on error
             });
     };
 
@@ -93,36 +101,62 @@
 
     // Load the first page initially
     const loadFirstPage = () => {
-        pageNum = 1;  // Default to the first page
+        pageNum = 1;
         renderPage(pageNum);
     };
 
-    // Previous page
+    // Show the previous page
     const showPrevPage = () => {
-        if (pageNum <= startPage) {
-            return;
-        }
+        if (pageNum <= startPage) return;
         pageNum--;
         queueRenderPage(pageNum);
     };
 
-    // Next page
+    // Show the next page
     const showNextPage = () => {
-        if (pageNum >= endPage) {
-            return;
-        }
+        if (pageNum >= endPage) return;
         pageNum++;
         queueRenderPage(pageNum);
+    };
+
+    // Swipe detection for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleGesture = () => {
+        if (touchEndX < touchStartX) showNextPage(); // Swipe left -> next page
+        if (touchEndX > touchStartX) showPrevPage(); // Swipe right -> previous page
+    };
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleGesture();
+    });
+
+    // Hide navigation buttons on mobile view
+    const checkScreenSize = () => {
+        if (window.innerWidth <= 768) {
+            document.querySelector('.pdf-controls').style.display = 'none';
+        } else {
+            document.querySelector('.pdf-controls').style.display = 'flex';
+        }
     };
 
     // Load the first page on page load
     document.addEventListener('DOMContentLoaded', () => {
         loadFirstPage();
+        checkScreenSize();
     });
+
+    // Handle screen resize
+    window.addEventListener('resize', checkScreenSize);
 
     // Button events
     document.getElementById('prev-page').addEventListener('click', showPrevPage);
     document.getElementById('next-page').addEventListener('click', showNextPage);
-
 </script>
 {% endblock pdf_view %}
