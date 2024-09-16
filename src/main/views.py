@@ -121,7 +121,7 @@ def item_list_filter(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Item, pk=pk)
-    return render(request, 'store/item.html', {'product': product,'pdf_url': product.pdf_file.url})
+    return render(request, 'store/item.html', {'product': product,'pdf_id': pk})
 
 @login_required(login_url='login-view')
 def add_to_cart(request, item_id):
@@ -580,3 +580,23 @@ def pdf_viewer(request, item_id):
         return render(request, 'viewer/pdf_viewer.html', context)
     else:
         return render(request, 'error_page.html', {'message': 'PDF not found'})
+    
+@login_required
+def serve_pdf(request, pdf_id):
+    import os
+    from django.http import FileResponse, Http404
+    try:
+        # Replace this with your logic to retrieve the PDF file
+        pdf = get_object_or_404(Item, id=pdf_id)
+        pdf_path = pdf.pdf_file.path  # Get file path of the PDF
+
+        # Ensure the file exists
+        if not os.path.exists(pdf_path):
+            raise Http404("PDF file not found.")
+
+        # Serve the PDF as a response
+        response = FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="{pdf.pdf_file.name}"'
+        return response
+    except Exception as e:
+        raise Http404("PDF file not found.")

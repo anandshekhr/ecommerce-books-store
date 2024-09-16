@@ -11,91 +11,101 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
 <script>
-    // URL of the PDF file
-    const url = '{{ pdf_url }}'; // Pass the PDF URL from Django view
+    
+    const url = '/pdf/serve/{{ pdf_id }}/';  // Point to the Django view
 
-    let pdfDoc = null,
-        pageNum = 1,
-        pageIsRendering = false,
-        pageNumIsPending = null,
-        scale = 5,
-        canvas = document.getElementById('pdf-render'),
-        ctx = canvas.getContext('2d'),
-        startPage = 1,  // First page to display
-        endPage = 50;   // Limit to 50 pages
+let pdfDoc = null,
+    pageNum = 1,
+    pageIsRendering = false,
+    pageNumIsPending = null,
+    scale = 5,
+    canvas = document.getElementById('pdf-render'),
+    ctx = canvas.getContext('2d'),
+    startPage = 1, 
+    endPage = 50;
 
-    // Function to queue rendering of the page
-    const queueRenderPage = num => {
-        if (pageIsRendering) {
-            pageNumIsPending = num;
-        } else {
-            renderPage(num);
-        }
-    };
-
-    // Function to render the page
-    const renderPage = num => {
-        pageIsRendering = true;
-
-        // Ensure the page is within the allowed range
-        if (num < startPage || num > endPage) {
-            alert(`This is only for view purpose. To view the full ebook, please purchase.`);
-            return;
-        }
-
-        // Get page
-        pdfDoc.getPage(num).then(page => {
-            const viewport = page.getViewport({ scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-
-            const renderCtx = {
-                canvasContext: ctx,
-                viewport
-            };
-
-            page.render(renderCtx).promise.then(() => {
-                pageIsRendering = false;
-
-                if (pageNumIsPending !== null) {
-                    renderPage(pageNumIsPending);
-                    pageNumIsPending = null;
-                }
-            });
-
-            // Output current page number
-            document.getElementById('page-num').textContent = num;
+// Fetch the PDF from the Django backend
+fetch(url, {
+    method: 'GET',
+    headers: {
+        'X-CSRFToken': '{{ csrf_token }}'  // Ensure CSRF token is sent for security
+    }
+})
+    .then(response => response.blob())
+    .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        pdfjsLib.getDocument(blobUrl).promise.then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
+            document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Limit to 50 pages
+            renderPage(pageNum);  // Render the first page
         });
-    };
+    })
+    .catch(error => console.error('Error fetching PDF:', error));
 
-    // Previous page
-    const showPrevPage = () => {
-        if (pageNum <= startPage) {
-            return;
-        }
-        pageNum--;
-        queueRenderPage(pageNum);
-    };
+// Function to queue rendering of the page
+const queueRenderPage = num => {
+    if (pageIsRendering) {
+        pageNumIsPending = num;
+    } else {
+        renderPage(num);
+    }
+};
 
-    // Next page
-    const showNextPage = () => {
-        if (pageNum >= endPage) {
-            return;
-        }
-        pageNum++;
-        queueRenderPage(pageNum);
-    };
+// Function to render the page
+const renderPage = num => {
+    pageIsRendering = true;
 
-    // Get the document
-    pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-        pdfDoc = pdfDoc_;
-        document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Display total up to 50 pages
+    // Ensure the page is within the allowed range
+    if (num < startPage || num > endPage) {
+        alert('This is only for view purposes. To view the full ebook, please purchase.');
+        return;
+    }
 
-        renderPage(pageNum); // Render the first page
+    // Get the page
+    pdfDoc.getPage(num).then(page => {
+        const viewport = page.getViewport({ scale });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        const renderCtx = {
+            canvasContext: ctx,
+            viewport
+        };
+
+        page.render(renderCtx).promise.then(() => {
+            pageIsRendering = false;
+
+            if (pageNumIsPending !== null) {
+                renderPage(pageNumIsPending);
+                pageNumIsPending = null;
+            }
+        });
+
+        // Output current page number
+        document.getElementById('page-num').textContent = num;
     });
+};
 
-    // Button events
-    document.getElementById('prev-page').addEventListener('click', showPrevPage);
-    document.getElementById('next-page').addEventListener('click', showNextPage);
+// Previous page
+const showPrevPage = () => {
+    if (pageNum <= startPage) {
+        return;
+    }
+    pageNum--;
+    queueRenderPage(pageNum);
+};
+
+// Next page
+const showNextPage = () => {
+    if (pageNum >= endPage) {
+        return;
+    }
+    pageNum++;
+    queueRenderPage(pageNum);
+};
+
+// Button events
+document.getElementById('prev-page').addEventListener('click', showPrevPage);
+document.getElementById('next-page').addEventListener('click', showNextPage);
 </script>
 {% endblock pdf_view %}
