@@ -11,101 +11,121 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
 <script>
-    
+
     const url = '/pdf/serve/{{ pdf_id }}/';  // Point to the Django view
 
-let pdfDoc = null,
-    pageNum = 1,
-    pageIsRendering = false,
-    pageNumIsPending = null,
-    scale = 5,
-    canvas = document.getElementById('pdf-render'),
-    ctx = canvas.getContext('2d'),
-    startPage = 1, 
-    endPage = 50;
+    let pdfDoc = null,
+        pageNum = 1,
+        pageIsRendering = false,
+        pageNumIsPending = null,
+        scale = 5,
+        canvas = document.getElementById('pdf-render'),
+        ctx = canvas.getContext('2d'),
+        startPage = 1,
+        endPage = 50;
 
-// Fetch the PDF from the Django backend
-fetch(url, {
-    method: 'GET',
-    headers: {
-        'X-CSRFToken': '{{ csrf_token }}'  // Ensure CSRF token is sent for security
-    }
-})
-    .then(response => response.blob())
-    .then(blob => {
-        const blobUrl = URL.createObjectURL(blob);
-        pdfjsLib.getDocument(blobUrl).promise.then(pdfDoc_ => {
-            pdfDoc = pdfDoc_;
-            document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Limit to 50 pages
-            renderPage(pageNum);  // Render the first page
-        });
-    })
-    .catch(error => console.error('Error fetching PDF:', error));
+    // Function to render the page
+    const renderPage = num => {
+        pageIsRendering = true;
 
-// Function to queue rendering of the page
-const queueRenderPage = num => {
-    if (pageIsRendering) {
-        pageNumIsPending = num;
-    } else {
-        renderPage(num);
-    }
-};
-
-// Function to render the page
-const renderPage = num => {
-    pageIsRendering = true;
-
-    // Ensure the page is within the allowed range
-    if (num < startPage || num > endPage) {
-        alert('This is only for view purposes. To view the full ebook, please purchase.');
-        return;
-    }
-
-    // Get the page
-    pdfDoc.getPage(num).then(page => {
-        const viewport = page.getViewport({ scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        const renderCtx = {
-            canvasContext: ctx,
-            viewport
-        };
-
-        page.render(renderCtx).promise.then(() => {
+        // Ensure the page is within the allowed range
+        if (num < startPage || num > endPage) {
+            alert('This is only for view purposes. To view the full ebook, please purchase.');
             pageIsRendering = false;
+            return;
+        }
 
-            if (pageNumIsPending !== null) {
-                renderPage(pageNumIsPending);
-                pageNumIsPending = null;
-            }
+        // Get the page
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const renderCtx = {
+                canvasContext: ctx,
+                viewport
+            };
+
+            page.render(renderCtx).promise.then(() => {
+                pageIsRendering = false;
+
+                if (pageNumIsPending !== null) {
+                    renderPage(pageNumIsPending);
+                    pageNumIsPending = null;
+                }
+            });
+
+            // Output current page number
+            document.getElementById('page-num').textContent = num;
+        }).catch(error => {
+            console.error("Error rendering page: ", error);
+            pageIsRendering = false;
         });
+    };
 
-        // Output current page number
-        document.getElementById('page-num').textContent = num;
-    });
-};
+    // Function to queue rendering of the page
+    const queueRenderPage = num => {
+        if (pageIsRendering) {
+            pageNumIsPending = num;
+        } else {
+            renderPage(num);
+        }
+    };
 
-// Previous page
-const showPrevPage = () => {
-    if (pageNum <= startPage) {
-        return;
-    }
-    pageNum--;
-    queueRenderPage(pageNum);
-};
+    // Load the first page when the PDF is ready
+    const loadFirstPage = () => {
+        if (pdfDoc) {
+            pageNum = 1;  // Set to the first page
+            renderPage(pageNum);  // Render the first page
+        }
+    };
 
-// Next page
-const showNextPage = () => {
-    if (pageNum >= endPage) {
-        return;
-    }
-    pageNum++;
-    queueRenderPage(pageNum);
-};
+    // Previous page
+    const showPrevPage = () => {
+        if (pageNum <= startPage) {
+            return;
+        }
+        pageNum--;
+        queueRenderPage(pageNum);
+    };
 
-// Button events
-document.getElementById('prev-page').addEventListener('click', showPrevPage);
-document.getElementById('next-page').addEventListener('click', showNextPage);
+    // Next page
+    const showNextPage = () => {
+        if (pageNum >= endPage) {
+            return;
+        }
+        pageNum++;
+        queueRenderPage(pageNum);
+    };
+
+    // Load the PDF document lazily
+    const loadPDF = () => {
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                return pdfjsLib.getDocument(blobUrl).promise;
+            })
+            .then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
+                document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Display total up to 50 pages
+
+                loadFirstPage();  // Automatically render the first page
+            })
+            .catch(error => console.error('Error loading PDF:', error));
+    };
+
+    // Button events
+    document.getElementById('prev-page').addEventListener('click', showPrevPage);
+    document.getElementById('next-page').addEventListener('click', showNextPage);
+
+    // Load the PDF when the page loads, but don't render all pages at once
+    loadPDF();
+
 </script>
 {% endblock pdf_view %}
