@@ -1,7 +1,7 @@
 # store/views.py
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect,JsonResponse
 from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail, Question, Answer
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -600,3 +600,35 @@ def serve_pdf(request, pdf_id):
         return response
     except Exception as e:
         raise Http404("PDF file not found.")
+
+import PyPDF2
+import os
+
+def serve_pdf_page(request, pdf_id):
+    """
+    Serve a single page of the PDF to the frontend.
+    """
+    page_num = int(request.GET.get('page', 1))  # Default to page 1
+    pdf = get_object_or_404(Item, id=pdf_id)
+    pdf_path = pdf.pdf_file.path 
+
+    # Open the PDF and extract the specific page
+    if os.path.exists(pdf_path):
+        try:
+            with open(pdf_path, "rb") as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                if page_num <= len(pdf_reader.pages):
+                    page = pdf_reader.pages[page_num - 1]  # PyPDF2 is zero-indexed
+                    output_pdf = PyPDF2.PdfWriter()
+                    output_pdf.add_page(page)
+                    
+                    response = HttpResponse(content_type="application/pdf")
+                    output_pdf.write(response)
+                    response['Content-Disposition'] = f'inline; filename="page-{page_num}.pdf"'
+                    return response
+                else:
+                    return JsonResponse({"error": "Page out of range"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "PDF not found"}, status=404)

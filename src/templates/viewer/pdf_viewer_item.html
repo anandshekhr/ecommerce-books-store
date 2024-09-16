@@ -12,7 +12,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
 <script>
 
-    const url = '/pdf/serve/{{ pdf_id }}/';  // Point to the Django view
+    // const url = '/pdf/serve/{{ pdf_id }}/';  // Point to the Django view
 
     let pdfDoc = null,
         pageNum = 1,
@@ -24,7 +24,7 @@
         startPage = 1,
         endPage = 50;
 
-    // Function to render the page
+    // Function to render a page by calling the server for each page
     const renderPage = num => {
         pageIsRendering = true;
 
@@ -35,32 +35,51 @@
             return;
         }
 
-        // Get the page
-        pdfDoc.getPage(num).then(page => {
-            const viewport = page.getViewport({ scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+        const url = `/serve-pdf-page/{{ pdf_id }}?page=${num}`;  // Django view to serve the specific page
 
-            const renderCtx = {
-                canvasContext: ctx,
-                viewport
-            };
+        // Fetch the specific page PDF
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = URL.createObjectURL(blob);
+                return pdfjsLib.getDocument(blobUrl).promise;
+            })
+            .then(pdfDoc_ => {
+                pdfDoc = pdfDoc_;
 
-            page.render(renderCtx).promise.then(() => {
+                // Get the page from the PDF document
+                pdfDoc.getPage(1).then(page => {
+                    const viewport = page.getViewport({ scale });
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderCtx = {
+                        canvasContext: ctx,
+                        viewport
+                    };
+
+                    page.render(renderCtx).promise.then(() => {
+                        pageIsRendering = false;
+
+                        if (pageNumIsPending !== null) {
+                            renderPage(pageNumIsPending);
+                            pageNumIsPending = null;
+                        }
+                    });
+
+                    // Output current page number
+                    document.getElementById('page-num').textContent = num;
+                });
+            })
+            .catch(error => {
+                console.error('Error loading page:', error);
                 pageIsRendering = false;
-
-                if (pageNumIsPending !== null) {
-                    renderPage(pageNumIsPending);
-                    pageNumIsPending = null;
-                }
             });
-
-            // Output current page number
-            document.getElementById('page-num').textContent = num;
-        }).catch(error => {
-            console.error("Error rendering page: ", error);
-            pageIsRendering = false;
-        });
     };
 
     // Function to queue rendering of the page
@@ -72,12 +91,10 @@
         }
     };
 
-    // Load the first page when the PDF is ready
+    // Load the first page initially
     const loadFirstPage = () => {
-        if (pdfDoc) {
-            pageNum = 1;  // Set to the first page
-            renderPage(pageNum);  // Render the first page
-        }
+        pageNum = 1;  // Default to the first page
+        renderPage(pageNum);
     };
 
     // Previous page
@@ -98,34 +115,14 @@
         queueRenderPage(pageNum);
     };
 
-    // Load the PDF document lazily
-    const loadPDF = () => {
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-            .then(response => response.blob())
-            .then(blob => {
-                const blobUrl = URL.createObjectURL(blob);
-                return pdfjsLib.getDocument(blobUrl).promise;
-            })
-            .then(pdfDoc_ => {
-                pdfDoc = pdfDoc_;
-                document.getElementById('page-count').textContent = Math.min(pdfDoc.numPages, endPage); // Display total up to 50 pages
-
-                loadFirstPage();  // Automatically render the first page
-            })
-            .catch(error => console.error('Error loading PDF:', error));
-    };
+    // Load the first page on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFirstPage();
+    });
 
     // Button events
     document.getElementById('prev-page').addEventListener('click', showPrevPage);
     document.getElementById('next-page').addEventListener('click', showNextPage);
-
-    // Load the PDF when the page loads, but don't render all pages at once
-    loadPDF();
 
 </script>
 {% endblock pdf_view %}
