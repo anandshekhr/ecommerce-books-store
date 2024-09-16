@@ -180,6 +180,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # Authentication backends
 AUTHENTICATION_BACKENDS = [
+    'main.authentication.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]

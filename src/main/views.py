@@ -415,7 +415,10 @@ def login_view(request):
     if request.method == 'POST':
         email = request.POST['email']
         password = request.POST['password']
+        print(email)
+        print(password)
         user = authenticate(request, email=email, password=password)
+        print(user)
         if user is not None:
             login(request, user)
             return redirect('home-1')
@@ -456,7 +459,10 @@ def signup_view(request):
             phone_number = phone_number.strip()
         
         if password:
-            password = password.strip()
+            password = password
+        
+        print(email)
+        print(password)
         
         # Generate a unique username
         username = generate_username(first_name, last_name)
