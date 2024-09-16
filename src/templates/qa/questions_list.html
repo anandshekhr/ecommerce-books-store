@@ -36,6 +36,7 @@
 .answer-preview {
     max-height: 60px;
     overflow: hidden;
+    margin-left: 15%;
     position: relative;
 }
 .expand-btn {
@@ -105,6 +106,7 @@ textarea {
     color: grey;
     font-weight:200;
     margin-top:0%;
+    margin-left: 15%;
 }
 .ask-question{
     float:right;
@@ -145,6 +147,28 @@ textarea {
     background-color: #f9f9f9; /* Optional background color */
 }
 
+/* Mobile view adjustments */
+@media (max-width: 768px) {
+    .container-filter {
+        flex-direction: column; /* Stack elements vertically */
+        align-items: flex-start; /* Align items to the start of the container */
+    }
+
+    .quick-filters {
+        margin-bottom: 10px; /* Adjust space between filters and the search bar */
+        width: 100%; /* Make the filters take full width */
+    }
+
+    .filters {
+        width: 100%; /* Make the search input take full width */
+    }
+
+    .search-form input {
+        width: 100%; /* Full width search bar in mobile view */
+        max-width: 290px;
+        {% comment %} margin-bottom: 10px; /* Add space below the search input */ {% endcomment %}
+    }
+}
 
 
 {% endblock style %}
@@ -191,7 +215,7 @@ textarea {
         {% if question.document %}
         <br><a href="{{ question.document.url }}" target="_blank">Download Document</a>
         {% endif %}
-        <p class="question-answer-date">{{question.created_at}}</p>
+        <p class="question-answer-date" style="margin-left: 0px;">{{question.created_at}}</p>
 
         {% if question.answers.count > 0 %}
             <p>Answers:</p>
