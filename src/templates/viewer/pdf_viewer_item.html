@@ -6,13 +6,16 @@
         <button id="next-page" class="btn btn-secondary">Next</button>
     </div>
 
-    <!-- Loader GIF (hidden by default) -->
-    <div id="loader" style="display: none; text-align: center;">
-        <img src="/static/assets/img/loader.gif" alt="Loading..." />
-    </div>
+    <!-- PDF container with loader overlay -->
+    <div style="position: relative; width: fit-content; margin: auto;">
+        <!-- Canvas for PDF rendering -->
+        <canvas id="pdf-render"></canvas>
 
-    <!-- Canvas for PDF rendering -->
-    <canvas id="pdf-render"></canvas>
+        <!-- Loader GIF with grey background -->
+        <div id="loader" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center;">
+            <img src="/static/assets/img/loader.gif" alt="Loading..." />
+        </div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
@@ -32,7 +35,7 @@
 
     // Function to show loader
     const showLoader = () => {
-        loader.style.display = 'block';
+        loader.style.display = 'flex';  // Display loader with flex for centering
     };
 
     // Function to hide loader
@@ -52,42 +55,42 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             }
         })
-            .then(response => response.blob())
-            .then(blob => {
-                const blobUrl = URL.createObjectURL(blob);
-                return pdfjsLib.getDocument(blobUrl).promise;
-            })
-            .then(pdfDoc_ => {
-                pdfDoc = pdfDoc_;
+        .then(response => response.blob())
+        .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            return pdfjsLib.getDocument(blobUrl).promise;
+        })
+        .then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
 
-                pdfDoc.getPage(1).then(page => {
-                    const viewport = page.getViewport({ scale });
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
+            pdfDoc.getPage(1).then(page => {
+                const viewport = page.getViewport({ scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-                    const renderCtx = {
-                        canvasContext: ctx,
-                        viewport
-                    };
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport
+                };
 
-                    page.render(renderCtx).promise.then(() => {
-                        pageIsRendering = false;
-                        hideLoader(); // Hide loader when the page is rendered
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+                    hideLoader(); // Hide loader when the page is rendered
 
-                        if (pageNumIsPending !== null) {
-                            renderPage(pageNumIsPending);
-                            pageNumIsPending = null;
-                        }
-                    });
-
-                    document.getElementById('page-num').textContent = num;
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
                 });
-            })
-            .catch(error => {
-                console.error('Error loading page:', error);
-                pageIsRendering = false;
-                hideLoader(); // Hide loader on error
+
+                document.getElementById('page-num').textContent = num;
             });
+        })
+        .catch(error => {
+            console.error('Error loading page:', error);
+            pageIsRendering = false;
+            hideLoader(); // Hide loader on error
+        });
     };
 
     // Function to queue rendering of the page
@@ -128,6 +131,7 @@
         if (touchEndX > touchStartX) showPrevPage(); // Swipe right -> previous page
     };
 
+    // Prevent whole page from scrolling horizontally
     document.addEventListener('touchstart', e => {
         touchStartX = e.changedTouches[0].screenX;
     });
@@ -136,6 +140,8 @@
         touchEndX = e.changedTouches[0].screenX;
         handleGesture();
     });
+
+    document.body.style.overflowX = 'hidden'; // Prevent horizontal scrolling of the body
 
     // Hide navigation buttons on mobile view
     const checkScreenSize = () => {
