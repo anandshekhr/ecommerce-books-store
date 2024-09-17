@@ -644,3 +644,19 @@ def serve_pdf_page(request, pdf_id):
             return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "PDF not found"}, status=404)
+
+def Error500(request):
+    context = {
+        'title':'Internal Server Error',
+        'http_code': '500',
+        'error_code': '-1'
+    }
+    return render(request, 'error/504.html',context)
+
+def Error404(request):
+    context = {
+        'title':'Page Not Found',
+        'http_code': '404',
+        'error_code': '-1'
+    }
+    return render(request, 'error/504.html',context)
