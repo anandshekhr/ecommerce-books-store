@@ -12,7 +12,8 @@
         <canvas id="pdf-render"></canvas>
 
         <!-- Loader GIF with grey background -->
-        <div id="loader" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center;">
+        <div id="loader"
+            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center;">
             <img src="/static/assets/img/loader.gif" alt="Loading..." />
         </div>
     </div>
@@ -28,7 +29,7 @@
         canvas = document.getElementById('pdf-render'),
         ctx = canvas.getContext('2d'),
         startPage = 1,
-        endPage = 50;
+        endPage = 50;  // Placeholder, will be updated dynamically
 
     const loader = document.getElementById('loader');
     const url = '/serve-pdf-page/{{ pdf_id }}?page=';
@@ -43,55 +44,82 @@
         loader.style.display = 'none';
     };
 
-    // Function to render the PDF page
-    const renderPage = num => {
-        pageIsRendering = true;
-        showLoader(); // Show loader before fetching the page
+    // Function to fetch and render the PDF page, along with total page count
+    // Function to fetch and render the PDF page, along with total page count
+    
+// Function to render the PDF page
+const renderPage = num => {
+    pageIsRendering = true;
+    showLoader(); // Show loader before fetching the page
 
-        // Fetch specific page from the server
-        fetch(`${url}${num}`, {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-        .then(response => response.blob())
-        .then(blob => {
-            const blobUrl = URL.createObjectURL(blob);
-            return pdfjsLib.getDocument(blobUrl).promise;
-        })
-        .then(pdfDoc_ => {
-            pdfDoc = pdfDoc_;
+    // Fetch specific page from the server
+    fetch(`${url}${num}`, {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => {
+        // Check if the response contains the total pages
+        if (!response.ok) {
+            throw new Error('Failed to load page');
+        }
 
-            pdfDoc.getPage(1).then(page => {
-                const viewport = page.getViewport({ scale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+        // Get total pages from the custom header if it's the first page request
+        if (!pdfDoc && response.headers.has('X-Total-Pages')) {
+            const totalPages = parseInt(response.headers.get('X-Total-Pages'));
+            endPage = Math.ceil(totalPages * 0.1);  // Display only 10% of the total pages
+            document.getElementById('page-count').textContent = endPage;
+        }
+        return response.blob();
+    })
+    .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        return pdfjsLib.getDocument(blobUrl).promise;
+    })
+    .then(pdfDoc_ => {
+        pdfDoc = pdfDoc_;
 
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport
-                };
+        // Ensure num is within the valid range
+        if (num < 1 || num > endPage ) {
+            throw new Error(`Invalid page request: ${num}. Max page allowed: ${endPage}, total pages: ${totalPages}`);
+        }
 
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
-                    hideLoader(); // Hide loader when the page is rendered
+        return pdfDoc.getPage(1);
+    })
+    .then(page => {
+        // Render the page
+        const viewport = page.getViewport({ scale });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
 
-                    if (pageNumIsPending !== null) {
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-                });
+        const renderCtx = {
+            canvasContext: ctx,
+            viewport
+        };
 
-                document.getElementById('page-num').textContent = num;
-            });
-        })
-        .catch(error => {
-            console.error('Error loading page:', error);
+        page.render(renderCtx).promise.then(() => {
             pageIsRendering = false;
-            hideLoader(); // Hide loader on error
+            hideLoader(); // Hide loader when the page is rendered
+
+            if (pageNumIsPending !== null) {
+                renderPage(pageNumIsPending);
+                pageNumIsPending = null;
+            }
         });
-    };
+
+        document.getElementById('page-num').textContent = num;
+    })
+    .catch(error => {
+        console.error('Error loading page:', error);
+        pageIsRendering = false;
+        hideLoader(); // Hide loader on error
+    });
+};
+
+
+    // Show the next page
+
 
     // Function to queue rendering of the page
     const queueRenderPage = num => {
@@ -116,8 +144,15 @@
     };
 
     // Show the next page
-    const showNextPage = () => {
+    {% comment %} const showNextPage = () => {
         if (pageNum >= endPage) return;
+        pageNum++;
+        queueRenderPage(pageNum);
+    }; {% endcomment %}
+    const showNextPage = () => {
+        if (pageNum >= endPage) {
+            return;
+        }
         pageNum++;
         queueRenderPage(pageNum);
     };

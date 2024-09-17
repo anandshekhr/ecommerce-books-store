@@ -610,9 +610,10 @@ def serve_pdf(request, pdf_id):
 import PyPDF2
 import os
 
+
 def serve_pdf_page(request, pdf_id):
     """
-    Serve a single page of the PDF to the frontend.
+    Serve a single page of the PDF and the total page count to the frontend.
     """
     page_num = int(request.GET.get('page', 1))  # Default to page 1
     pdf = get_object_or_404(Item, id=pdf_id)
@@ -623,14 +624,19 @@ def serve_pdf_page(request, pdf_id):
         try:
             with open(pdf_path, "rb") as pdf_file:
                 pdf_reader = PyPDF2.PdfReader(pdf_file)
-                if page_num <= len(pdf_reader.pages):
+                total_pages = len(pdf_reader.pages)
+
+                if page_num <= total_pages:
                     page = pdf_reader.pages[page_num - 1]  # PyPDF2 is zero-indexed
                     output_pdf = PyPDF2.PdfWriter()
                     output_pdf.add_page(page)
-                    
+
                     response = HttpResponse(content_type="application/pdf")
                     output_pdf.write(response)
                     response['Content-Disposition'] = f'inline; filename="page-{page_num}.pdf"'
+                    
+                    # Set a custom header to include the total page count
+                    response['X-Total-Pages'] = total_pages
                     return response
                 else:
                     return JsonResponse({"error": "Page out of range"}, status=400)
