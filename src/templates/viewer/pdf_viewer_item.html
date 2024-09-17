@@ -68,7 +68,13 @@ const renderPage = num => {
         // Get total pages from the custom header if it's the first page request
         if (!pdfDoc && response.headers.has('X-Total-Pages')) {
             const totalPages = parseInt(response.headers.get('X-Total-Pages'));
-            endPage = Math.ceil(totalPages * 0.1);  // Display only 10% of the total pages
+            if (totalPages < 20 ) {
+                endPage = Math.ceil(totalPages * 0.5); 
+            } else if (totalPages < 50 ) {
+                endPage = Math.ceil(totalPages * 0.2); 
+            } else {
+            endPage = Math.ceil(totalPages * 0.1); 
+            } 
             document.getElementById('page-count').textContent = endPage;
         }
         return response.blob();
