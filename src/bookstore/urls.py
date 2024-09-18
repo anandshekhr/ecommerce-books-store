@@ -20,7 +20,6 @@ from django.contrib import admin
 from django.urls import path, include, register_converter
 from main import views
 from rest_framework.routers import DefaultRouter
-from django.conf.urls import handler404, handler500
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
@@ -29,6 +28,8 @@ from rest_framework import permissions
 from .utils import HashIdConverter
 from django.contrib.sitemaps.views import sitemap
 from main.sitemaps import ProductSitemap
+from django.conf.urls import handler404, handler500
+from django.views.decorators.cache import cache_page
 
 sitemaps = {
     'products': ProductSitemap,
@@ -68,7 +69,7 @@ admin.site.site_title = "VAMS Book Store"
 
 urlpatterns = [
     path('robots.txt', views.robots_txt),
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('sitemap.xml', cache_page(0)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('admin/', admin.site.urls),
     path('volt/', include('admin_volt.urls')),
     path('', include('main.urls')),
@@ -87,10 +88,10 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
-handler500 = "main.views.Error500"
-handler404 = "main.views.Error404"
+# handler500 = "main.views.Error500"
+# handler404 = "main.views.Error404"

@@ -651,7 +651,7 @@ def Error500(request):
         'http_code': '500',
         'error_code': '-1'
     }
-    return render(request, 'error/504.html',context)
+    return render(request, 'error/504.html',context,status=500)
 
 def Error404(request):
     context = {
@@ -659,4 +659,4 @@ def Error404(request):
         'http_code': '404',
         'error_code': '-1'
     }
-    return render(request, 'error/504.html',context)
+    return render(request, 'error/504.html',context,status=404)
