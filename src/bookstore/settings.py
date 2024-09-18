@@ -140,10 +140,24 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+if DEBUG:
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+    STATIC_ROOT = BASE_DIR / 'staticfiles'
+else:
+    # Static files (CSS, JavaScript, images)
+    STATIC_URL = '/static/'
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+    # Directory where static files are collected by `collectstatic` command
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    # During development, you may have additional directories with static files
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static'),  # Your custom static files directory
+    ]
+
+    # Enable the storage backend that handles compression and serving
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
