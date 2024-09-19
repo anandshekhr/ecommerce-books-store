@@ -18,6 +18,7 @@ drf-yasg
 django-quill-editor
 PyJWT
 django-allauth
+django-allauth[socialaccount]
 cryptography
 django-admin-volt
 hashids

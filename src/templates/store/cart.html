@@ -1,50 +1,53 @@
 {% extends "base.html" %}
-{% load static %}       
+{% load static %}
 {% block title %}Cart{% endblock title %}
 
 {% block content %}
 <!-- Cart Items -->
 <div class="container mt-4">
-    <h2>Your Cart</h2>
-    {% if order %}
-    <table class="table cart-table">
-        <thead>
-            <tr>
-                <th scope="col">Image</th>
-                <th scope="col">Product</th>
-                <th scope="col">Price</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Total</th>
-                <th scope="col">Action</th>
-            </tr>
-        </thead>
-        <tbody id="cartItems">
-            {% for item in order.items.all %}
-            <tr data-id="{{ item.id }}">
-                <td>{% if item.thumbnail %}
-                    <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}" class="img-thumbnail"
-                        style="width: 100px; height: auto;"><br>
-                    {% else %}
-                    No image available<br>
-                    {% endif %}
-                </td>
-                <td>{{ item.title }}</td>
-                <td>₹{{ item.price }}</td>
-                <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
-                <td>₹{{ item.price }}</td>
-                <td>
-                    <button class="btn btn-danger remove-item" id="remove-item">Remove</button>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <h3>Your Cart</h3>
+    <div style="overflow-y:scroll;">
+        {% if order %}
+        <table class="table cart-table">
+            <thead>
+                <tr>
+                    <th scope="col">Image</th>
+                    <th scope="col">Product</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody id="cartItems">
+                {% for item in order.items.all %}
+                <tr data-id="{{ item.id }}">
+                    <td>{% if item.thumbnail %}
+                        <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}" class="img-thumbnail"
+                            style="width: 100px; height: auto;"><br>
+                        {% else %}
+                        No image available<br>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.title }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>
+                        <button class="btn btn-danger remove-item" id="remove-item">Remove</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Cart Summary -->
     <div class="cart-summary">
         <h5>Cart Summary</h5>
         <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
-        {% comment %} <a type="button" href="{% url "checkout" order_id=order.id %}" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a> {% endcomment %}
+        {% comment %} <a type="button" href="{% url " checkout" order_id=order.id %}" class="btn btn-primary"
+            id="rzp-button1">Proceed to Checkout</a> {% endcomment %}
         <a type="button" href="#" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a>
     </div>
     {% else %}
@@ -74,7 +77,7 @@
                 row.remove();
                 if (response) {
                     $('#subTotal').text('Subtotal: ₹' + response.total_price.toFixed(2));
-                    if (response.total_price == 0){
+                    if (response.total_price == 0) {
                         var checkoutButton = document.getElementById("rzp-button1");
                         checkoutButton.disabled = true;
                     } else {
@@ -114,7 +117,7 @@
     rzp1.on('payment.failed', function (response) {
         window.location.href = domain + `/`;
     });
-    $('#rzp-button1').on('click',function () {
+    $('#rzp-button1').on('click', function () {
         rzp1.open();
         e.preventDefault();
     });
