@@ -121,7 +121,7 @@ textarea {
     color: grey;
     font-weight:200;
     margin-top:0%;
-    margin-left: 8%;
+    margin-left: 5%;
 }
 .ask-question{
     float:right;
@@ -261,7 +261,7 @@ textarea {
     <div class="full-content" id="full-content-{{ answer.id }}" style="display: none;">
         {{ answer.content|safe }}  <!-- Ensure content is displayed here -->
     </div>
-    <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: none;margin-left: 15%;">View More</span>
+    <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: none;margin-left: 5%;">View More</span>
 {% else %}
     <div class="answer-preview">
         {{ answer.content|safe }}  <!-- Ensure content is displayed here -->
