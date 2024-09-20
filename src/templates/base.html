@@ -110,6 +110,18 @@
             padding: 10px;  /* Padding for better text spacing */
             border-radius: 5px;  /* Rounded corners */
         }
+
+        div[id^="quillEditor_"] {
+            min-height: 100px; /* Initial height */
+            max-height: 500px; /* Maximum height */
+            overflow-y: auto;  /* Scroll if the content exceeds max height */
+            resize: vertical;  /* Allow vertical resizing by the user */
+            border: 1px solid #ccc; /* Add a border for better visibility */
+            padding: 10px;  /* Padding for better text spacing */
+            border-radius: 5px;  /* Rounded corners */
+            width: 100%; /* Ensure it takes full width */
+        }
+        
         {% block style %}{% endblock style %}
         
     </style>
