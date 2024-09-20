@@ -26,6 +26,21 @@
 {% endblock head %}
 {% block style %}
 
+   
+
+    /* Optional: Add a hover effect for the "View More" button */
+    .expand-btn {
+        color: #007bff;
+        cursor: pointer;
+        text-decoration: none;
+        margin-left: 15%;
+        transition: color 0.3s ease;
+    }
+
+    .expand-btn:hover {
+        color: #0056b3;  /* Slightly darker color on hover */
+    }
+
 .container-filter {
     display: flex;
     justify-content: space-between;
@@ -36,7 +51,7 @@
 .answer-preview {
     max-height: 60px;
     overflow: hidden;
-    margin-left: 15%;
+    margin-left: 8%;
     position: relative;
 }
 .expand-btn {
@@ -106,7 +121,7 @@ textarea {
     color: grey;
     font-weight:200;
     margin-top:0%;
-    margin-left: 15%;
+    margin-left: 8%;
 }
 .ask-question{
     float:right;
@@ -239,19 +254,21 @@ textarea {
                             {% endif %}
                         </div>
                         <!-- Answer Content Preview -->
-                        {% if answer.content|length > 100 %}  <!-- Adjust this threshold based on your needs -->
-                            <p class="answer-preview" id="answer-{{ answer.id }}">
-                                {{ answer.content|truncatewords:20 }}  <!-- Show only 20 words initially -->
-                            </p>
-                            <p class="full-content" id="full-content-{{ answer.id }}" style="display: None;">
-                                {{ answer.content }}  <!-- Show only 20 words initially -->
-                            </p>
-                            <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: None;margin-left: 15%;">View More</span>
-                        {% else %}
-                            <p class="answer-preview">
-                                {{ answer.content|safe }}
-                            </p>
-                        {% endif %}
+                        {% if answer.content|length > 100 %}
+    <div class="answer-preview" id="answer-{{ answer.id }}">
+        {{ answer.content|truncatewords:20|safe }}  <!-- Ensure content is displayed here -->
+    </div>
+    <div class="full-content" id="full-content-{{ answer.id }}" style="display: none;">
+        {{ answer.content|safe }}  <!-- Ensure content is displayed here -->
+    </div>
+    <span class="expand-btn" onclick="expandAnswer({{ answer.id }})" style="color: #007bff; cursor: pointer;text-decoration: none;margin-left: 15%;">View More</span>
+{% else %}
+    <div class="answer-preview">
+        {{ answer.content|safe }}  <!-- Ensure content is displayed here -->
+    </div>
+{% endif %}
+
+                    
                         <p class="question-answer-date" style="margin-top: 0%">{{answer.created_at}}</p>
                     </div>
                 {% endfor %}
@@ -369,17 +386,20 @@ document.querySelectorAll('form').forEach(function(form) {
 </script>
 <script>
     function expandAnswer(answerId) {
-        var answerElement = document.getElementById('answer-' + answerId);
-        var content = document.getElementById('full-content-' + answerId); // Ensure you have a full content element
+        var fullContent = document.getElementById('full-content-' + answerId);
+        var previewContent = document.getElementById('answer-' + answerId);
+        var toggleBtn = document.getElementById('toggle-btn-' + answerId);
     
-        if (answerElement) {
-                answerElement.style.display = 'none';
-                content.style.display = 'block'; // Show the full content
-                content.classList.add('full-content'); // Apply the scroll class
+        if (fullContent.style.display === 'none') {
+            // Show full content and hide the truncated preview
+            fullContent.style.display = 'block';
+            previewContent.style.display = 'none';
+            toggleBtn.textContent = 'View Less';  // Change button text to "View Less"
         } else {
-            answerElement.style.display = 'block';
-            content.style.display = 'none'; // Hide the full content
-            content.classList.remove('full-content'); // Remove the scroll class
+            // Show the truncated preview and hide the full content
+            fullContent.style.display = 'none';
+            previewContent.style.display = 'block';
+            toggleBtn.textContent = 'View More';  // Change button text back to "View More"
         }
     }
     
