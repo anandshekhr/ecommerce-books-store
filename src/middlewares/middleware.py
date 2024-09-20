@@ -62,7 +62,6 @@ class RequestDataMiddleware(MiddlewareMixin):
         RequestDataLog.objects.create(
             method=method,
             path=path,
-            body=body,
             user_agent=user_agent_string,
             mobile=is_mobile,
             is_new_user=is_new_user,

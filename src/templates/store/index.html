@@ -129,7 +129,12 @@
                                 <span class="text-primary">₹{{ product.price }}</span>
                             </p>
                             <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
+                            {% if product.is_free %}
+                            <a href="{{product.pdf_file.url}}" class="btn btn-success">Download</a>
+                            
+                            {% else %}
                             <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
