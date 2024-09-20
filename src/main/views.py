@@ -521,7 +521,7 @@ def question_list(request):
 @login_required
 def ask_question(request):
     if request.method == 'POST':
-        content = request.POST['content']
+        content = request.POST['content_html']
         image = request.FILES.get('image')
         document = request.FILES.get('document')
 
@@ -555,10 +555,11 @@ def question_detail_view(request, question_id):
     return render(request, 'qa/question_detail.html', context)
 
 # Add new answer to a question
+@csrf_exempt
 def add_answer(request, question_id):
     question = get_object_or_404(Question, id=question_id)
     if request.method == 'POST':
-        content = request.POST.get('content')
+        content = request.POST.get(f'content_html_{question_id}')
         image = request.FILES.get('image')
         document = request.FILES.get('document')
         Answer.objects.create(content=content, user=request.user, image=image, document=document,question=question)

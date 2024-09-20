@@ -284,25 +284,30 @@ textarea {
             </div>
             {% if question.is_active %}
             <!-- Form to add a new answer -->
-            <form method="post" action="{% url 'add_answer' question.id %}">
+            <form method="post" action="{% url 'add_answer' question.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
+                <!-- Quill Editor Container with Dynamic ID -->
+                <div id="quillEditor_{{ question.id }}" name="content" placeholder="Add your answer" style="width: 100%;"></div>
+                <!-- Hidden input to store Quill HTML content -->
+                <input type="hidden" name="content_html_{{ question.id }}" id="content_html_{{ question.id }}">
                 
-                <textarea id="add_answer_quill_{{ forloop.counter }}" name="content"  placeholder="Add your answer" style="width: 100%;"></textarea>
+                <!-- File Upload Options -->
                 <div class="form-group mt-3 d-flex">
                     <label for="image-upload" class="d-flex align-items-center">
                         <i class="fa-regular fa-image" title="Upload Image"></i>
                         <input type="file" name="image" class="d-none" id="image-upload">
                     </label>
                     <label for="document-upload" class="d-flex align-items-center">
-                        {% comment %} <i class="fas fa-file-alt fa-2x" title="Upload Document"></i> {% endcomment %}
                         <i class="fa-solid fa-paperclip" title="Upload Document"></i>
                         <input type="file" name="document" class="d-none" id="document-upload">
                     </label>
                 </div>
                 
-                {% comment %} <button type="submit" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; cursor: pointer;">Submit</button> {% endcomment %}
-                <button class="btn btn-primary">Submit</button>
+                <!-- Submit Button -->
+                <button class="btn btn-primary" type="submit">Submit</button>
             </form>
+            
+            
             {% else %}
             <p>This thread has been closed.</p>
             {% endif %}
@@ -312,22 +317,56 @@ textarea {
 {% endfor %}
 
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize Quill editors
-        var quillEditors = document.querySelectorAll('textarea[id^="add_answer_quill_"]');
-        quillEditors.forEach(function(textarea) {
-            new Quill(textarea, {
-                theme: 'snow'
-            });
-        });
-    });
-</script>
+
+
 
 
 
 {% endblock content %}
 {% block MoreJs %}
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill editors for each dynamically created editor
+        var quillEditors = document.querySelectorAll('[id^="quillEditor_"]');
+        
+        quillEditors.forEach(function(editor) {
+            var quill = new Quill(editor, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        ['bold', 'italic', 'underline'],   // Text formatting
+                        ['link', 'blockquote', 'code-block', 'image'],
+                        [{ list: 'ordered' }, { list: 'bullet' }]
+                    ],
+                }
+            });
+
+        });
+    });
+
+    // Attach event listener for each form's submission
+document.querySelectorAll('form').forEach(function(form) {
+    form.addEventListener('submit', function(event) {
+        // Prevent form submission if needed for debugging
+        // event.preventDefault();
+
+        // Get the Quill editor associated with this form by finding its ID
+        var questionId = form.querySelector('div[id^="quillEditor_"]').id.split('_')[1];
+        
+        // Get the specific Quill editor instance
+        var quillEditorId = '#quillEditor_' + questionId;
+        var quill = Quill.find(document.querySelector(quillEditorId)); // Find the correct Quill instance
+
+        // Get the corresponding hidden input field with dynamic ID (content_html_{{ question.id }})
+        var contentHtmlField = form.querySelector('#content_html_' + questionId);
+        
+        // Update the hidden field with the Quill editor's content
+        contentHtmlField.value = quill.root.innerHTML;
+    });
+});
+
+</script>
 <script>
     function expandAnswer(answerId) {
         var answerElement = document.getElementById('answer-' + answerId);

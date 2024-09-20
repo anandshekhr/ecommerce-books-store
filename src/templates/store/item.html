@@ -91,13 +91,14 @@ gap: 10px;
     <div class="col-md-6 item">
         <h1>{{ product.title }}</h1>
         <p>{{ product.description }}</p>
+        {% if not product.is_free %}
         <p>
             {% if product.og_price %}
             <span class="text-muted" style="text-decoration: line-through;">₹{{ product.og_price }}</span>
             {% endif %}
             <span class="text-primary">₹{{ product.price }}</span>
         </p>
-
+        {% endif %}
         <!-- Add to Cart & Buy Now Buttons -->
         <div class="d-flex">
             {% if product.is_free %}
@@ -106,8 +107,7 @@ gap: 10px;
             {% else %}
             <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success  me-3">Add to Cart</a>
             {% endif %}
-            {% comment %} <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Buy Now</a> {% endcomment
-            %}
+            {% comment %} <a href="{% url 'add_to_cart' product.id %}" class="btn btn-primary">Buy Now</a> {% endcomment %}
         </div>
     </div>
 </div>
