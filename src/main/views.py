@@ -80,7 +80,7 @@ def item_list(request):
         items = items.filter(category_id=selected_category)
 
     # Pagination
-    paginator = Paginator(items.order_by('id'), 10)  # Show 10 items per page
+    paginator = Paginator(items.order_by('id'), 9)  # Show 10 items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -112,7 +112,7 @@ def item_list_filter(request):
         items = items.filter(price__lte=max_price)
 
     # Pagination
-    paginator = Paginator(items.order_by('id'), 10)  # Show 10 items per page
+    paginator = Paginator(items.order_by('id'), 9)  # Show 10 items per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
