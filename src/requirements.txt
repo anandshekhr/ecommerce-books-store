@@ -24,3 +24,8 @@ django-admin-volt
 hashids
 ua_parser
 PyPDF2
+celery
+flower
+redis
+django-celery-results
+django-celery-beat

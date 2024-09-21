@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_quill',
     "middlewares",
+    'django_celery_results',
+    'django_celery_beat',
 
     # Allauth apps
     'allauth',
@@ -100,26 +102,22 @@ WSGI_APPLICATION = 'bookstore.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',  # Use MySQL backend
-#         'NAME': 'ashekhar123$vams-books-store',         # Your database name
-#         'USER': 'ashekhar123',          # Your database username
-#         'PASSWORD': 'OneManArmy1$',  # Your database password
-#         'HOST': 'ashekhar123.mysql.pythonanywhere-services.com',                   # Set to your database server address (e.g., 'localhost' or '127.0.0.1')
-#         # 'PORT': '3306',                        # Default MySQL port is 3306
-#         # 'OPTIONS': {
-#         #     'init_command':"SET SESSION max_allowed_packet=104857600",
-#         #     },
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',  # Use MySQL backend
+        'NAME': 'ashekhar123$vams-books-store',         # Your database name
+        'USER': 'ashekhar123',          # Your database username
+        'PASSWORD': 'OneManArmy1$',  # Your database password
+        'HOST': 'ashekhar123.mysql.pythonanywhere-services.com',
+    }
+}
 
 
 # Password validation
@@ -252,3 +250,21 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
 
 SECURE_REFERRER_POLICY= "strict-origin-when-cross-origin"
 SOCIALACCOUNT_LOGIN_ON_GET=True
+
+
+# Celery
+CELERY_IMPORTS = ('main.tasks',)
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = "Asia/Kolkata"
+
+# EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtpout.secureserver.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS= True
+EMAIL_HOST_USER = "shopping@vamscentral.com"
+EMAIL_HOST_PASSWORD = "OneManArmy2$"

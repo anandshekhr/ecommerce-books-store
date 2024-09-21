@@ -23,7 +23,6 @@ WORKDIR /app/vams/book-store/
 # Install dependencies
 COPY src/requirements.txt /app/vams/book-store/
 RUN pip install -r requirements.txt
-RUN pip install --index-url https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-python --extra-index-url https://pypi.org/simple phonepe_sdk==1.1.0
 
 
 # Copy the rest of the application code
