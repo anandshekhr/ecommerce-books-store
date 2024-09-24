@@ -98,6 +98,12 @@ function renderLineChart(pathGrowth) {
                 y: {
                     beginAtZero: true
                 }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'No. of Path Requests'
+                }
             }
         }
     });
@@ -155,6 +161,12 @@ fetchData();
                 scales: {
                     y: {
                         beginAtZero: true
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'No. of New Users'
                     }
                 }
             }
