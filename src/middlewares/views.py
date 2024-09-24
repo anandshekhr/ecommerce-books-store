@@ -75,12 +75,13 @@ class DataLogAPI(generics.ListAPIView):
             summary_data['path_growth'] = top_path_growth_data
 
             # Count new users based on distinct IPs
-            # distinct_ips = RequestDataLog.objects.filter(
-            #     timestamp__date__gte=last_seven_days
-            # ).values_list('client_ip', flat=True).distinct()
+            distinct_ips = RequestDataLog.objects.filter(
+                timestamp__date__gte=last_seven_days
+            ).values_list('client_ip', flat=True).distinct()
 
             new_users_daily = (
-                RequestDataLog.objects.filter(timestamp__date__gte=last_seven_days)
+                RequestDataLog.objects.filter(client_ip__in=distinct_ips)
+                .filter(timestamp__date__gte=last_seven_days)
                 .filter(is_new_user=True)
                 .values('timestamp', 'client_ip', 'mobile')
             )
