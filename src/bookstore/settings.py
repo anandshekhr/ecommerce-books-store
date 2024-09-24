@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import os 
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -28,8 +28,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in']
 CSRF_TRUSTED_ORIGINS = [
     'https://ashekhar123.pythonanywhere.com',
-    'http://127.0.0.1:8000', 
-    'http://localhost:8000', 
     'https://www.vamsbookstore.in'
 ]
 
@@ -115,7 +113,8 @@ DATABASES = {
         'NAME': 'ashekhar123$vams-books-store',         # Your database name
         'USER': 'ashekhar123',          # Your database username
         'PASSWORD': 'OneManArmy1$',  # Your database password
-        'HOST': 'ashekhar123.mysql.pythonanywhere-services.com',
+        'HOST': 'ashekhar123.mysql.pythonanywhere-services.com',                   # Set to your database server address (e.g., 'localhost' or '127.0.0.1')
+        # 'PORT': '3306',                        # Default MySQL port is 3306
     }
 }
 
@@ -200,8 +199,8 @@ APPEND_SLASH = True
 
 
 # razorpay test mode
-RAZORPAY_API_KEY = "rzp_test_JxyNEhaWwH97JY"
-RAZORPAY_API_KEY_SECRET = "vOOKcQWX2cAZ7Yj1eV0TtOXk"
+RAZORPAY_API_KEY = "rzp_live_QrfibNlVCx7mrR"
+RAZORPAY_API_KEY_SECRET = "MwWodYP6ES8WsgN5yCdvUUMN"
 CORS_ALLOW_ALL_ORIGINS = True
 
 
@@ -266,5 +265,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtpout.secureserver.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS= True
-EMAIL_HOST_USER = "shopping@vamscentral.com"
-EMAIL_HOST_PASSWORD = "OneManArmy2$"
+EMAIL_HOST_USER = "info@vamsbookstore.in"
+EMAIL_HOST_PASSWORD = "OneManArmy3$"
