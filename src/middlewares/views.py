@@ -52,6 +52,8 @@ class DataLogAPI(generics.ListAPIView):
                 .exclude(path__contains='admin')
                 .exclude(path__contains='sitemap')
                 .exclude(path__contains='favicon')
+                .exclude(path__contains='platform')
+                .exclude(path__contains='accounts')
                 .values('timestamp', 'path')
             )
 
