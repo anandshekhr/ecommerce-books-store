@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock title %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .chart-container {
+        display: flex;
+        justify-content: space-between;
+    }
+    canvas {
+        max-width: 45%; /* Adjust size as needed */
+    }
+</style>
+
+{% endblock head %}
+{% block content %}
+<div class="chart-container">
+<canvas id="pathGrowthChart" width="400px" height="200px"></canvas>
+<canvas id="newUsersChart" width="400px" height="200px"></canvas>
+</div>
+
+{% endblock content %}
+{% block MoreJs %}
+<script>
+{% comment %} async function fetchData() {
+    const response = await fetch('/api/v1/log/overview/?summary=true');
+    const data = await response.json();
+    console.log('API Response:', data);
+    renderLineChart(data.path_growth);
+} {% endcomment %}
+
+async function fetchData() {
+    try {
+        const response = await fetch('/api/v1/log/overview/?summary=true');
+        const data = await response.json();
+        //console.log('API Response:', data); // Debug log
+
+        if (!data.path_growth) {
+            console.error('No path growth data available');
+            return;
+        }
+
+        renderLineChart(data.path_growth);
+        renderNewUsersChart(data.new_users);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
+function renderLineChart(pathGrowth) {
+    const ctx = document.getElementById('pathGrowthChart').getContext('2d');
+    const labels = Object.keys(pathGrowth).reduce((allDates, path) => {
+        Object.keys(pathGrowth[path]).forEach(date => {
+            if (!allDates.includes(date)) {
+                allDates.push(date);
+            }
+        });
+        return allDates;
+    }, []).sort();
+
+    const datasets = Object.keys(pathGrowth).map(path => ({
+        label: path,
+        data: labels.map(date => pathGrowth[path][date] || 0),
+        fill: false,
+        borderColor: getRandomColor(), // Function to generate random colors for each line
+        tension: 0.1
+    }));
+
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+fetchData();
+</script>
+<script>
+    
+    
+    function renderNewUsersChart(newUsers) {
+        if (!newUsers || Object.keys(newUsers).length === 0) {
+            console.error('No new user data available');
+            return; // Exit early if there's no data
+        }
+    
+        const labels = Object.keys(newUsers.mobile).concat(Object.keys(newUsers.web));
+        const uniqueLabels = [...new Set(labels)].sort(); // Get unique dates
+    
+        const mobileData = uniqueLabels.map(date => newUsers.mobile[date] || 0);
+        const webData = uniqueLabels.map(date => newUsers.web[date] || 0);
+    
+        const ctx = document.getElementById('newUsersChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: uniqueLabels,
+                datasets: [
+                    {
+                        label: 'Mobile Users',
+                        data: mobileData,
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Web Users',
+                        data: webData,
+                        fill: false,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    </script>
+
+    
+{% endblock MoreJs %}

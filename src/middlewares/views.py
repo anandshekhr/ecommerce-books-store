@@ -11,26 +11,92 @@ from django.contrib.auth import authenticate, get_user_model,login
 from django.http import JsonResponse
 from django.db.models import Max, Min, Count, Avg
 from django.template.loader import render_to_string
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render,redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, pagination
 from django_filters import FilterSet
 from django.db.models import Q
 import django_filters
+from django.db.models import Count
+from django.db.models.functions import ExtractHour
 
+from django.utils import timezone
 from .serializer import *
 from .models import *
+import datetime
+from collections import defaultdict
 
 
 class DataLogAPI(generics.ListAPIView):
     serializer_class = RequestDataLogSerializer
     pagination_class = PageNumberPagination
-    authentication_classes = (SessionAuthentication,TokenAuthentication)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
+    # authentication_classes = (SessionAuthentication,TokenAuthentication)
     queryset = RequestDataLog.objects.all()
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend,filters.SearchFilter]
     filterset_fields = ('method','path','body','user_agent','client_ip','country','mobile','is_new_user','timestamp')
     search_fields = ('method','path','body','user_agent','client_ip','country','mobile','is_new_user','timestamp')
     ordering_fields = ('method','path','user_agent','client_ip','country','mobile','is_new_user','timestamp')
 
+    def get(self, request, *args, **kwargs):
+        if 'summary' in request.query_params:
+            summary_data = {}
+
+            # Get today's date and calculate last 7 days
+            today = timezone.now().date()
+            last_seven_days = today - timezone.timedelta(days=7)
+
+            # Daily path requests for the last 7 days
+            daily_paths = (
+                RequestDataLog.objects
+                .filter(timestamp__date__gte=last_seven_days)
+                .values('timestamp', 'path')
+            )
+
+            # Organizing data for the line graph
+            path_growth_data = defaultdict(lambda: defaultdict(int))
+            for entry in daily_paths:
+                timestamp = entry['timestamp']
+                date_str = timestamp.date().isoformat()  # Convert date to string
+                path = entry['path']
+                path_growth_data[path][date_str] += 1
+
+            # Calculate total requests per path and get top 5 paths
+            total_path_counts = {
+                path: sum(counts.values()) for path, counts in path_growth_data.items()
+            }
+            top_paths = sorted(total_path_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+            top_path_growth_data = {path: path_growth_data[path] for path, _ in top_paths}
+
+            summary_data['path_growth'] = top_path_growth_data
+
+            # Count new users based on distinct IPs
+            new_users_daily = (
+                RequestDataLog.objects
+                .filter(timestamp__date__gte=last_seven_days)
+                .values('timestamp', 'client_ip', 'mobile')
+                .distinct()
+            )
+
+            new_users_data = {'mobile': {}, 'web': {}}
+            for entry in new_users_daily:
+                timestamp = entry['timestamp']
+                date_str = timestamp.date().isoformat()  # Convert timestamp to date string
+                is_mobile = entry['mobile']
+
+                if is_mobile:
+                    new_users_data['mobile'].setdefault(date_str, 0)
+                    new_users_data['mobile'][date_str] += 1
+                else:
+                    new_users_data['web'].setdefault(date_str, 0)
+                    new_users_data['web'][date_str] += 1
+
+            summary_data['new_users'] = new_users_data
+
+            return Response(summary_data)
+
+        return Response({"error": "Invalid query parameters"}, status=400)
+
+def getGraphOverview(request):
+    return render(request,'graph.html')
