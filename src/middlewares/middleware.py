@@ -23,9 +23,12 @@ class RequestDataMiddleware(MiddlewareMixin):
             return request.META.get('REMOTE_ADDR', '')
         
     def process_request(self, request):
+        path = request.path
+        if 'admin' in path:
+            return
+
         # Extract relevant data from the request
         method = request.method
-        path = request.path
         body = request.body
         user_agent_string = request.META.get('HTTP_USER_AGENT', '')
         ip_address = self.get_client_ip(request)
@@ -47,7 +50,7 @@ class RequestDataMiddleware(MiddlewareMixin):
             is_new_user = True
         
         # Determine the origin country based on the user's IP address
-        origin_country = ''
+        origin_country = 'IN'
         if ip_address:
             try:
                 # geoip = GeoIP2(path=settings.GEOIP_PATH)
@@ -62,6 +65,7 @@ class RequestDataMiddleware(MiddlewareMixin):
         RequestDataLog.objects.create(
             method=method,
             path=path,
+            body=body,
             user_agent=user_agent_string,
             mobile=is_mobile,
             is_new_user=is_new_user,

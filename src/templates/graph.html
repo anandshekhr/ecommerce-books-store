@@ -3,21 +3,42 @@
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
+h1 {
+    margin: auto;
+}
     .chart-container {
-        display: flex;
-        justify-content: space-between;
-    }
-    canvas {
-        max-width: 45%; /* Adjust size as needed */
-    }
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px; /* Limit the max width */
+            margin: auto; /* Center the container */
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 50%; /* Adjust for aspect ratio (height/width) */
+            margin: 10px; /* Space between charts */
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
 </style>
 
 {% endblock head %}
 {% block content %}
-<div class="chart-container">
-<canvas id="pathGrowthChart" width="400px" height="200px"></canvas>
-<canvas id="newUsersChart" width="400px" height="200px"></canvas>
-</div>
+<h1>Path Growth and New Users</h1>
+    <div class="chart-container">
+        <div class="chart-wrapper">
+            <canvas id="pathGrowthChart"></canvas>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="newUsersChart"></canvas>
+        </div>
+    </div>
 
 {% endblock content %}
 {% block MoreJs %}
@@ -94,20 +115,20 @@ function getRandomColor() {
 fetchData();
 </script>
 <script>
-    
-    
+
+
     function renderNewUsersChart(newUsers) {
         if (!newUsers || Object.keys(newUsers).length === 0) {
             console.error('No new user data available');
             return; // Exit early if there's no data
         }
-    
+
         const labels = Object.keys(newUsers.mobile).concat(Object.keys(newUsers.web));
         const uniqueLabels = [...new Set(labels)].sort(); // Get unique dates
-    
+
         const mobileData = uniqueLabels.map(date => newUsers.mobile[date] || 0);
         const webData = uniqueLabels.map(date => newUsers.web[date] || 0);
-    
+
         const ctx = document.getElementById('newUsersChart').getContext('2d');
         const myChart = new Chart(ctx, {
             type: 'line',
@@ -141,5 +162,5 @@ fetchData();
     }
     </script>
 
-    
+
 {% endblock MoreJs %}

@@ -16,10 +16,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, pagination
 from django_filters import FilterSet
-from django.db.models import Q
+from django.db.models import Q,F
 import django_filters
-from django.db.models import Count
-from django.db.models.functions import ExtractHour
 
 from django.utils import timezone
 from .serializer import *
@@ -51,6 +49,9 @@ class DataLogAPI(generics.ListAPIView):
             daily_paths = (
                 RequestDataLog.objects
                 .filter(timestamp__date__gte=last_seven_days)
+                .exclude(path__contains='admin')
+                .exclude(path__contains='sitemap')
+                .exclude(path__contains='favicon')
                 .values('timestamp', 'path')
             )
 
@@ -72,11 +73,15 @@ class DataLogAPI(generics.ListAPIView):
             summary_data['path_growth'] = top_path_growth_data
 
             # Count new users based on distinct IPs
+            distinct_ips = RequestDataLog.objects.filter(
+                timestamp__date__gte=last_seven_days
+            ).values_list('client_ip', flat=True).distinct()
+
             new_users_daily = (
-                RequestDataLog.objects
+                RequestDataLog.objects.filter(client_ip__in=distinct_ips)
                 .filter(timestamp__date__gte=last_seven_days)
+                .filter(is_new_user=True)
                 .values('timestamp', 'client_ip', 'mobile')
-                .distinct()
             )
 
             new_users_data = {'mobile': {}, 'web': {}}
@@ -94,9 +99,18 @@ class DataLogAPI(generics.ListAPIView):
 
             summary_data['new_users'] = new_users_data
 
-            return Response(summary_data)
+            return Response(summary_data,status=status.HTTP_200_OK)
+        queryset = self.filter_queryset(self.get_queryset())
 
-        return Response({"error": "Invalid query parameters"}, status=400)
+        # Use the paginator defined in the class to paginate the queryset
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # If pagination is not needed or not enabled, return a normal response
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 def getGraphOverview(request):
     return render(request,'graph.html')
