@@ -8,8 +8,8 @@ from django.conf import settings
 import stripe
 from decimal import Decimal
 from rest_framework import viewsets
-from .models import Item, Order
-from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer
+from .models import Item, Order, UnsubscribedEmail
+from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -661,3 +661,18 @@ def Error404(request):
         'error_code': '-1'
     }
     return render(request, 'error/504.html',context,status=404)
+
+
+class UnsubscribeView(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = UnsubscribeSerializer
+    def post(self, request):
+        serializer = UnsubscribeSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            # Check if the email is already unsubscribed
+            if not UnsubscribedEmail.objects.filter(email=email).exists():
+                UnsubscribedEmail.objects.create(email=email)
+                return Response({'message': 'You have been successfully unsubscribed.'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Email is already unsubscribed.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

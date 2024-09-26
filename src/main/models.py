@@ -163,5 +163,10 @@ class PhonePePaymentRequestDetail(models.Model):
     def get_order_sid(self):
         return self.order_id.sid
 
+class UnsubscribedEmail(models.Model):
+    email = models.EmailField(unique=True)
+    unsubscribed_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.email
 
