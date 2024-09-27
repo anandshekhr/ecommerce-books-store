@@ -76,6 +76,7 @@ urlpatterns = [
     path( API_URL +'search', views.SearchAPI.as_view()),
     path( API_URL +'cart/', views.CartView.as_view()),
     path( API_URL +'items/', views.ItemGetAPI.as_view()),
+    path( API_URL +'items/detail', views.ItemGetDetailAPI.as_view()),
     path( API_URL +'items/add/', views.ItemPostAPI.as_view()),
     path( API_URL +'list-items/', views.FilterItemsView.as_view()),
     path( API_URL +'checkout/', views.CheckoutView.as_view()),

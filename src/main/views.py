@@ -8,6 +8,7 @@ from django.conf import settings
 import stripe
 from decimal import Decimal
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from .models import Item, Order, UnsubscribedEmail
 from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer
 from rest_framework import generics, status, filters
@@ -270,6 +271,19 @@ class ItemGetAPI(generics.ListAPIView):
     permission_classes = (AllowAny,)
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+
+class ItemGetDetailAPI(APIView):
+    permission_classes = (AllowAny,)
+    serializer_class = ItemSerializer
+
+    def get(self, request):
+        id = request.GET.get('id')
+        if id:
+            queryset = Item.objects.get(id=id)
+            serializer = ItemSerializer(queryset)
+            return Response(serializer.data,status=200)
+        
+        
 
 class ItemPostAPI(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
