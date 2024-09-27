@@ -29,3 +29,4 @@ flower
 redis
 django-celery-results
 django-celery-beat
+dj-rest-auth

@@ -83,6 +83,8 @@ urlpatterns = [
     path( API_URL +'cart/remove/<int:item_id>/', views.RemoveFromCartView.as_view()),
     path( API_URL, include(router.urls)),
     path( API_URL, include('middlewares.urls')),
+    path( API_URL + 'accounts/', include('dj_rest_auth.urls')), 
+    path( API_URL + 'accounts/register/', include('dj_rest_auth.registration.urls')),
     path('accounts/', include('allauth.urls')), 
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
