@@ -28,6 +28,13 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 
+
+class CartItemSerializer(serializers.ModelSerializer):
+    category = ExamCategorySerializer()
+    class Meta:
+        model = Item
+        fields = ['id','category','title','description','og_price','price','is_free','pdf_file','thumbnail']
+
 class ItemPOSTSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
