@@ -4,13 +4,14 @@ from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect,JsonResponse
 from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail, Question, Answer
 from django.contrib.auth.decorators import login_required
+from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
 import stripe
 from decimal import Decimal
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from .models import Item, Order, UnsubscribedEmail
-from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer
+from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer,CartItemSerializer
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -248,6 +249,22 @@ def razorpay_success_redirect(request):
     messages.success(request, "Your order was successful!")
     return redirect("order-summary", pk=order.id)
 
+class PaymentSuccessRazorpay(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,SessionAuthentication)
+    def post(self,request):
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        order_id = request.data.get('order_id')
+        if order_id:
+            order_id = int(order_id)
+        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
+        order.payment_status = True
+        order.razorpay_payment_id = razorpay_payment_id
+        order.save()
+        return Response({'message':'Payment Successful. Redirecting to Order Summary.'})
+
+
 @csrf_exempt
 def phonepe_success_redirect(request, order_id):
     # order_id = request.GET.get('order_id')
@@ -343,17 +360,31 @@ class CartView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         try:
             order = Order.objects.get(user=request.user, payment_status=False)
-            items = order.items.all()  # Get all items in the current order
+            items = order.items.all()
             total_price = order.total_price
             item_count = items.count()
 
             # Serialize the item data
             serialized_items = ItemSerializer(items, many=True)
 
+            #razorpay
+
+            request_data = {
+            "amount": int(order.total_price * 100),
+            "currency": "INR",
+            "receipt": order.sid,
+            }
+            razorpay_response = razorpay_api.order.create(data=request_data)
+            order.razorpay_order_id = razorpay_response["id"]
+            order.save()
+
             return Response({
                 'items': serialized_items.data,
                 'total_price': total_price,
-                'item_count': item_count
+                'item_count': item_count,
+                "razorpay_order_id": razorpay_response["id"],
+                "razorpay_key_id": settings.RAZORPAY_API_KEY,
+                "order_id":order.pk
             }, status=status.HTTP_200_OK)
 
         except Order.DoesNotExist:
@@ -362,6 +393,22 @@ class CartView(generics.GenericAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 # store/api_views.py
+class OrderHistory(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (BasicAuthentication,TokenAuthentication,SessionAuthentication)
+    pagination_class = PageNumberPagination
+    
+    def get_queryset(self):
+        return Order.objects.all()
+    
+    def get(self, request):
+        queryset = self.get_queryset()
+        data = queryset.filter(user=request.user,payment_status = True)
+        paginator = self.pagination_class()
+        result = paginator.paginate_queryset(data, request)
+        serializer = OrderSerializer(result,many=True)
+        return paginator.get_paginated_response(serializer.data)
+
 
 class CheckoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
