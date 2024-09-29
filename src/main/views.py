@@ -370,7 +370,7 @@ class CartView(generics.GenericAPIView):
             #razorpay
 
             request_data = {
-            "amount": int(order.total_price * 100),
+            "amount": int(order.total_price * 100) if int(order.total_price) > 0 else 100,
             "currency": "INR",
             "receipt": order.sid,
             }
