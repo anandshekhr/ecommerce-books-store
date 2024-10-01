@@ -18,6 +18,7 @@ from rest_framework import filters, pagination
 from django_filters import FilterSet
 from django.db.models import Q,F
 import django_filters
+from django.db.models.functions import TruncDate
 
 from django.utils import timezone
 from .serializer import *
@@ -74,34 +75,33 @@ class DataLogAPI(generics.ListAPIView):
 
             summary_data['path_growth'] = top_path_growth_data
 
-            # Count new users based on distinct IPs
+            # Count new users based on distinct IPs for the last 7 days, grouped by day
             distinct_ips = RequestDataLog.objects.filter(
-                timestamp__date__gte=last_seven_days
-            ).values_list('client_ip', flat=True).distinct()
-
-            new_users_daily = (
-                RequestDataLog.objects.filter(client_ip__in=distinct_ips)
-                .filter(timestamp__date__gte=last_seven_days)
-                .filter(is_new_user=True)
-                .values('timestamp', 'client_ip', 'mobile')
-            )
+                timestamp__date__gte=last_seven_days,  # Filter for last 7 days
+                is_new_user=True                       # Filter for new users
+            ).annotate(date=TruncDate('timestamp'))    # Truncate timestamp to the date level
+            distinct_ip_count_per_day = distinct_ips.values('date').annotate(
+                distinct_ip_count=Count('client_ip', distinct=True)  # Count distinct client IPs per day
+            ).order_by('date')  # Ensure the data is ordered by the date
 
             new_users_data = {'mobile': {}, 'web': {}}
-            for entry in new_users_daily:
-                timestamp = entry['timestamp']
-                date_str = timestamp.date().isoformat()  # Convert timestamp to date string
-                is_mobile = entry['mobile']
 
-                if is_mobile:
-                    new_users_data['mobile'].setdefault(date_str, 0)
-                    new_users_data['mobile'][date_str] += 1
-                else:
-                    new_users_data['web'].setdefault(date_str, 0)
-                    new_users_data['web'][date_str] += 1
+            # Fetch counts for mobile and web users separately
+            for entry in distinct_ip_count_per_day:
+                date_str = entry['date'].isoformat()  # Convert date to string in 'YYYY-MM-DD' format
+                distinct_ip_count = entry['distinct_ip_count']
 
-            summary_data['new_users'] = new_users_data
+                # You can further refine mobile vs web logic here if needed
+                # For now, adding the distinct IP count to 'web' and 'mobile' assuming the distinction is handled elsewhere
+                new_users_data['web'].setdefault(date_str, 0)
+                new_users_data['web'][date_str] += distinct_ip_count
 
-            return Response(summary_data,status=status.HTTP_200_OK)
+            # Add the data to the response
+            summary_data = {
+                'new_users': new_users_data
+            }
+
+            return Response(summary_data, status=status.HTTP_200_OK)
         queryset = self.filter_queryset(self.get_queryset())
 
         # Use the paginator defined in the class to paginate the queryset
