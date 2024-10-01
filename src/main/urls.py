@@ -29,5 +29,6 @@ urlpatterns = [
     path('questions/<hashid:question_id>/add_answer/', views.add_answer, name='add_answer'),
     path('pdf/serve/<int:pdf_id>/',views.serve_pdf,name="serve-pdf"),
     path('serve-pdf-page/<int:pdf_id>',views.serve_pdf_page,name="serve-pdf-page"),
+    path('pdf/total-pages/<int:pdf_id>',views.totalPagePages,name="serve-pdf-page"),
     path('unsubscribe/', views.UnsubscribeView.as_view(), name='unsubscribe'),
 ]

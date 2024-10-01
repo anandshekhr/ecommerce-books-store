@@ -671,7 +671,25 @@ def serve_pdf(request, pdf_id):
 
 import PyPDF2
 import os
+def totalPagePages(request, pdf_id):
+    """
+    Serve a single page of the PDF and the total page count to the frontend.
+    """
+    pdf = get_object_or_404(Item, id=pdf_id)
+    pdf_path = pdf.pdf_file.path 
 
+    # Open the PDF and extract the specific page
+    if os.path.exists(pdf_path):
+        total_pages = 0
+        try:
+            with open(pdf_path, "rb") as pdf_file:
+                pdf_reader = PyPDF2.PdfReader(pdf_file)
+                total_pages = len(pdf_reader.pages)
+            return JsonResponse({'total_pages':total_pages},status = status.HTTP_200_OK)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    else:
+        return JsonResponse({"error": "PDF not found"}, status=404)
 
 def serve_pdf_page(request, pdf_id):
     """
