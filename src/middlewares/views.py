@@ -97,9 +97,7 @@ class DataLogAPI(generics.ListAPIView):
                 new_users_data['web'][date_str] += distinct_ip_count
 
             # Add the data to the response
-            summary_data = {
-                'new_users': new_users_data
-            }
+            summary_data['new_users'] = new_users_data
 
             return Response(summary_data, status=status.HTTP_200_OK)
         queryset = self.filter_queryset(self.get_queryset())
