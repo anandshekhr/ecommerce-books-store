@@ -47,8 +47,10 @@
                         {% for item in order.items.all %}
                         {% if item.pdf_file %}
                         <div class="d-flex align-items-center">
+                            {% if item.is_downloadable %}
                             <a href="{{ item.pdf_file.url }}" class="btn btn-success btn-sm" title="download"
                                 style="margin-right: 2px;" download><i class="fa-solid fa-download"></i></a><br>
+                            {% endif %}
                             <a href="{% url 'pdf_viewer' item.id %}" class="btn btn-primary btn-sm" title="view pdf"><i
                                     class="fa-regular fa-eye"></i></a><br>
                         </div>
