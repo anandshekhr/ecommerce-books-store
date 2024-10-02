@@ -1,7 +1,7 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer
+from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer, Earning
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -43,6 +43,12 @@ class QuestionAdmin(admin.ModelAdmin):
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ('id','is_active','user','question','created_at','updated_at')
     search_fields = ('id','is_active','user','question','created_at','updated_at')
+
+@admin.register(Earning)
+class EarningAdmin(admin.ModelAdmin):
+    pass
+    
+
     
 
     

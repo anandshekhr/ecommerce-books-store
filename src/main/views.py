@@ -10,7 +10,7 @@ import stripe
 from decimal import Decimal
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from .models import Item, Order, UnsubscribedEmail
+from .models import Item, Order, UnsubscribedEmail, Earning
 from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer,CartItemSerializer
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
@@ -795,3 +795,13 @@ def add_product(request):
         form = ProductForm()
 
     return render(request, 'educator/add_product.html', {'form': form,'selected':'add-products'})
+
+@login_required
+def adminEarnings(request):
+    if request.user.is_staff:
+
+        earning = Earning.objects.filter(user = request.user)
+    else:
+        earning = []
+        messages.error('You are not authorized to view this page')
+    return render(request, 'educator/earnings.html',{'earnings':earning,'selected':'earning'})

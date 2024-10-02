@@ -36,4 +36,5 @@ urlpatterns = [
     path('educator/admin/products',views.adminProductList,name="educator-admin-products"),
     path('educator/admin/category',views.adminCategoryList,name="educator-admin-category"),
     path('educator/admin/add-product/', views.add_product, name='educator-admin-add-product'),
+    path('educator/admin/earnings/', views.adminEarnings, name='educator-admin-earnings'),
 ]

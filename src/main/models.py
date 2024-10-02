@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from datetime import date
 from django.utils import timezone
+from decimal import Decimal
 
 from django_quill.fields import QuillField
 
@@ -171,4 +172,21 @@ class UnsubscribedEmail(models.Model):
 
     def __str__(self):
         return self.email
+    
+
+class Earning(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE) 
+    quantity_sold = models.PositiveIntegerField(default=0)
+    total_earning = models.DecimalField(max_digits=10, decimal_places=2, default=0)  
+    paid = models.BooleanField(_("Is Payment Released"),default=False)
+    modified_at = models.DateTimeField(auto_now=True)  
+    payment_date = models.DateField(null=True, blank=True) 
+
+    def save(self, *args, **kwargs):
+        self.total_earning = Decimal(self.item.price) * Decimal(self.quantity_sold) * Decimal(0.60)
+        super().save(*args, **kwargs) 
+
+    def __str__(self):
+        return f"Earnings for {self.user} from {self.item} on {self.modified_at}"
 
