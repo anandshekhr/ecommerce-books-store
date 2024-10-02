@@ -1,0 +1,39 @@
+{% extends "educator/base.html" %}
+{% block rightcontent %}
+<div class="container table-container">
+    <h2 class="mb-4">Category</h2>
+
+    <!-- Products Table -->
+    <table id="productTable" class="table table-hover table-sm">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Parent Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{category.name}}</td>
+                <td>{{category.board}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Initialize DataTables -->
+<script>
+    $(document).ready(function() {
+        $('#productTable').DataTable({
+            "paging": true,    // Enable pagination
+            "searching": true, // Enable search box
+            "ordering": true,  // Enable sorting
+            "info": true       // Show information summary
+        });
+    });
+</script>
+
+{% endblock rightcontent %}

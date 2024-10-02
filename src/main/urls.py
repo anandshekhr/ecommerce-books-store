@@ -31,4 +31,9 @@ urlpatterns = [
     path('serve-pdf-page/<int:pdf_id>',views.serve_pdf_page,name="serve-pdf-page"),
     path('pdf/total-pages/<int:pdf_id>',views.totalPagePages,name="serve-pdf-page"),
     path('unsubscribe/', views.UnsubscribeView.as_view(), name='unsubscribe'),
+
+    # admin
+    path('educator/admin/products',views.adminProductList,name="educator-admin-products"),
+    path('educator/admin/category',views.adminCategoryList,name="educator-admin-category"),
+    path('educator/admin/add-product/', views.add_product, name='educator-admin-add-product'),
 ]

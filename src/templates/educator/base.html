@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock title %}
+
+{% block style %}
+body {
+    display: flex;
+    flex-direction: column; /* Stack the navbar, sidebar, and footer vertically */
+    min-height: 100vh; /* Ensure the body takes the full height of the screen */
+    margin: 0;
+}
+.sidebar {
+    width: 280px; /* Fixed width for the sidebar */
+    background-color: ghostwhite; /* Dark background */
+    color: white;
+    height: 100vh; /* Make the sidebar take full height of the screen */
+    padding: 20px;
+    position: fixed; /* Make it fixed on the left side */
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    margin-top:5%;
+    margin-left: 280px; /* Push the main content to the right of the sidebar */
+    padding: 20px;
+    flex-grow: 1; /* Allow the main content to take the remaining width */
+    background-color: #f8f9fa; /* Light background for the main content */
+    min-height: 100vh; /* Ensure it takes the full height of the page */
+}
+
+{% comment %} .nav-link .sidebar {
+    color: white;
+} {% endcomment %}
+
+.sidebar a:hover {
+    color: #ddd;
+}
+
+.content-wrapper {
+    display: none;
+    {% comment %} min-height: 100vh; /* Ensures content wrapper is at least full height */ {% endcomment %}
+}
+
+.sidebar {
+    width: 280px; /* Fixed width for sidebar */
+}
+.main-content {
+    flex-grow: 1; /* Allow the main content to take up remaining space */
+    padding: 20px; /* Add some padding to the main content */
+}
+{% endblock style %}
+
+{% block sidenavbar %}
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white sidebar">
+    <ul class="nav nav-pills flex-column mb-auto" style="margin-top:50%;">
+        <li class="nav-item">
+            <a class="nav-link {% if selected == 'category' %}active{% endif %}" href="{% url "educator-admin-category" %}">Category</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if selected == 'products' %}active{% endif %}" href="{% url "educator-admin-products" %}">Products</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if selected == 'add-products' %}active{% endif %}" href="{% url "educator-admin-add-product" %}">Add New Products</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if selected == 'earning' %}active{% endif %}" href="#">Earning</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if selected == 'profile' %}active{% endif %}" href="#">Profile</a>
+        </li>
+    </ul>
+</div>
+
+<main class="main-content">
+    {% block rightcontent %}
+    <!-- Right side content goes here -->
+    {% endblock rightcontent %}
+</main>
+{% endblock sidenavbar %}

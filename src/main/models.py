@@ -55,6 +55,7 @@ class ExamCategory(models.Model):
         verbose_name_plural = _("Categories")
 
 class Item(models.Model):
+    user = models.ForeignKey(User, verbose_name=_("Owner"), on_delete=models.SET_NULL, null=True,blank=True)
     category = models.ForeignKey(ExamCategory, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()

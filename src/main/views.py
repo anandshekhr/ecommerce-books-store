@@ -26,6 +26,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
+# from django.contrib.auth.decorators import login_required
+from .forms import ProductForm
 import uuid
 # from phonepe.sdk.pg.payments.v1.models.request.pg_pay_request import PgPayRequest
 # from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
@@ -528,6 +530,10 @@ def signup_view(request):
         # Generate a unique username
         username = generate_username(first_name, last_name)
 
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'User already Exists with this email.')
+            return redirect('signup-view')
+
         # Create a new user
         user = User.objects.create_user(email=email,username=username, first_name=first_name, last_name=last_name +";"+phone_number , password=password)
         messages.success(request, 'Account created successfully! Please log in.')
@@ -755,3 +761,37 @@ class UnsubscribeView(generics.CreateAPIView):
                 return Response({'message': 'You have been successfully unsubscribed.'}, status=status.HTTP_200_OK)
             return Response({'message': 'Email is already unsubscribed.'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+def adminProductList(request):
+    if request.user.is_staff:
+        products = Item.objects.filter(user=request.user.id)
+    else:
+        products = []
+        messages.error(request,'You donot have permission to view this page')
+    return render(request, 'educator/products.html',{'products':products,'selected':'products'})
+
+@login_required
+def adminCategoryList(request):
+    if request.user.is_staff:
+        categories = ExamCategory.objects.all()
+
+    else:
+        categories = []
+        messages.error(request,'You donot have permission to view this page')
+    return render(request, 'educator/category.html',{'categories':categories,'selected':'category'})
+
+@login_required
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.user = request.user
+            product.save()
+            return redirect('educator-admin-products')
+    else:
+        form = ProductForm()
+
+    return render(request, 'educator/add_product.html', {'form': form})
