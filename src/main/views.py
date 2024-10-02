@@ -794,4 +794,4 @@ def add_product(request):
     else:
         form = ProductForm()
 
-    return render(request, 'educator/add_product.html', {'form': form})
+    return render(request, 'educator/add_product.html', {'form': form,'selected':'add-products'})

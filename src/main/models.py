@@ -62,6 +62,7 @@ class Item(models.Model):
     og_price = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
     price = models.DecimalField(max_digits=10, decimal_places=2,default=1.00)
     is_free = models.BooleanField(default=False)
+    is_downloadable = models.BooleanField(default=True)
     pdf_file = models.FileField(upload_to='pdfs/', max_length=500)
     thumbnail = models.ImageField(_("thumbnail"), upload_to='thumbnails/',null=True, blank=True)
     is_available = models.BooleanField(default=True)

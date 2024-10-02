@@ -12,6 +12,6 @@ class ProductForm(forms.ModelForm):
     )
     class Meta:
         model = Item
-        fields = ['title', 'description','category' ,'thumbnail','pdf_file','price', 'og_price']  
+        fields = ['title', 'description','category' ,'thumbnail','pdf_file','price', 'og_price','is_free','is_downloadable']  
 
     
