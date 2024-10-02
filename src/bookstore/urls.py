@@ -70,7 +70,7 @@ admin.site.site_title = "VAMS Book Store"
 urlpatterns = [
     path('robots.txt', views.robots_txt),
     path('sitemap.xml', cache_page(0)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
-    path('admin/', admin.site.urls),
+    path('ebooks/admin/', admin.site.urls),
     path('volt/', include('admin_volt.urls')),
     path('', include('main.urls')),
     path( API_URL +'search', views.SearchAPI.as_view()),
