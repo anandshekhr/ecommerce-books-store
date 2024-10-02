@@ -22,11 +22,6 @@ class ExamCategorySerializer(serializers.ModelSerializer):
         model = ExamCategory
         fields = '__all__'
 
-class ItemSerializer(serializers.ModelSerializer):
-    category = ExamCategorySerializer()
-    class Meta:
-        model = Item
-        fields = '__all__'
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -40,9 +35,21 @@ class ItemPOSTSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 
+class ItemSerializer(serializers.ModelSerializer):
+    category = ExamCategorySerializer()
+    class Meta:
+        model = Item
+        exclude = ('pdf_file',)
+
+
+class ItemOrderSerializer(serializers.ModelSerializer):
+    category = ExamCategorySerializer()
+    class Meta:
+        model = Item
+        fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
-    items = ItemSerializer(many=True)
+    items = ItemOrderSerializer(many=True)
     class Meta:
         model = Order
         fields = '__all__'
