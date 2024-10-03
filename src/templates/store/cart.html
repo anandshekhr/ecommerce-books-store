@@ -40,20 +40,20 @@
                 {% endfor %}
             </tbody>
         </table>
+        <!-- Cart Summary -->
+        <div class="cart-summary">
+            <h5>Cart Summary</h5>
+            <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
+            {% comment %} <a type="button" href="{% url " checkout" order_id=order.id %}" class="btn btn-primary"
+                id="rzp-button1">Proceed to Checkout</a> {% endcomment %}
+            <a type="button" href="#" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a>
+        </div>
+        {% else %}
+        <!-- No items in the cart -->
+        <p>Your cart is empty.</p>
+        {% endif %}
     </div>
 
-    <!-- Cart Summary -->
-    <div class="cart-summary">
-        <h5>Cart Summary</h5>
-        <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
-        {% comment %} <a type="button" href="{% url " checkout" order_id=order.id %}" class="btn btn-primary"
-            id="rzp-button1">Proceed to Checkout</a> {% endcomment %}
-        <a type="button" href="#" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a>
-    </div>
-    {% else %}
-    <!-- No items in the cart -->
-    <p>Your cart is empty.</p>
-    {% endif %}
 </div>
 
 
