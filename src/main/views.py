@@ -6,7 +6,6 @@ from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentReque
 from django.contrib.auth.decorators import login_required
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
-import stripe
 from decimal import Decimal
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -26,33 +25,16 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
-# from django.contrib.auth.decorators import login_required
 from .forms import ProductForm
 import uuid
-# from phonepe.sdk.pg.payments.v1.models.request.pg_pay_request import PgPayRequest
-# from phonepe.sdk.pg.payments.v1.payment_client import PhonePePaymentClient
-# from phonepe.sdk.pg.env import Env
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
 
 
 
-# s2s_callback_url = settings.PAYMENT_SUCCESS_REDIRECT_URL
-# id_assigned_to_user_by_merchant = settings.PHONEPE_USER_ID
-
-
-stripe.api_key = settings.STRIPE_SECRET_KEY
 razorpay_api = razorpay.Client(
     auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_KEY_SECRET)
 )
 
-# merchant_id = settings.PHONEPE_MERCHANT_ID
-# salt_key = settings.PHONEPE_SALT_KEY
-# salt_index = 1
-# env = Env.UAT # Change to Env.PROD when you go live
-
-# phonepe_client = PhonePePaymentClient(
-#     merchant_id=merchant_id, salt_key=salt_key, salt_index=salt_index, env=env
-# )
 from django.core.paginator import Paginator
 
 def privacy_policy(request):
@@ -701,7 +683,10 @@ def serve_pdf_page(request, pdf_id):
     """
     Serve a single page of the PDF and the total page count to the frontend.
     """
-    page_num = int(request.GET.get('page', 1))  # Default to page 1
+    try:
+        page_num = int(request.GET.get('page', 1))
+    except ValueError:
+        page_num = 1
     pdf = get_object_or_404(Item, id=pdf_id)
     pdf_path = pdf.pdf_file.path 
 

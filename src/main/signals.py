@@ -10,7 +10,7 @@ from bookstore.utils import HashIdConverter
 
 obj = HashIdConverter()
 def send_notification_email(subject,message,recipient_list):
-    send_mail(subject,message,'shopping@vamscentral.com',recipient_list,fail_silently=False,html_message=message)
+    send_mail(subject,message,'info@vamsbookstore.in',recipient_list,fail_silently=False,html_message=message)
 
 @receiver(post_save,sender=Question)
 def notify_teachers_on_new_questions(sender,instance,created, **kwargs):
