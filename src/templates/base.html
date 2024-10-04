@@ -152,6 +152,14 @@
                     {% else %}
                     <li class="nav-item"><a class="nav-link" href="{% url "login-view" %}">Login</a></li>
                     {% endif %}
+                    
+                    {% if request.user.is_staff or request.user.is_superuser%} 
+                    <li class="nav-item"><a class="nav-link" href="{% url "educator-user-profile" %}">Hi, {{request.user.username|capfirst}}</a></li>
+                    {% elif request.user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" >Hi, {{request.user.username|capfirst}}</a></li>
+
+                    {% endif %}
+
                 </ul>
             </div>
         </div>
