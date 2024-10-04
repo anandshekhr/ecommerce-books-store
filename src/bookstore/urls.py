@@ -73,6 +73,7 @@ urlpatterns = [
     path('ebook/admin/', admin.site.urls),
     path('volt/', include('admin_volt.urls')),
     path('', include('main.urls')),
+    path('educator/accounts/', include('accounts.urls')),
     path( API_URL +'search', views.SearchAPI.as_view()),
     path( API_URL +'cart', views.CartView.as_view()),
     path( API_URL +'order', views.OrderHistory.as_view()),
