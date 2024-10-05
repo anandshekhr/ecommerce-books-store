@@ -88,8 +88,8 @@
 
                                     <!-- Email -->
                                     <div class="mb-3">
-                                        <label for="email" class="form-label">Email address</label>
-                                        <input type="email" class="form-control" id="email" name="email" required>
+                                        <label for="username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="username" name="username" required>
                                     </div>
 
                                     <!-- Password -->
@@ -276,13 +276,13 @@
             // Handle login form submission
             $('#loginFormSubmit').on('submit', function (e) {
                 e.preventDefault();
-                const email = $('#email').val();
+                const username = $('#username').val();
                 const password = $('#password').val();
 
                 $.ajax({
                     url: '/api/v1/accounts/login/',
                     type: 'POST',
-                    data: JSON.stringify({ email: email, password: password }),
+                    data: JSON.stringify({ username: username, password: password }),
                     contentType: 'application/json',
                     success: function (response) {
                         toastr.success('Logged in successfully.');
@@ -356,7 +356,7 @@
                 const email = $('#forgotPasswordEmail').val();
 
                 $.ajax({
-                    url: '/api/v1/accounts/password/reset/',
+                    url: '/accounts/password/reset/',
                     type: 'POST',
                     data: { email: email, csrfmiddlewaretoken: '{{ csrf_token }}' },
                     success: function (response) {
