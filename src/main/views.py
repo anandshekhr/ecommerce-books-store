@@ -26,6 +26,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
 from .forms import ProductForm
+from django.db.models import Q
 import uuid
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
 
@@ -83,14 +84,22 @@ def item_list_filter(request):
     
     if category_id:
         category_obj = ExamCategory.objects.get(pk=category_id)
-        items = items.filter(category=category_obj)
+        items = items.filter(Q(category__icontains=category_obj) |
+                              Q(category__board__icontains=category_obj))
     
     if pcategory_id:
         category_obj = ExamCategory.objects.get(pk=pcategory_id)
-        items = items.filter(category__board=category_obj)
+        items = items.filter(Q(category__icontains=category_obj) |
+                              Q(category__board__icontains=category_obj))
     
     if search_query:
-        items = items.filter(title__icontains=search_query)
+        items = items.filter(
+        Q(title__icontains=search_query) |
+        Q(description__icontains=search_query) |
+        Q(price__icontains=search_query) |
+        Q(category__name__icontains=search_query) | 
+        Q(category__board__name__icontains=search_query) 
+    )
     
     if min_price:
         items = items.filter(price__gte=min_price)
