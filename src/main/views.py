@@ -84,13 +84,13 @@ def item_list_filter(request):
     
     if category_id:
         category_obj = ExamCategory.objects.get(pk=category_id)
-        items = items.filter(Q(category__icontains=category_obj) |
-                              Q(category__board__icontains=category_obj))
+        items = items.filter(Q(category__id__icontains=category_obj.pk) |
+                              Q(category__board__id__icontains=category_obj.pk))
     
     if pcategory_id:
         category_obj = ExamCategory.objects.get(pk=pcategory_id)
-        items = items.filter(Q(category__icontains=category_obj) |
-                              Q(category__board__icontains=category_obj))
+        items = items.filter(Q(category__id__icontains=category_obj.pk) |
+                              Q(category__board__id__icontains=category_obj.pk))
     
     if search_query:
         items = items.filter(
