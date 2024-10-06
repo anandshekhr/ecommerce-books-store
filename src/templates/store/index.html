@@ -245,23 +245,46 @@
         }
     });
 
-    function searchProducts() {
+    function searchProducts(page = 1) {
         const searchQuery = document.getElementById('searchInput').value;
-        const url = window.location.origin + '/item/search/?q=' + searchQuery;
-
-        // Perform an AJAX request to fetch the filtered products
+        const url = window.location.origin + `/item/search/?q=${searchQuery}&page=${page}`;
+    
+        // Perform an AJAX request to fetch the filtered products with pagination
         $.ajax({
             url: url,
             method: 'GET',
             success: function(response) {
-                // Assuming your response contains the filtered HTML
+                // Replace the product list and pagination links
                 $('#products_item').html(response);
+    
+                // Re-bind the AJAX pagination handler after loading new content
+                bindAjaxPagination();
             },
             error: function(error) {
                 console.error("Error fetching filtered products: ", error);
             }
         });
     }
+    
+    function bindAjaxPagination() {
+        // Attach event listeners to pagination links
+        $('.ajax-pagination').click(function(e) {
+            e.preventDefault();
+            const page = $(this).data('page');
+            searchProducts(page);  // Call searchProducts with the selected page number
+        });
+    }
+    
+    // Bind the pagination links on page load (initially)
+    $(document).ready(function() {
+        bindAjaxPagination();
+    
+        // Also trigger search on input change or on keypress
+        $('#searchInput').on('input', function() {
+            searchProducts();
+        });
+    });
+    
 
     
     
