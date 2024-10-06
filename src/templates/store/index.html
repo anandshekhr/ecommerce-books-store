@@ -148,7 +148,7 @@
             <p>Tip: try entering a different search item.</p>
             {% endif %}
 
-            {% if products|length > 9 %}
+            {% comment %} {% if products|length > 9 %} {% endcomment %}
             <!-- Pagination -->
             <nav class="mt-4">
                 <ul class="pagination justify-content-center">
@@ -185,7 +185,7 @@
                     {% endif %}
                 </ul>
             </nav>
-            {% endif %}
+            {% comment %} {% endif %} {% endcomment %}
         </div>
     </div>
 </div>
