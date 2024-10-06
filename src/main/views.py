@@ -133,7 +133,7 @@ def item_list_search(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'store/product_list.html', {'products': page_obj})
+    return render(request, 'store/product_list.html', {'products': page_obj,'item_length':len(items)})
 
 def product_detail(request, pk):
     product = get_object_or_404(Item, pk=pk)

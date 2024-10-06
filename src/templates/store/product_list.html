@@ -1,73 +1,74 @@
 {% if products %}
-            <div class="row" id="productList">
-                <!-- Item Cards (Populated via Django or API) -->
-                {% for product in products %}
-                <div class="col-md-4 item-card">
-                    <div class="card h-100">
-                        <a href="{% url 'item-details' product.id %}"><img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}"></a>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.title }}</h5>
-                            <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
-                            {% if not product.is_free %}
-                            <p class="card-text">
-                                {% if product.og_price %}
-                                    <span class="text-muted original-price">₹{{ product.og_price }}</span><br>
-                                {% endif %}
-                                <span class="text-primary">₹{{ product.price }}</span>
-                            </p>
-                            {% endif %}
-                            <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
-                            {% if product.is_free %}
-                            <a href="{{product.pdf_file.url}}" class="btn btn-success">Download</a>
-                            
-                            {% else %}
-                            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
-                            {% endif %}
-                        </div>
-                    </div>
+    <p>Search Result(s): {{item_length}}</p>
+    <div class="row" id="productList">
+        <!-- Item Cards (Populated via Django or API) -->
+        {% for product in products %}
+        <div class="col-md-4 item-card">
+            <div class="card h-100">
+                <a href="{% url 'item-details' product.id %}"><img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}"></a>
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.title }}</h5>
+                    <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
+                    {% if not product.is_free %}
+                    <p class="card-text">
+                        {% if product.og_price %}
+                            <span class="text-muted original-price">₹{{ product.og_price }}</span><br>
+                        {% endif %}
+                        <span class="text-primary">₹{{ product.price }}</span>
+                    </p>
+                    {% endif %}
+                    <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
+                    {% if product.is_free %}
+                    <a href="{{product.pdf_file.url}}" class="btn btn-success">Download</a>
+                    
+                    {% else %}
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
+                    {% endif %}
                 </div>
-                {% endfor %}
             </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- No items in the cart -->
+    <p>No relevant search item(s) found.</p>
+    <p>Tip: try entering a different search item.</p>
+    {% endif %}
+    {% if products|length > 9 %}
+    <!-- Pagination -->
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if products.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
             {% else %}
-            <!-- No items in the cart -->
-            <p>No relevant search item(s) found.</p>
-            <p>Tip: try entering a different search item.</p>
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                </li>
             {% endif %}
-            {% if products|length > 9 %}
-            <!-- Pagination -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if products.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </span>
-                        </li>
-                    {% endif %}
-                    {% for num in products.paginator.page_range %}
-                    <li class="page-item {% if products.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                    </li>
-                    {% endfor %}
-                    {% if products.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </span>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
+            {% for num in products.paginator.page_range %}
+            <li class="page-item {% if products.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+            {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                </li>
             {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
