@@ -114,6 +114,27 @@ def item_list_filter(request):
     categories = ExamCategory.objects.all()
     return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
+def item_list_search(request):
+    search_query = request.GET.get('q')
+
+    items = Item.objects.filter(is_available=True)
+    
+    if search_query:
+        items = items.filter(
+        Q(title__icontains=search_query) |
+        Q(description__icontains=search_query) |
+        Q(price__icontains=search_query) |
+        Q(category__name__icontains=search_query) | 
+        Q(category__board__name__icontains=search_query) 
+    )
+
+    # Pagination
+    paginator = Paginator(items.order_by('-updated_at'), 9)  # Show 10 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'store/product_list.html', {'products': page_obj})
+
 def product_detail(request, pk):
     product = get_object_or_404(Item, pk=pk)
     return render(request, 'store/item.html', {'product': product,'pdf_id': pk})
