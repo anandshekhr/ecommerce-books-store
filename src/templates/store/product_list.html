@@ -29,12 +29,8 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
-    <!-- No items in the cart -->
-    <p>No relevant search item(s) found.</p>
-    <p>Tip: try entering a different search item.</p>
-    {% endif %}
-    {% comment %} {% if products|length > 9 %}
+    
+    {% comment %} {% if products|length > 9 %} {% endcomment %}
     <!-- Pagination -->
     <nav class="mt-4">
         <ul class="pagination justify-content-center">
@@ -71,4 +67,9 @@
             {% endif %}
         </ul>
     </nav>
-    {% endif %} {% endcomment %}
+    {% comment %} {% endif %} {% endcomment %}
+    {% else %}
+    <!-- No items in the cart -->
+    <p>No relevant search item(s) found.</p>
+    <p>Tip: try entering a different search item.</p>
+    {% endif %}
