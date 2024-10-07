@@ -9,4 +9,4 @@ class NewsDetailsSerializer(serializers.ModelSerializer):
 class NewsHeadLinesSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsTheHindu
-        fields = ['id','headline','author','publish_time','created_at','updated_at']
+        fields = ['id','headline','sub_title','author','publish_time','created_at','updated_at']
