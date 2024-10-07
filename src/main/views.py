@@ -345,7 +345,7 @@ class AddToCartView(generics.GenericAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         order.items.add(item)
-        total_price = Decimal(order.total_price) + Decimal(item.price)
+        total_price = Decimal(order.total_price) + Decimal(item.price) if not item.is_free else Decimal(0.00)
         order.total_price = total_price
         order.save()
         return Response({'message': 'Item added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
@@ -360,7 +360,7 @@ class RemoveFromCartView(generics.GenericAPIView):
         order = get_object_or_404(Order, user=request.user, payment_status=False)
         if item in order.items.all():
             order.items.remove(item)
-            order.total_price -= item.price
+            order.total_price -= item.price if not item.is_free else 0.00
             order.save()
             return Response({'message': 'Item removed from cart','total_price': order.total_price}, status=status.HTTP_200_OK)
         return Response({'message': 'Item not in cart','total_price': order.total_price}, status=status.HTTP_400_BAD_REQUEST)
