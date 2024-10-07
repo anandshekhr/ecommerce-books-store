@@ -85,6 +85,7 @@ urlpatterns = [
     path( API_URL +'cart/add/<int:item_id>', views.AddToCartView.as_view()),
     path( API_URL +'cart/remove/<int:item_id>', views.RemoveFromCartView.as_view()),
     path( API_URL +'razorpay/confirm-payment', views.PaymentSuccessRazorpay.as_view()),
+    path( API_URL +'news/', include('news.urls')),
     path( API_URL, include(router.urls)),
     path( API_URL, include('middlewares.urls')),
     path( API_URL + 'accounts/', include('dj_rest_auth.urls')), 
