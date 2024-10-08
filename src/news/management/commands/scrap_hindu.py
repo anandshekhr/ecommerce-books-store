@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         for item in soup.find_all('h3'):
             news = {}
-            news['headline'] = item.text.strip()
+            news['headline'] = item.text.strip().replace('"', '&quot;').replace("'", '&apos;').replace('&', '&amp;')
             if item.find_all('a'):
                 news['link'] = item.find_all('a')[0]['href'].strip()
 
@@ -33,7 +33,7 @@ class Command(BaseCommand):
                 sub_title = news_soup.find_all('h2',class_ = 'sub-title')
 
                 if sub_title:
-                    news['sub_title'] = sub_title[0].text.strip()
+                    news['sub_title'] = sub_title[0].text.strip().replace('"', '&quot;').replace("'", '&apos;').replace('&', '&amp;')
                 else:
                     news['sub_title'] = sub_title
 
@@ -67,7 +67,7 @@ class Command(BaseCommand):
                             visited_tags.update([first_p,next_h4,second_p])
 
                 formatted_html = ''.join(result)
-                news['content'] = formatted_html
+                news['content'] = formatted_html.replace('"', '&quot;').replace("'", '&apos;').replace('&', '&amp;')
 
                 obj, created = NewsTheHindu.objects.update_or_create(
                     # headline = news['headline'],
