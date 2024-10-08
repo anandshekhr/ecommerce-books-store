@@ -10,7 +10,7 @@ from .serializers import *
 
 class NewsHeadlines(generics.ListAPIView):
     permission_classes = (AllowAny,)
-    queryset = NewsTheHindu.objects.all()
+    queryset = NewsTheHindu.objects.all().order_by('updated_at')
     serializer_class = NewsHeadLinesSerializer
     pagination_class = PageNumberPagination
 
