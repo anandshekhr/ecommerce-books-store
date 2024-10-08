@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-z=_92iza7$y6#aun^$cj=n*c!!4ie825)&27vv0295ffds6%*9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in']
 CSRF_TRUSTED_ORIGINS = [
@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'main',
+    'news',
+    'accounts',
     'corsheaders',
     'drf_yasg',
     'django_quill',
@@ -145,7 +147,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -228,13 +230,14 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'online',
         },
         'OAUTH_PKCE_ENABLED': True,
-        'FETCH_USERINFO' : True
+        'FETCH_USERINFO' : True,
+        'EMAIL_AUTHENTICATION': True
     }
 }
 
 # Optional: Account adapter settings
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
-ACCOUNT_EMAIL_REQUIRED = True  # Require email
+# ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
+# ACCOUNT_EMAIL_REQUIRED = True  # Require email
 
 PHONEPE_MERCHANT_ID ='PGTESTPAYUAT86'
 PAYMENT_SUCCESS_REDIRECT_URL = ""
@@ -269,3 +272,17 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS= True
 EMAIL_HOST_USER = "info@vamsbookstore.in"
 EMAIL_HOST_PASSWORD = "OneManArmy3$"
+
+# Default email address from which emails will be sent
+DEFAULT_FROM_EMAIL = 'Books Store <info@vamsbookstore.in>'
+
+# Email address for handling errors
+ADMINS = [('Admin', 'shekharanand7773@gmail.com')]
+
+
+REST_AUTH = {
+    'REGISTER_SERIALIZER': 'accounts.serializers.CRegisterSerializer',
+}
+
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
