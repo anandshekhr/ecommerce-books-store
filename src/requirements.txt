@@ -31,4 +31,5 @@ django-celery-results
 django-celery-beat
 dj-rest-auth
 bs4
-
+# django-environ
+python-dotenv

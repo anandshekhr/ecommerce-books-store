@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+
+from dotenv import load_dotenv
+
+# Load .env file
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -20,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-z=_92iza7$y6#aun^$cj=n*c!!4ie825)&27vv0295ffds6%*9'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True if os.environ.get('ENV') == 'dev' else False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in']
 CSRF_TRUSTED_ORIGINS = [
@@ -104,23 +109,24 @@ WSGI_APPLICATION = 'bookstore.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Use MySQL backend
-        'NAME': 'ashekhar123$vams-books-store',         # Your database name
-        'USER': 'ashekhar123',          # Your database username
-        'PASSWORD': 'OneManArmy1$',  # Your database password
-        'HOST': 'ashekhar123.mysql.pythonanywhere-services.com',                   # Set to your database server address (e.g., 'localhost' or '127.0.0.1')
-        # 'PORT': '3306',                        # Default MySQL port is 3306
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',  
+            'NAME': os.environ.get('DB_NAME'),         
+            'USER': os.environ.get('DB_USER'),          
+            'PASSWORD': os.environ.get('DB_PASSWORD'),  
+            'HOST': os.environ.get('DB_HOST'),                   
+            # 'PORT': os.environ.get('DB_PORT'),                       
+        }
+    }
 
 
 # Password validation
@@ -203,8 +209,8 @@ APPEND_SLASH = True
 
 
 # razorpay test mode
-RAZORPAY_API_KEY = "rzp_live_QrfibNlVCx7mrR"
-RAZORPAY_API_KEY_SECRET = "MwWodYP6ES8WsgN5yCdvUUMN"
+RAZORPAY_API_KEY = os.environ.get('RAZORPAY_API_KEY')
+RAZORPAY_API_KEY_SECRET = os.environ.get('RAZORPAY_API_KEY_SECRET')
 CORS_ALLOW_ALL_ORIGINS = True
 
 
@@ -239,10 +245,10 @@ SOCIALACCOUNT_PROVIDERS = {
 # ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification (optional)
 # ACCOUNT_EMAIL_REQUIRED = True  # Require email
 
-PHONEPE_MERCHANT_ID ='PGTESTPAYUAT86'
-PAYMENT_SUCCESS_REDIRECT_URL = ""
-PHONEPE_SALT_KEY ='96434309-7796-489d-8924-ab56988a6076'
-PHONEPE_USER_ID = 'M11IAE6S0K0S'
+PHONEPE_MERCHANT_ID =os.environ.get('PHONEPE_MERCHANT_ID')
+PAYMENT_SUCCESS_REDIRECT_URL = os.environ.get('PAYMENT_SUCCESS_REDIRECT_URL')
+PHONEPE_SALT_KEY =os.environ.get('PHONEPE_SALT_KEY')
+PHONEPE_USER_ID = os.environ.get('PHONEPE_USER_ID')
 
 HASHIDS_SALT = (
     "jkqbdvaiacobaowr27834691230jnfbqoey92tribhwefq8w9r1@E23jr23r!3hrg81t43r1r"
@@ -270,8 +276,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtpout.secureserver.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS= True
-EMAIL_HOST_USER = "info@vamsbookstore.in"
-EMAIL_HOST_PASSWORD = "OneManArmy3$"
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # Default email address from which emails will be sent
 DEFAULT_FROM_EMAIL = 'Books Store <info@vamsbookstore.in>'
