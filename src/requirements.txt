@@ -33,3 +33,5 @@ dj-rest-auth
 bs4
 # django-environ
 python-dotenv
+pandas
+openpyxl

@@ -88,6 +88,7 @@ urlpatterns = [
     path( API_URL +'news/', include('news.urls')),
     path( API_URL, include(router.urls)),
     path( API_URL, include('middlewares.urls')),
+    path( 'data/', include('marketing.urls')),
     path( API_URL + 'accounts/', include('dj_rest_auth.urls')), 
     path( API_URL + 'accounts/register/', include('dj_rest_auth.registration.urls')),
     path('accounts/', include('allauth.urls')), 
