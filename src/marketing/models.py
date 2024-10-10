@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 class TbEmailSentLog(models.Model):
     email = models.TextField(blank=True, null=True)
-    created_at = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(_("created_at"), auto_now=False, auto_now_add=True)
     mobile = models.TextField(blank=True, null=True)
 
 
@@ -23,6 +23,7 @@ class EmailWhatsappTable(models.Model):
     website = models.CharField(max_length=2000, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     active = models.BooleanField(blank=True, null=True)
+    
 
 
 # Create your models here.
