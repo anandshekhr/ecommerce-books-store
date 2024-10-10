@@ -167,7 +167,7 @@ def view_cart(request):
                 'message': "Your cart is empty. Please add items to your cart."
             })
         request_data = {
-            "amount": int(order.total_price * 100),
+            "amount": int(order.total_price * 100) if order.total_price > 1.00 else 100,
             "currency": "INR",
             "receipt": order.sid,
             }
