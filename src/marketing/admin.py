@@ -12,7 +12,7 @@ class EmailSendRequestLogAdmin(admin.ModelAdmin):
 
 @admin.register(EmailWhatsappTable)
 class EmailWhatsappTableAdmin(admin.ModelAdmin):
-    list_display = ('name','gender','email','mobile','created_at')
+    list_display = ('name','gender','email','mobile')
 
 @admin.register(TbEmailSentLog)
 class TbEmailSentLogAdmin(admin.ModelAdmin):

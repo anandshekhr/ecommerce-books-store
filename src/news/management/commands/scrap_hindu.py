@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
         for item in soup.find_all('h3'):
             news = {}
-            news['headline'] = html.escape(item.text.strip())
+            news['headline'] = item.text.strip()
             if item.find_all('a'):
                 news['link'] = item.find_all('a')[0]['href'].strip()
 
@@ -78,7 +78,7 @@ class Command(BaseCommand):
                 sub_title = news_soup.find_all('h2',class_ = 'sub-title')
 
                 if sub_title:
-                    news['sub_title'] = html.escape(sub_title[0].text.strip())
+                    news['sub_title'] = sub_title[0].text.strip()
                 else:
                     news['sub_title'] = None
 
@@ -97,14 +97,16 @@ class Command(BaseCommand):
                 
                 result = self.fetch_paragraphs_with_retry(news_soup)
 
-                formatted_html = ''.join(result)
-                news['content'] = formatted_html.replace("'", "&#39;").replace("₹", "&#8377;")
-
-                obj, created = NewsTheHindu.objects.update_or_create(
-                    # headline = news['headline'],
-                    link=news['link'],  # unique field
-                    defaults=news  # fields to update or set
-                )
+                formatted_html = ''.join(item.replace('‘', '\'').replace('’', '\'') for item in result)
+                news['content'] = formatted_html
+                try:
+                    obj, created = NewsTheHindu.objects.update_or_create(
+                        # headline = news['headline'],
+                        link=news['link'],  # unique field
+                        defaults=news  # fields to update or set
+                    )
+                except:
+                    pass
 
 
         self.stdout.write(self.style.SUCCESS(f'Completed Scraping from The Hindu today: {today} at: {make_aware(datetime.now()).time()}'))
