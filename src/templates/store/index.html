@@ -21,6 +21,69 @@
 
 {% endblock head %}
 {% block style %}
+.card-img-top {
+    height: 380px;
+}
+.card-text {
+    font-size: small;
+    color: grey;
+    margin-bottom: 0;
+}
+.card-text-author {
+    font-size: small;
+    color: black;
+    margin-bottom: 0;
+}
+.card-text-mrp {
+    font-size: smaller;
+    margin-bottom: 0;
+}
+
+.card-text-discounted {
+    font-size: smaller;
+    margin-bottom: 0;
+}
+.item-price {
+    font-size: large;
+    margin-bottom: 0;
+    color: black;
+}
+
+.card-text-author a {
+    color: #4b9698;
+}
+.rating-box {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 0px 7px 0px 0px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    position: relative;
+  }
+
+  .rating-stars {
+    color: gold; /* Color for stars */
+    margin-right: 8px;
+  }
+
+  .rating-number {
+    font-weight: bold;
+  }
+
+  .rating-box:before {
+    content: '\2605 \2605 \2605 \2605 \2605';
+    font-size: 12px;
+    color: goldenrod;
+    position: absolute;
+    top: -2px;
+    left: 33px;
+  }
+  .card-text-discounted .rupee-symbol {
+    font-size: smaller;
+  }
+
 /* Mobile view: Hide the filter section initially */
 @media (max-width: 768px) {
     .filter-section {
@@ -123,12 +186,15 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ product.title }}</h5>
                             <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
+                            <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.user.username|capfirst}}</a>(Author){% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
+                            <div class="rating-box"><span class="rating-stars"></span>
+                                <span class="rating-number">{{product.rating}}</span></div>
                             {% if not product.is_free %}
                             <p class="card-text">
                                 {% if product.og_price %}
-                                    <span class="text-muted original-price">₹{{ product.og_price }}</span><br>
+                                <span class="text-muted original-price card-text-mrp">M.R.P.: ₹{{ product.og_price }}</span><br>
                                 {% endif %}
-                                <span class="text-primary">₹{{ product.price }}</span>
+                                <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">{{ product.price|floatformat:"0" }}</span></span>
                             </p>
                             {% endif %}
                             <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
