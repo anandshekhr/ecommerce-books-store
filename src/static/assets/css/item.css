@@ -1,0 +1,114 @@
+@media (max-width: 768px) {
+    .item {
+        margin-left: 5%;
+        margin-right: 5%;
+        width: 95%;
+        margin-bottom: 5%;
+    }
+
+    #productImagesCarousel{
+        /* margin-left: ; */
+        margin-right: 5%;
+        margin-bottom: 5%;
+        margin-top:15%;
+    }
+    .pdf-render-m{
+        margin-right: 5%;
+        margin-bottom: 5%;
+        margin-top:15%;
+    }
+}
+
+.item {
+    margin-top: 5%;
+    max-width: fit-content;
+}
+
+#productImagesCarousel{
+    margin-left: 10%;
+    margin-bottom: 5%;
+}
+
+#pdf-render {
+    width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.pdf-controls input {
+    width: 50px;
+    text-align: center;
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.card-text {
+    font-size: small;
+    color: grey;
+    margin-bottom: 0;
+}
+.card-text-author {
+    font-size: small;
+    color: black;
+    margin-bottom: 0;
+}
+.card-text-mrp {
+    font-size: smaller;
+    margin-bottom: 0;
+}
+
+.card-text-discounted {
+    font-size: smaller;
+    margin-bottom: 0;
+}
+.item-price {
+    font-size: large;
+    margin-bottom: 0;
+    color: black;
+}
+
+.card-text-author a {
+    color: #4b9698;
+}
+.rating-box {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 0px 7px 0px 0px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    position: relative;
+  }
+
+  .rating-stars {
+    color: gold; /* Color for stars */
+    margin-right: 8px;
+  }
+
+  .rating-number {
+    font-weight: bold;
+  }
+
+  .rating-box:before {
+    content: '\2605 \2605 \2605 \2605 \2605';
+    font-size: 12px;
+    color: goldenrod;
+    position: absolute;
+    top: -2px;
+    left: 33px;
+  }
+  .card-text-discounted .rupee-symbol {
+    font-size: smaller;
+  }

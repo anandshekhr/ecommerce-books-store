@@ -17,113 +17,12 @@
 <meta name="twitter:title" content="Product | BookStore">
 <meta name="twitter:description" content="Find the best books and educational material online.">
 <meta name="twitter:image" content="{% static 'assets/img/meta_image.png' %}">
+<link href="{% static "assets/css/index.css" %}" rel="stylesheet">
+
 
 
 {% endblock head %}
 {% block style %}
-
-.card-text {
-    font-size: small;
-    color: grey;
-    margin-bottom: 0;
-}
-.card-text-author {
-    font-size: small;
-    color: black;
-    margin-bottom: 0;
-}
-.card-text-mrp {
-    font-size: smaller;
-    margin-bottom: 0;
-}
-
-.card-text-discounted {
-    font-size: smaller;
-    margin-bottom: 0;
-}
-.item-price {
-    font-size: large;
-    margin-bottom: 0;
-    color: black;
-}
-
-.card-text-author a {
-    color: #4b9698;
-}
-.rating-box {
-    display: inline-block;
-    background-color: #4CAF50;
-    color: white;
-    padding: 0px 7px 0px 0px;
-    border-radius: 5px;
-    font-family: Arial, sans-serif;
-    font-size: 10px;
-    position: relative;
-  }
-
-  .rating-stars {
-    color: gold; /* Color for stars */
-    margin-right: 8px;
-  }
-
-  .rating-number {
-    font-weight: bold;
-  }
-
-  .rating-box:before {
-    content: '\2605 \2605 \2605 \2605 \2605';
-    font-size: 12px;
-    color: goldenrod;
-    position: absolute;
-    top: -2px;
-    left: 33px;
-  }
-  .card-text-discounted .rupee-symbol {
-    font-size: smaller;
-  }
-
-/* Mobile view: Hide the filter section initially */
-@media (max-width: 768px) {
-    .filter-section {
-        display: none; /* Ensure the element doesn't take up space when hidden */
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease, opacity 0.5s ease;
-    }
-
-    .filter-section.open {
-        display: block; /* Show the element */
-        max-height: 500px; /* Adjust based on your content's height */
-        opacity: 1;
-    }
-
-    .filter-btn {
-        margin: 20px 0;
-        display: block;
-        width: 100%;
-        text-align: center;
-    }
-    .card-img-top {
-        height: 100%;
-    }
-}
-
-/* Show filter section normally on larger screens */
-@media (min-width: 769px) {
-    .filter-btn {
-        display: none;
-    }
-
-    .filter-section {
-        display: block;
-        max-height: none;
-        opacity: 1;
-    }
-    .card-img-top {
-        height: 380px;
-    }
-}
 
 
 
@@ -188,7 +87,8 @@
                     <div class="card h-100">
                         <a href="{% url 'item-details' product.id %}"><img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}"></a>
                         <div class="card-body">
-                            <h5 class="card-title">{{ product.title }}</h5>
+                            <h5 class="card-title">{{ product.title }}
+                            <span class="card-text">{% if product.is_paperback %}(Paperback){% else %}(eBook){% endif %}</span></h5>
                             <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
                             <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.user.username|capfirst}}</a>(Author){% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
                             <div class="rating-box"><span class="rating-stars"></span>
