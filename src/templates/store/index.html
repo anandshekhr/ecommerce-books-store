@@ -21,9 +21,7 @@
 
 {% endblock head %}
 {% block style %}
-.card-img-top {
-    height: 380px;
-}
+
 .card-text {
     font-size: small;
     color: grey;
@@ -106,6 +104,9 @@
         width: 100%;
         text-align: center;
     }
+    .card-img-top {
+        height: 100%;
+    }
 }
 
 /* Show filter section normally on larger screens */
@@ -118,6 +119,9 @@
         display: block;
         max-height: none;
         opacity: 1;
+    }
+    .card-img-top {
+        height: 380px;
     }
 }
 
