@@ -2,15 +2,14 @@
 
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from django.http import HttpResponseRedirect,JsonResponse
-from .models import Item, ExamCategory, Order, LegalContent, PhonePePaymentRequestDetail, Question, Answer
+from .models import *
+from .serializers import *
 from django.contrib.auth.decorators import login_required
 from rest_framework.pagination import PageNumberPagination
 from django.conf import settings
 from decimal import Decimal
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from .models import Item, Order, UnsubscribedEmail, Earning
-from .serializers import ItemSerializer, OrderSerializer, ExamCategorySerializer, UnsubscribeSerializer,CartItemSerializer
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -820,3 +819,10 @@ def adminEarnings(request):
         earning = []
         messages.error('You are not authorized to view this page')
     return render(request, 'educator/earnings.html',{'earnings':earning,'selected':'earning'})
+
+class UserAddressAPI(generics.ListCreateAPIView):
+    queryset = BillingAddress.objects.all()
+    serializer_class = AddressSerializer
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,SessionAuthentication)
+    pagination_class = PageNumberPagination

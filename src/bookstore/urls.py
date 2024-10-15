@@ -75,6 +75,7 @@ urlpatterns = [
     path('', include('main.urls')),
     path('educator/accounts/', include('accounts.urls')),
     path( API_URL +'search', views.SearchAPI.as_view()),
+    path( API_URL +'address', views.UserAddressAPI.as_view()),
     path( API_URL +'cart', views.CartView.as_view()),
     path( API_URL +'order', views.OrderHistory.as_view()),
     path( API_URL +'items', views.ItemGetAPI.as_view()),

@@ -1,7 +1,7 @@
 # store/serializers.py
 
 from rest_framework import serializers
-from .models import Item, ExamCategory, Order, Question, Answer
+from .models import Item, ExamCategory, Order, Question, Answer, BillingAddress
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -61,3 +61,8 @@ class UnsubscribeSerializer(serializers.Serializer):
     def validate_email(self, value):
         # You can add additional email validation here if needed
         return value
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingAddress
+        fields = '__all__'

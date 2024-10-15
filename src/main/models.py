@@ -199,3 +199,30 @@ class Earning(models.Model):
     def __str__(self):
         return f"Earnings for {self.user} from {self.item} on {self.modified_at}"
 
+class BillingAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Optional: You can also add a default boolean for marking a primary billing address
+    is_default = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name}, {self.city}, {self.country}"
+    
+    def save(self, *args, **kwargs):
+        # If the address is marked as default, set other addresses of the same user to False
+        if self.is_default:
+            BillingAddress.objects.filter(user=self.user, is_default=True).update(is_default=False)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Billing Addresses"
