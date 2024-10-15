@@ -72,7 +72,7 @@ class Item(models.Model):
     is_downloadable = models.BooleanField(default=True)
     is_paperback = models.BooleanField(default=False)
     rating = models.DecimalField(_("Ratings"), max_digits=2, decimal_places=1, default=5.0)
-    pdf_file = models.FileField(upload_to='pdfs/', max_length=500)
+    pdf_file = models.FileField(upload_to='pdfs/', max_length=500,null=True, blank=True)
     thumbnail = models.ImageField(_("thumbnail"), upload_to='thumbnails/',null=True, blank=True)
     is_available = models.BooleanField(default=True)
     variant = models.ForeignKey("self", verbose_name=_("Variant"), on_delete=models.SET_NULL, null=True,blank=True)
