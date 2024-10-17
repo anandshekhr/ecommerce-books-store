@@ -90,7 +90,7 @@
                             <h5 class="card-title">{{ product.title }}
                             <span class="card-text">{% if product.is_paperback %}(Paperback){% else %}(eBook){% endif %}</span></h5>
                             <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
-                            <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.user.username|capfirst}}</a>(Author){% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
+                            <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.author|capfirst}}</a><span class="card-text"> (Author)</span>{% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
                             <div class="rating-box">
                                 <span class="rating-stars"></span>
                                 <span class="rating-number">{{product.rating}}</span>
