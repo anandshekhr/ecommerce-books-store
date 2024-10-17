@@ -1,8 +1,21 @@
 
+.h-107 {
+    height: 107% !important;
+}
+
 .card-text {
     font-size: small;
     color: grey;
     margin-bottom: 0;
+}
+.card-text-price{
+    font-size: small;
+    color: grey;
+    position: absolute;
+    bottom: 0;
+    width: 90%;
+    padding: 10px 10px 10px 0px;
+
 }
 .card-text-author {
     font-size: small;
