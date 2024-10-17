@@ -59,6 +59,24 @@
     font-size: smaller;
   }
 
+  .price-btn {
+    float: right;
+    
+  }
+  .price-btn-style {
+    float: right;
+    background-color: #eef7f0 !important; /* Green background */
+    border-radius: 8px !important; /* Makes the button more rounded */
+    padding: 5px 20px !important; /* Adjusts the padding */
+    font-size: small !important;
+    font-weight: bold !important; /* Makes the text bold */
+}
+
+.price-btn-style:hover {
+    background-color: #218838 !important; /* Darker green on hover */
+    color: #fff; /* Ensures text stays white on hover */
+}
+
 /* Mobile view: Hide the filter section initially */
 @media (max-width: 768px) {
     .filter-section {

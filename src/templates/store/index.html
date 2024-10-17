@@ -91,23 +91,31 @@
                             <span class="card-text">{% if product.is_paperback %}(Paperback){% else %}(eBook){% endif %}</span></h5>
                             <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
                             <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.user.username|capfirst}}</a>(Author){% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
-                            <div class="rating-box"><span class="rating-stars"></span>
-                                <span class="rating-number">{{product.rating}}</span></div>
-                            {% if not product.is_free %}
-                            <p class="card-text">
+                            <div class="rating-box">
+                                <span class="rating-stars"></span>
+                                <span class="rating-number">{{product.rating}}</span>
+                            </div>
+                            <div class="card-text">
                                 {% if product.og_price %}
                                 <span class="text-muted original-price card-text-mrp">M.R.P.: ₹{{ product.og_price }}</span><br>
                                 {% endif %}
-                                <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">{{ product.price|floatformat:"0" }}</span></span>
-                            </p>
-                            {% endif %}
-                            <a href="{% url 'item-details' product.id %}" class="btn btn-primary">View</a>
-                            {% if product.is_free %}
-                            <a href="{{product.pdf_file.url}}" class="btn btn-success">Download</a>
+                                {% if not product.is_free %}
+                                    <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">{{ product.price|floatformat:"0" }}</span></span>
+                                {% else %}
+                                    <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">0</span></span>
+
+                                {% endif %}
+                                <div class="price-btn">
+                                    {% if product.is_free %}
+                                    <a href="{{product.pdf_file.url}}" class="btn btn-outline-success price-btn-style" title="Download now"><i class="fa fa-download" aria-hidden="true"></i></a>
+                                    
+                                    {% else %}
+                                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-outline-success price-btn-style">ADD</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% comment %} <a href="{% url 'item-details' product.id %}" class="btn btn-outline-primary">View</a> {% endcomment %}
                             
-                            {% else %}
-                            <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success">Add to Cart</a>
-                            {% endif %}
                         </div>
                     </div>
                 </div>
