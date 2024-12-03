@@ -30,7 +30,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('ENV') == 'dev' else False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in','192.168.29.161']
 CSRF_TRUSTED_ORIGINS = [
     'https://ashekhar123.pythonanywhere.com',
     'https://www.vamsbookstore.in'
@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'main',
+    'marketing',
     'news',
     'accounts',
     'corsheaders',

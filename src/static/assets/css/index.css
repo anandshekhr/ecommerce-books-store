@@ -78,19 +78,19 @@
   }
   .price-btn-style {
     float: right;
-    background-color: #eef7f0 !important; /* Green background */
-    border-radius: 8px !important; /* Makes the button more rounded */
-    padding: 5px 20px !important; /* Adjusts the padding */
+    background-color: #eef7f0 !important;
+    border-radius: 8px !important;
+    padding: 5px 20px !important;
     font-size: small !important;
-    font-weight: bold !important; /* Makes the text bold */
+    font-weight: bold !important;
 }
 
 .price-btn-style:hover {
-    background-color: #218838 !important; /* Darker green on hover */
-    color: #fff; /* Ensures text stays white on hover */
+    background-color: #218838 !important;
+    color: #fff;
 }
 
-/* Mobile view: Hide the filter section initially */
+
 @media (max-width: 768px) {
     .filter-section {
         display: none; /* Ensure the element doesn't take up space when hidden */
@@ -115,10 +115,6 @@
     .card-img-top {
         height: 100%;
     }
-}
-
-/* Show filter section normally on larger screens */
-@media (min-width: 769px) {
     .filter-btn {
         display: none;
     }
@@ -132,3 +128,4 @@
         height: 380px;
     }
 }
+

@@ -74,3 +74,19 @@ class EmailSendRequestLog(models.Model):
     def get_absolute_url(self):
         return reverse("EmailSendRequestLog_detail", kwargs={"pk": self.pk})
 
+class ContactUsFormMarketing(models.Model):
+    name = models.CharField(_("Name"), max_length=500)
+    email = models.EmailField(_("Email"), max_length=254)
+    phone = models.CharField(_("Phone no"), max_length=50)
+    message = models.TextField(_("Message"),null=True, blank=True)
+    created_at = models.DateTimeField(_("Created At"), auto_now=False, auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("ContactUsFormMarketing")
+        verbose_name_plural = _("ContactUsFormMarketings")
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("ContactUsFormMarketing_detail", kwargs={"pk": self.pk})

@@ -2,6 +2,29 @@ from django.shortcuts import render, HttpResponse
 import pandas as pd
 import os
 from .models import *
+from .serializer import ContactUsSerializer
+from rest_framework import generics, status, authentication, permissions,filters
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.authtoken.models import Token
+from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import authenticate, get_user_model,login
+from django.http import JsonResponse
+from django.db.models import Max, Min, Count, Avg
+from django.template.loader import render_to_string
+from django.shortcuts import get_object_or_404, render,redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, pagination
+from django_filters import FilterSet
+from django.db.models import Q,F
+import django_filters
+from django.db.models.functions import TruncDate
+
+from django.utils import timezone
 
 import re
 
@@ -63,3 +86,12 @@ def read_xls_and_write_to_db(request):
         )
     return HttpResponse('Success')
 
+class ContactUsApi(generics.ListCreateAPIView):
+    queryset = ContactUsFormMarketing.objects.all()
+    serializer_class = ContactUsSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['name','email','phone']
+    filterset_fields = ['name','email','phone']
+    ordering_fields = ['created_at']

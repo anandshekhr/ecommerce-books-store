@@ -114,3 +114,14 @@ class DataLogAPI(generics.ListAPIView):
 
 def getGraphOverview(request):
     return render(request,'graph.html')
+
+class ErrorLogApi(generics.ListCreateAPIView):
+    queryset = ErrorLog.objects.all()
+    serializer_class = ErrorLogSerializer
+    permission_classes = (AllowAny,)
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['user_token','timestamp','error_message','error_details','api_name']
+    filterset_fields = ['user_token','timestamp','error_message','error_details','api_name']
+    ordering_fields = ['timestamp']
+

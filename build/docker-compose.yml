@@ -3,7 +3,7 @@
 version: '3'
 
 services:
-  web:
+  web-ebook:
     build:
       context: ..
       dockerfile: build/image/Dockerfile
@@ -16,7 +16,7 @@ services:
       - redis
     restart: always
 
-  celery:
+  celery-ebook:
     build:
       context: ..
       dockerfile: build/image/Dockerfile
@@ -48,7 +48,7 @@ services:
       - "5555:5555"
     depends_on:
       - redis
-      - celery
+      - celery-ebook
   
 
 

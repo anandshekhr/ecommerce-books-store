@@ -136,7 +136,8 @@ def item_list_search(request):
 
 def product_detail(request, pk):
     product = get_object_or_404(Item, pk=pk)
-    return render(request, 'store/item.html', {'product': product,'pdf_id': pk})
+    relevant_products = Item.objects.filter(category = product.category)
+    return render(request, 'store/item.html', {'product': product,'pdf_id': pk,'relevant_products':relevant_products})
 
 @login_required(login_url='login-view')
 def add_to_cart(request, item_id):
@@ -155,6 +156,7 @@ def add_to_cart(request, item_id):
 @login_required(login_url='login-view')
 def view_cart(request):
     try:
+        address = BillingAddress.objects.get(user = request.user, is_default = True)
         # Try to get the user's active order (unpaid)
         order = Order.objects.get(user=request.user, payment_status=False)
         # Check if the order has any items
@@ -173,7 +175,7 @@ def view_cart(request):
         razorpay_response = razorpay_api.order.create(data=request_data)
         order.razorpay_order_id = razorpay_response["id"]
         order.save()
-        return render(request, 'store/cart.html', {'order': order,"razorpay_order_id": razorpay_response["id"],
+        return render(request, 'store/cart.html', {'order': order,"billing_address":address,"razorpay_order_id": razorpay_response["id"],
                     "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
     except Order.DoesNotExist:
         # If no order exists, set order to None or an empty order object
@@ -253,10 +255,12 @@ def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
     order_id = request.GET.get('order_id')
+    selected_billing_address = BillingAddress.objects.get(user=request.user, is_default=True)
     if request.user and order_id:
         order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
         order.payment_status = True
         order.razorpay_payment_id = razorpay_payment_id
+        order.address = selected_billing_address
         order.save()
 
     messages.success(request, "Your order was successful!")
@@ -826,3 +830,39 @@ class UserAddressAPI(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,SessionAuthentication)
     pagination_class = PageNumberPagination
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import BillingAddress
+
+@csrf_exempt
+def billing_address_list(request):
+    if request.method == 'GET':
+        addresses = BillingAddress.objects.filter(user=request.user)
+        data = [{"id": address.id, "full_name": address.full_name, "street_address": address.street_address, "city": address.city, "state": address.state, "postal_code": address.postal_code, "country": address.country} for address in addresses]
+        return JsonResponse(data, safe=False)
+
+    elif request.method == 'POST':
+        data = request.POST
+        # Convert 'is_default' from string to Boolean
+        is_default = data.get('is_default', 'false').lower() == 'true'
+        BillingAddress.objects.create(
+            user=request.user,
+            full_name=data['full_name'],
+            street_address=data['street_address'],
+            city=data['city'],
+            state=data.get('state', ''),
+            postal_code=data['postal_code'],
+            country=data['country'],
+            phone_number=data.get('phone_number', ''),
+            is_default=is_default
+        )
+        return JsonResponse({'success': True})
+
+@csrf_exempt
+def select_billing_address(request, address_id):
+    if request.method == 'POST':
+        BillingAddress.objects.filter(user=request.user).update(is_default=False)
+        BillingAddress.objects.filter(id=address_id, user=request.user).update(is_default=True)
+        return JsonResponse({'success': True})
+
