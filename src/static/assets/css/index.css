@@ -84,11 +84,32 @@
     font-size: small !important;
     font-weight: bold !important;
 }
+.card {
+    /* Basic card styling */
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    max-width: 300px;
+    /* Shadow effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 
+                0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Add hover effect for better interaction */
+.card:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2), 
+                0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
 
 .price-btn-style:hover {
     background-color: #218838 !important;
     color: #fff;
 }
+
+
 
 
 @media (max-width: 768px) {

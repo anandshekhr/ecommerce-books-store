@@ -5,6 +5,7 @@
 {% block content %}
 <!-- Cart Items -->
 <div class="container mt-4">
+    {% if order %}
     <div class="billing-address-section mt-4">
         <h5>Billing Address 
             <a><i class="fa-solid fa-pen" id="editBillingAddressButton" title="Edit/Add Address"></i></a></h5> 
@@ -18,87 +19,63 @@
             <p>No billing address selected.</p>
             {% endif %}
     </div>
+    {% endif %}
         
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-normal mb-0">Shopping Cart</h3>
+        {% if order %}
         <div>
           <p class="mb-0"><span class="text-muted">Sort by:</span> <a href="#!" class="text-body">price <i
                 class="fas fa-angle-down mt-1"></i></a></p>
         </div>
-      </div>
+        {% endif %}
+    </div>
     <div style="overflow-y:scroll;overflow-x:scroll;">
         {% if order %}
         {% for item in order.items.all %}
         <div class="card rounded-3 mb-4" data-id="{{ item.id }}">
             <div class="card-body p-4">
-              <div class="row d-flex justify-content-between align-items-center">
-                <div class="col-md-2 col-lg-2 col-xl-2">
-                  <img
-                    src="{{ item.thumbnail.url }}" alt="{{ item.title }}"
-                    class="img-fluid rounded-3" alt="Cotton T-shirt">
+                <div class="row d-flex justify-content-between align-items-center">
+                    <div class="col-md-2 col-lg-2 col-xl-2">
+                        <img
+                            src="{{ item.thumbnail.url }}" alt="{{ item.title }}"
+                            class="img-fluid rounded-3" alt="Cotton T-shirt">
+                        </div>
+                    <div class="col-md-3 col-lg-3 col-xl-3">
+                        <p class="lead fw-normal mb-2">{{ item.title }}</p>
+                        <p><span class="text-muted">{{ item.description|slice:":100" }}{% if item.description|length > 100 %}...{% endif %}</span></p>
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                    {% comment %} <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
+                        onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
+                        <i class="fas fa-minus"></i>
+                    </button> {% endcomment %}
+    
+                    <input id="form1" min="0" name="quantity" value="1" type="number"
+                        class="form-control form-control-sm" readonly/>
+    
+                    {% comment %} <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
+                        onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
+                        <i class="fas fa-plus"></i>
+                    </button> {% endcomment %}
+                    </div>
+                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                        <h5 class="mb-0">₹{{ item.price }}</h5>
+                    </div>
+                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                        <a class="text-danger remove-item" id="remove-item" ><i class="fas fa-trash fa-lg"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-3 col-lg-3 col-xl-3">
-                  <p class="lead fw-normal mb-2">{{ item.title }}</p>
-                  <p><span class="text-muted">Size: </span>M <span class="text-muted">Color: </span>Grey</p>
-                </div>
-                <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                  <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
-                    onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                    <i class="fas fa-minus"></i>
-                  </button>
-  
-                  <input id="form1" min="0" name="quantity" value="2" type="number"
-                    class="form-control form-control-sm" />
-  
-                  <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
-                    onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                    <i class="fas fa-plus"></i>
-                  </button>
-                </div>
-                <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                  <h5 class="mb-0">₹{{ item.price }}</h5>
-                </div>
-                <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                  <a class="text-danger remove-item" id="remove-item" ><i class="fas fa-trash fa-lg"></i></a>
-                </div>
-              </div>
             </div>
-          </div>
-          {% endfor %}
-        {% comment %} <table class="table cart-table">
-            <thead>
-                <tr>
-                    <th scope="col">Image</th>
-                    <th scope="col">Product</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Action</th>
-                </tr>
-            </thead>
-            <tbody id="cartItems">
-                {% for item in order.items.all %}
-                <tr data-id="{{ item.id }}">
-                    <td>{% if item.thumbnail %}
-                        <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}" class="img-thumbnail"
-                            style="width: 100px; height: auto;"><br>
-                        {% else %}
-                        No image available<br>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.title }}</td>
-                    <td>₹{{ item.price }}</td>
-                    <td>{% if item.quantity %}{{item.quantity}}{% else %}1{% endif %}</td>
-                    <td>₹{{ item.price }}</td>
-                    <td>
-                        <a class="remove-item" id="remove-item"><i class="fa-solid fa-trash"></i></a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table> {% endcomment %}
+        </div>
+        {% endfor %}
+        
         <!-- Cart Summary -->
-        <div class="cart-summary">
+        <div class="cart-summary" >
+            <div class="discount-wrapper" style="margin:2% 0px;">
+                <input type="text" class="form-control" id="discount-form" placeholder="Discount coupon"/>
+                <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-success">Apply</button>
+            </div>
             <h5>Summary</h5>
             <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
             {% comment %} <a type="button" href="{% url " checkout" order_id=order.id %}" class="btn btn-primary"
@@ -110,17 +87,7 @@
         <p>Your cart is empty.</p>
         {% endif %}
     </div>
-    {% if order %}
-    <div class="card mb-4">
-    <div class="card-body p-4 d-flex flex-row">
-        <div data-mdb-input-init class="form-outline flex-fill">
-        <input type="text" id="form1" class="form-control form-control-lg" />
-        <label class="form-label" for="form1">Discound code</label>
-        </div>
-        <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-outline-warning btn-lg ms-3">Apply</button>
-    </div>
-    </div>
-    {% endif %}
+    
  
     
     <!-- Modal for Adding/Editing Address -->

@@ -98,3 +98,17 @@ div[id^="quillEditor_"] {
     border-radius: 5px;  /* Rounded corners */
     width: 100%; /* Ensure it takes full width */
 }
+
+.cart-summary {
+    float: right;
+}
+
+.discount-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Adjust spacing between input and button */
+}
+
+#discount-form {
+    flex: 1; /* Make input take up remaining space */
+}
