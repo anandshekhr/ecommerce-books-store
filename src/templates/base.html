@@ -38,11 +38,15 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="z-index:1000;">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url "home-1" %}">eBooks Store</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            <a class="navbar-brand" href="{% url "home-1" %}">Books Store</a>
+            {% comment %} <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
-            </button>
+            </button> {% endcomment %}
+             <!-- Search Bar -->
+            <div class="d-flex justify-content-center w-50" style="width:50%;">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search for products..." style=""  oninput="searchProducts()">
+            </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="{% url "home-1" %}">Products</a></li>
@@ -75,7 +79,7 @@
         data-auto_select="true">
     </div>
     {% endif %}
-    <div class="content-wrapper" style="margin-top:5%;">
+    <div class="content-wrapper" style="margin-top:5%;margin-bottom:5%;">
     {% block content %}{% endblock content %}
     </div>
     <!-- Footer -->

@@ -96,6 +96,8 @@ class Command(BaseCommand):
 
                 
                 result = self.fetch_paragraphs_with_retry(news_soup)
+                # Remove duplicates while preserving the original order
+                result = list(dict.fromkeys(result))
 
                 formatted_html = ''.join(item.replace('‘', '\'').replace('’', '\'') for item in result)
                 news['content'] = formatted_html

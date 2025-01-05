@@ -47,6 +47,7 @@ class Answer(models.Model):
 class ExamCategory(models.Model):
     name = models.CharField(verbose_name=_("Category"),max_length=100)
     board = models.ForeignKey("self", verbose_name=_("Parent Category"), on_delete=models.CASCADE, default=None, null=True, blank=True)
+    image = models.ImageField(_("image"), upload_to='image/',null=True, blank=True)
 
     def __str__(self):
         return f"{self.name} { '-' + self.board.name if self.board else ''}"
@@ -54,6 +55,35 @@ class ExamCategory(models.Model):
     class Meta:
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+
+
+class BillingAddress(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=100)
+    street_address = models.CharField(max_length=255)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    
+    # Optional: You can also add a default boolean for marking a primary billing address
+    is_default = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name}, {self.city}, {self.country}"
+    
+    def save(self, *args, **kwargs):
+        # If the address is marked as default, set other addresses of the same user to False
+        if self.is_default:
+            BillingAddress.objects.filter(user=self.user, is_default=True).update(is_default=False)
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name_plural = "Billing Addresses"
 
 class Item(models.Model):
     user = models.ForeignKey(User, verbose_name=_("Owner"), on_delete=models.SET_NULL, null=True,blank=True)
@@ -102,6 +132,7 @@ class ProductImage(models.Model):
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    address = models.ForeignKey(BillingAddress, verbose_name=_("billing address"), on_delete=models.CASCADE, null=True, blank=True)
     items = models.ManyToManyField(Item)
     total_price = models.DecimalField(max_digits=10, decimal_places=2,default= 0.00)
     payment_status = models.BooleanField(default=False)
@@ -199,30 +230,3 @@ class Earning(models.Model):
     def __str__(self):
         return f"Earnings for {self.user} from {self.item} on {self.modified_at}"
 
-class BillingAddress(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=100)
-    street_address = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100, blank=True, null=True)
-    postal_code = models.CharField(max_length=20)
-    country = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    
-    # Optional: You can also add a default boolean for marking a primary billing address
-    is_default = models.BooleanField(default=False)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.full_name}, {self.city}, {self.country}"
-    
-    def save(self, *args, **kwargs):
-        # If the address is marked as default, set other addresses of the same user to False
-        if self.is_default:
-            BillingAddress.objects.filter(user=self.user, is_default=True).update(is_default=False)
-        super().save(*args, **kwargs)
-
-    class Meta:
-        verbose_name_plural = "Billing Addresses"

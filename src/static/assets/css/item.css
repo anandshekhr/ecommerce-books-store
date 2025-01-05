@@ -58,6 +58,15 @@
     color: grey;
     margin-bottom: 0;
 }
+.card-text-price{
+    font-size: small;
+    color: grey;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    padding: 10px 0px 10px 0px;
+
+}
 .card-text-author {
     font-size: small;
     color: black;
@@ -90,25 +99,123 @@
     font-family: Arial, sans-serif;
     font-size: 10px;
     position: relative;
-  }
+}
 
-  .rating-stars {
+.rating-stars {
     color: gold; /* Color for stars */
     margin-right: 8px;
-  }
+}
 
-  .rating-number {
+.rating-number {
     font-weight: bold;
-  }
+}
 
-  .rating-box:before {
+.rating-box:before {
     content: '\2605 \2605 \2605 \2605 \2605';
     font-size: 12px;
     color: goldenrod;
     position: absolute;
     top: -2px;
     left: 33px;
-  }
-  .card-text-discounted .rupee-symbol {
+}
+.card-text-discounted .rupee-symbol {
     font-size: smaller;
-  }
+}
+
+.price-btn {
+    float: right;
+
+}
+.price-btn-style {
+    float: right;
+    background-color: #eef7f0 !important;
+    border-radius: 8px !important;
+    padding: 5px 20px !important;
+    font-size: small !important;
+    font-weight: bold !important;
+}
+
+.price-btn-style:hover {
+    background-color: #218838 !important;
+    color: #fff;
+}
+.divider {
+    border: none;
+    border-top: 0.5px solid #333;
+    margin: 10px 0;
+    width: 100%;
+}
+.vertical-divider {
+    width: 2px;                /* Line thickness */
+    height: 100px;              /* Set the desired height */
+    background-color: #333;     /* Line color */
+    margin: 0 20px;             /* Space around the divider */
+}
+
+.relevant-items-container {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+    width: 100%;
+}
+
+.relevant-items-wrapper {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    scroll-behavior: smooth; /* Smooth scrolling */
+    display: flex;
+    flex: 1;
+    padding: 0 20px; /* Spacing for scroll buttons */
+}
+
+.relevant-items {
+    display: flex;
+    gap: 20px; /* Space between items */
+}
+
+.item-card {
+    min-width: 200px; /* Set card width */
+    padding: 0.5px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    text-align: justify;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.item-card:hover {
+    transform: scale(1.05); /* Scale on hover */
+}
+
+.scroll-left,
+.scroll-right {
+    background-color: #cbc9c9;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 20px;
+    border-radius: 10%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.scroll-left {
+    left: 0;
+}
+
+.scroll-right {
+    right: 0;
+}
+
+.scroll-left:hover,
+.scroll-right:hover {
+    background-color: #555;
+}
+.col-md-4 {
+    padding-right: 5px !important;
+    padding-left: 5px !important;
+}
+

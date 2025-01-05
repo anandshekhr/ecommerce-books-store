@@ -1,8 +1,21 @@
 
+.h-107 {
+    height: 107% !important;
+}
+
 .card-text {
     font-size: small;
     color: grey;
     margin-bottom: 0;
+}
+.card-text-price{
+    font-size: small;
+    color: grey;
+    position: absolute;
+    bottom: 0;
+    width: 90%;
+    padding: 10px 10px 10px 0px;
+
 }
 .card-text-author {
     font-size: small;
@@ -59,7 +72,46 @@
     font-size: smaller;
   }
 
-/* Mobile view: Hide the filter section initially */
+  .price-btn {
+    float: right;
+    
+  }
+  .price-btn-style {
+    float: right;
+    background-color: #eef7f0 !important;
+    border-radius: 8px !important;
+    padding: 5px 20px !important;
+    font-size: small !important;
+    font-weight: bold !important;
+}
+.card {
+    /* Basic card styling */
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    max-width: 300px;
+    /* Shadow effect */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 
+                0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Add hover effect for better interaction */
+.card:hover {
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2), 
+                0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+
+.price-btn-style:hover {
+    background-color: #218838 !important;
+    color: #fff;
+}
+
+
+
+
 @media (max-width: 768px) {
     .filter-section {
         display: none; /* Ensure the element doesn't take up space when hidden */
@@ -84,10 +136,6 @@
     .card-img-top {
         height: 100%;
     }
-}
-
-/* Show filter section normally on larger screens */
-@media (min-width: 769px) {
     .filter-btn {
         display: none;
     }
@@ -101,3 +149,4 @@
         height: 380px;
     }
 }
+
