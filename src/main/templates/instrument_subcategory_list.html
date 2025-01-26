@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ parent_category.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            padding: 20px;
+        }
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .product-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 240px;
+            text-align: center;
+            padding: 10px;
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+        }
+        .product-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .product-price {
+            color: #e63946;
+            font-size: 14px;
+        }
+        .add-to-cart {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .add-to-cart:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Wrap the category name in a link -->
+        <h1><a href="{% url 'musical_instruments_list' instrument_id=parent_category.id %}">{{ parent_category.name }}</a></h1>
+        
+        <div class="product-grid">
+            {% for subcategory in subcategories %}
+                <div class="product-card">
+                    <div class="product-name">{{ subcategory.name }}</div>
+                    <div class="product-price">₹{{ subcategory.price }}</div>
+                    <a href="#" class="add-to-cart">Add to Cart</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

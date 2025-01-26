@@ -1,7 +1,7 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer, Earning
+from .models import Item, Category, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer, Earning,ProductMusicalInstrument
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -9,15 +9,12 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = ('id','title','price')
     sortable_by = ('id','title','price')    
 
-@admin.register(ExamCategory)
-class ExamCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','name','board')
-    search_fields = ('id','name','board')
-    sortable_by = ('id','name','board')
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    pass
     
-@admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ('id','product','image')
+    pass
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -48,8 +45,13 @@ class AnswerAdmin(admin.ModelAdmin):
 class EarningAdmin(admin.ModelAdmin):
     pass
     
+# Musical instrument category and subcategory
 
-    
+@admin.register(ProductMusicalInstrument)
+class ProductMusicalInstrumentAdmin(admin.ModelAdmin): 
+    pass
+
+
 
     
 

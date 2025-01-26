@@ -40,7 +40,7 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_volt.apps.AdminVoltConfig',
+    # 'admin_volt.apps.AdminVoltConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'dj_rest_auth',
     'dj_rest_auth.registration',
+    'bookstore',
 
     # Allauth apps
     'allauth',
@@ -91,7 +92,7 @@ ROOT_URLCONF = 'bookstore.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'main')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -110,24 +111,24 @@ WSGI_APPLICATION = 'bookstore.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+# if DEBUG:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',  
-            'NAME': os.environ.get('DB_NAME'),         
-            'USER': os.environ.get('DB_USER'),          
-            'PASSWORD': os.environ.get('DB_PASSWORD'),  
-            'HOST': os.environ.get('DB_HOST'),                   
-            # 'PORT': os.environ.get('DB_PORT'),                       
-        }
-    }
+}
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',  
+#             'NAME': os.environ.get('DB_NAME'),         
+#             'USER': os.environ.get('DB_USER'),          
+#             'PASSWORD': os.environ.get('DB_PASSWORD'),  
+#             'HOST': os.environ.get('DB_HOST'),                   
+#             # 'PORT': os.environ.get('DB_PORT'),                       
+#         }
+#     }
 
 
 # Password validation

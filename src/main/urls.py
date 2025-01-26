@@ -1,7 +1,11 @@
-from django.urls import path
+from django.urls import path, include
 import main.views as views
+from django.contrib import admin
+from .views import instrument
 
-urlpatterns = [
+
+
+urlpatterns = [ 
     path('login/', views.login_view, name='login-view'),
     path('logout/', views.logout_view, name='logout-view'),
     path('signup/', views.signup_view, name='signup-view'),
@@ -41,4 +45,10 @@ urlpatterns = [
     path('educator/admin/category',views.adminCategoryList,name="educator-admin-category"),
     path('educator/admin/add-product/', views.add_product, name='educator-admin-add-product'),
     path('educator/admin/earnings/', views.adminEarnings, name='educator-admin-earnings'),
+
+# musical instrument 
+    path('musical-instruments/<instrument_id>/', instrument, name='musical_instruments_list'),
+
+
 ]
+

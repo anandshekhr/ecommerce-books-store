@@ -31,6 +31,7 @@ from main.sitemaps import ProductSitemap
 from django.conf.urls import handler404, handler500
 from django.views.decorators.cache import cache_page
 
+
 sitemaps = {
     'products': ProductSitemap,
 }
@@ -68,6 +69,9 @@ admin.site.site_title = "VAMS Book Store"
 
 
 urlpatterns = [
+    # main 
+    path('admin/', admin.site.urls), 
+    path('', include('main.urls')), 
     path('robots.txt', views.robots_txt),
     path('sitemap.xml', cache_page(0)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('ebook/admin/', admin.site.urls),
