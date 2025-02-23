@@ -47,8 +47,8 @@ urlpatterns = [
     path('educator/admin/earnings/', views.adminEarnings, name='educator-admin-earnings'),
 
 # musical instrument 
-    path('musical-instruments/<instrument_id>/', instrument, name='musical_instruments_list'),
-
+   
+    path('musical-instruments/<int:category_id>/', instrument, name='musical_instruments_list'),
 
 ]
 

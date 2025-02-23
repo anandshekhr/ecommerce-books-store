@@ -868,15 +868,15 @@ def select_billing_address(request, address_id):
         return JsonResponse({'success': True})
 
 # Musical Instruments category and subcategory views
-def instrument(request, instrument_id):
+def instrument(request, category_id):
     # Fetch the parent category
-    parent_category = get_object_or_404(Category, id=instrument_id)
+    parent_category = get_object_or_404(Category, id=category_id)
 
     # Fetch subcategories (instruments)
-    subcategories = ProductMusicalInstrument.objects.filter(category=parent_category)
+    products = ProductMusicalInstrument.objects.filter(category=parent_category)
 
     # Render the template with the fetched data
-    return render(request, 'main/instrument_subcategory_list.html', {
+    return render(request, 'store/instrument_product_list.html', {
         'parent_category': parent_category,
-        'subcategories': subcategories
+        'products': products
     })
