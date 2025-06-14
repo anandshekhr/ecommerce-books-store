@@ -7,6 +7,12 @@ pipeline {
             choices: ['Dev', 'Int','Uat', 'Prod'],
             description: 'Select the environment to build for'
         )
+
+        choice(
+            name: 'BUILD_ACTION',
+            choices: ['Build Only', 'Build and Deploy'],
+            description: 'Choose whether to only build or also deploy'
+        )
     }
 
     environment {
@@ -14,7 +20,8 @@ pipeline {
         COMPOSE_FILE = "deploy/docker-compose.yml"
         IMAGE_NAME="bookstore"
         TAG = "v${BUILD_NUMBER}"
-        VERSION_FILE = 'deploy/version.txt'
+        VERSION_PREFIX = '1.0'
+        CUSTOM_VERSION = ''
     }
 
     stages {
@@ -26,37 +33,36 @@ pipeline {
         }
         stage('Preparing') {
             steps{
-            script {
-                    def versionFile = readFile("${env.VERSION_FILE}").trim()
-                    echo "Current Version: ${versionFile}"
+                script {
+                    // Step 1: Set version prefix based on environment
+                    def prefix = (params.ENVIRONMENT in ['Dev', 'Int']) ? '0.0' : '1.0'
+                    env.VERSION_PREFIX = prefix
+                    echo "📌 Version prefix set to: ${env.VERSION_PREFIX}"
 
-                    def (major, minor, patch) = versionFile.tokenize('.').collect { it.toInteger() }
+                    // Step 2: Get previous build number and bump patch
+                    def previousBuild = currentBuild.previousBuild
+                    def lastVersion = "${env.VERSION_PREFIX}.0"
 
-                    // Bump logic: you can make this dynamic
-                    patch += 1
-                    if (patch > 9) {
-                        patch = 0
-                        minor += 1
+                    if (previousBuild != null) {
+                        def previousDesc = previousBuild.getDescription()
+                        if (previousDesc?.startsWith('v')) {
+                            lastVersion = previousDesc.replace('v', '')
+                        }
                     }
 
-                    def newVersion = "${major}.${minor}.${patch}"
-                    echo "🔢 New Version: ${newVersion}"
+                    def (major, minor, patch) = lastVersion.tokenize('.').collect { it as int }
 
-                    // Save new version back to file
-                    writeFile file: "${env.VERSION_FILE}", text: newVersion
+                    // Just increment patch here
+                    patch += 1
 
-                    // Save as build display name
-                    currentBuild.displayName = "#${newVersion}"
+                    CUSTOM_VERSION = "${major}.${minor}.${patch}"
+                    currentBuild.displayName = "v${CUSTOM_VERSION}"
+                    currentBuild.description = "v${CUSTOM_VERSION}"
 
-                    // Optional: commit updated version to Git (requires credentials)
-                    // withCredentials([usernamePassword(credentialsId: 'git-creds-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
-                    //     sh "git config user.email 'jenkins@ci.com'"
-                    //     sh "git config user.name 'Jenkins CI'"
-                    //     sh "git add ${env.VERSION_FILE}"
-                    //     sh "git commit -m 'Bump version to ${newVersion}'"
-                    //     sh "git push https://${GIT_USER}:${GIT_PASS}@github.com/your-repo.git HEAD:main"
-                    // }
+                    echo "🔢 Computed Version: v${CUSTOM_VERSION}"
                 }
+
+            
             }
         }
 
@@ -89,7 +95,7 @@ pipeline {
         // }
         stage('Post Check') {
             steps {
-                sh """Completing..."""
+                echo """Completing..."""
             }
         }
     }
