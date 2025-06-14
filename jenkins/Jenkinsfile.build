@@ -25,6 +25,7 @@ pipeline {
             }
         }
         stage('Preparing') {
+            steps{
             script {
                     def versionFile = readFile("${env.VERSION_FILE}").trim()
                     echo "Current Version: ${versionFile}"
@@ -56,6 +57,7 @@ pipeline {
                     //     sh "git push https://${GIT_USER}:${GIT_PASS}@github.com/your-repo.git HEAD:main"
                     // }
                 }
+            }
         }
 
         // stage('Install Docker & Build') {
