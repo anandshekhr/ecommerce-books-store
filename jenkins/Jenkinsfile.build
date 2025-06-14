@@ -89,8 +89,7 @@ pipeline {
         // }
         stage('Post Check') {
             steps {
-                sh """export PATH=/usr/local/bin:$PATH
-                docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${TAG}"""
+                sh """Completing..."""
             }
         }
     }
