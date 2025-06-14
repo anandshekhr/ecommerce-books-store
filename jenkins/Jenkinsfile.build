@@ -23,12 +23,12 @@ pipeline {
             }
         }
 
-        stage('Install Docker & Build') {
-            steps {
-                sh 'chmod +x deploy/shell/setup-and-build.sh'
-                sh 'deploy/shell/setup-and-build.sh'
-            }
-        }
+        // stage('Install Docker & Build') {
+        //     steps {
+        //         sh 'chmod +x deploy/shell/setup-and-build.sh'
+        //         sh 'deploy/shell/setup-and-build.sh'
+        //     }
+        // }
 
         stage('Build using Docker Compose') {
             steps {
