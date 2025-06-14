@@ -11,7 +11,7 @@ pipeline {
 
     environment {
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
-        COMPOSE_FILE = "deploy/image/Dockerfile"
+        COMPOSE_FILE = "deploy/docker-compose.yml"
         IMAGE_NAME="bookstore:latest"
     }
 
@@ -36,7 +36,7 @@ pipeline {
                 sh '''
                     export PATH=/usr/local/bin:$PATH
                     docker --version
-                    docker build -f ${COMPOSE_FILE} ${IMAGE_NAME} .
+                    docker-compose -f ${COMPOSE_FILE} build
                     '''
             }
         }
