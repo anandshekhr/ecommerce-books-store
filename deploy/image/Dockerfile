@@ -40,6 +40,7 @@ ENV POSTGRES_USER='postgres'
 ENV POSTGRES_HOST='host.docker.internal'
 ENV POSTGRES_PORT='5433'
 ENV ENV='dev'
+ENV SECRET_KEY = 'dj!tkv8l1o%$jhqg0(*#(n=3ka6n$y@l%=79_o6z5gxoz7+uj^'
 
 COPY deploy/shell/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
