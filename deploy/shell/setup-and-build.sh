@@ -1,38 +1,35 @@
 #!/bin/bash
 
-set -e  # Stop on any error
+set -e  # Exit on any error
 
 echo "🚀 Starting Docker installation and build process..."
 
-# Check if Docker is already installed
-if ! command -v docker &> /dev/null
-then
-    echo "🐳 Docker not found. Installing Docker..."
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "🐳 Docker not found. Attempting to install Docker for macOS..."
 
-    # Install Docker for Debian/Ubuntu-based systems
-    apt-get update
-    apt-get install -y \
-        ca-certificates \
-        curl \
-        gnupg \
-        lsb-release
+    # Check if Homebrew is installed
+    if ! command -v brew &> /dev/null; then
+        echo "🔧 Homebrew not found. Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    fi
 
-    mkdir -p /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    # Install Docker using Homebrew
+    brew install --cask docker
 
-    echo \
-      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-      https://download.docker.com/linux/ubuntu \
-      $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-    apt-get update
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    echo "📦 Docker installed. Please open Docker Desktop manually to complete setup if this is the first time."
+    exit 1  # Exit so user can manually start Docker Desktop
 else
     echo "✅ Docker is already installed."
 fi
 
-# Verify Docker version
-docker --version
+# Wait for Docker daemon to be ready
+while ! docker info > /dev/null 2>&1; do
+    echo "⏳ Waiting for Docker to start..."
+    sleep 2
+done
 
 echo "🔧 Building Docker image from deploy/image/Dockerfile..."
 
