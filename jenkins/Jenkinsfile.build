@@ -4,34 +4,36 @@ pipeline {
     environment {
         IMAGE_NAME = "bookstore:latest"
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
+        DOCKERFILE_PATH = "deploy/image/Dockerfile"
+        BUILD_CONTEXT = "."  // Or you can use `deploy/` if your build context is only that folder
     }
 
     stages {
         stage('Checkout Code') {
             steps {
                 echo "📥 Cloning code from repository..."
-                git url: "$GIT_REPO"
+                git url: "${GIT_REPO}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "🔧 Building Docker image..."
-                sh "docker build -t $IMAGE_NAME ."
+                echo "🔧 Building Docker image using Dockerfile at ${DOCKERFILE_PATH}..."
+                sh "docker build -f ${DOCKERFILE_PATH} -t ${IMAGE_NAME} ${BUILD_CONTEXT}"
             }
         }
 
         stage('Save Docker Image (optional)') {
             steps {
                 echo "💾 Saving image to archive (optional)"
-                sh "docker save $IMAGE_NAME -o django_app.tar"
+                sh "docker save ${IMAGE_NAME} -o django_app.tar"
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build completed: $IMAGE_NAME"
+            echo "✅ Build completed: ${IMAGE_NAME}"
         }
         failure {
             echo "❌ Build failed"
