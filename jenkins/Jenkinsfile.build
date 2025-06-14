@@ -26,7 +26,7 @@ pipeline {
         stage('Install Docker & Build') {
             steps {
                 sh 'chmod +x setup-and-build.sh'
-                sh './setup-and-build.sh'
+                sh 'deploy/shell/setup-and-build.sh'
             }
         }
 
