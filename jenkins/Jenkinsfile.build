@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "django-app:latest"
+        GIT_REPO = "https://github.com/your-username/your-django-repo.git"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo "📥 Cloning code from repository..."
+                git url: "$GIT_REPO"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                echo "🔧 Building Docker image..."
+                sh "docker build -t $IMAGE_NAME ."
+            }
+        }
+
+        stage('Save Docker Image (optional)') {
+            steps {
+                echo "💾 Saving image to archive (optional)"
+                sh "docker save $IMAGE_NAME -o django_app.tar"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Build completed: $IMAGE_NAME"
+        }
+        failure {
+            echo "❌ Build failed"
+        }
+    }
+}
