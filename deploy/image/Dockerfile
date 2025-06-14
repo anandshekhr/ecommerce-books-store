@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 # Install system dependencies
 RUN apt-get update \
     && apt-get install -y build-essential openssl\
-    && apt-get clean
+    && apt-get clean && apt-get install docker-compose
 
 # Install pip and setuptools
 RUN pip install --upgrade pip setuptools
