@@ -6,7 +6,7 @@ echo "🔧 Running pre-start scripts..."
 
 # Example custom commands before runserver
 python manage.py collectstatic --noinput
-python manage.py makemigrations
+# python manage.py makemigrations
 python manage.py migrate
 echo "✅ Pre-commands done."
 
