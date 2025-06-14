@@ -1,5 +1,5 @@
 services:
-  web-provider:
+  web-bookstore:
     build:
       context: ..
       dockerfile: deploy/image/Dockerfile
@@ -14,7 +14,4 @@ services:
       POSTGRES_USER: 'postgres'
       POSTGRES_HOST: 'host.docker.internal'
       POSTGRES_PORT: '5433'
-    depends_on:
-      # - db
-      - redis
     restart: always
