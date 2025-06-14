@@ -11,7 +11,8 @@ pipeline {
 
     environment {
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
-        COMPOSE_FILE = "deploy/docker-compose.yml"
+        COMPOSE_FILE = "deploy/image/Dockerfile"
+        IMAGE_NAME="bookstore:latest"
     }
 
     stages {
@@ -25,7 +26,7 @@ pipeline {
         stage('Build using Docker Compose') {
             steps {
                 echo "🔧 Building Docker containers using Docker Compose..."
-                sh "docker-compose -f ${COMPOSE_FILE} build"
+                sh "docker build -f ${COMPOSE_FILE} ${IMAGE_NAME} ."
             }
         }
 

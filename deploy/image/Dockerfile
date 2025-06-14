@@ -31,3 +31,5 @@ ENV POSTGRES_USER='postgres'
 ENV POSTGRES_HOST='host.docker.internal'
 ENV POSTGRES_PORT='5433'
 
+CMD [ "python" ,"manage.py runserver 8000"]
+
