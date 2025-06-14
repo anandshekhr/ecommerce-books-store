@@ -14,6 +14,7 @@ pipeline {
         COMPOSE_FILE = "deploy/docker-compose.yml"
         IMAGE_NAME="bookstore"
         TAG = "v${BUILD_NUMBER}"
+        VERSION_FILE = 'deploy/version.txt'
     }
 
     stages {
@@ -24,10 +25,37 @@ pipeline {
             }
         }
         stage('Preparing') {
-            steps {
-                echo "🏷️ Build number: ${BUILD_NUMBER}"
-                echo "📦 Docker image tag: ${IMAGE_NAME}:${TAG}"
-            }
+            script {
+                    def versionFile = readFile("${env.VERSION_FILE}").trim()
+                    echo "Current Version: ${versionFile}"
+
+                    def (major, minor, patch) = versionFile.tokenize('.').collect { it.toInteger() }
+
+                    // Bump logic: you can make this dynamic
+                    patch += 1
+                    if (patch > 9) {
+                        patch = 0
+                        minor += 1
+                    }
+
+                    def newVersion = "${major}.${minor}.${patch}"
+                    echo "🔢 New Version: ${newVersion}"
+
+                    // Save new version back to file
+                    writeFile file: "${env.VERSION_FILE}", text: newVersion
+
+                    // Save as build display name
+                    currentBuild.displayName = "v${newVersion}"
+
+                    // Optional: commit updated version to Git (requires credentials)
+                    // withCredentials([usernamePassword(credentialsId: 'git-creds-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                    //     sh "git config user.email 'jenkins@ci.com'"
+                    //     sh "git config user.name 'Jenkins CI'"
+                    //     sh "git add ${env.VERSION_FILE}"
+                    //     sh "git commit -m 'Bump version to ${newVersion}'"
+                    //     sh "git push https://${GIT_USER}:${GIT_PASS}@github.com/your-repo.git HEAD:main"
+                    // }
+                }
         }
 
         // stage('Install Docker & Build') {
