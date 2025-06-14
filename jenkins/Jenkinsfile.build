@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "bookstore:latest"
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
-        DOCKERFILE_PATH = "deploy/image/Dockerfile"
-        BUILD_CONTEXT = "."
+        COMPOSE_FILE = "deploy/docker-compose.yml"
     }
 
     stages {
@@ -16,27 +14,30 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build using Docker Compose') {
             steps {
-                echo "🔧 Building Docker image using Dockerfile at ${DOCKERFILE_PATH}..."
-                sh "docker build -f ${DOCKERFILE_PATH} -t ${IMAGE_NAME} ${BUILD_CONTEXT}"
+                echo "🔧 Building Docker containers using Docker Compose..."
+                sh "docker-compose -f ${COMPOSE_FILE} build"
             }
         }
 
-        stage('Save Docker Image (optional)') {
+        stage('(Optional) Save Image') {
+            when {
+                expression { fileExists("deploy/image/Dockerfile") }
+            }
             steps {
                 echo "💾 Saving image to archive (optional)"
-                sh "docker save ${IMAGE_NAME} -o django_app.tar"
+                sh "docker save bookstore:latest -o django_app.tar"
             }
         }
     }
 
     post {
         success {
-            echo "✅ Build completed: ${IMAGE_NAME}"
+            echo "✅ Docker Compose build succeeded"
         }
         failure {
-            echo "❌ Build failed"
+            echo "❌ Docker Compose build failed"
         }
     }
 }
