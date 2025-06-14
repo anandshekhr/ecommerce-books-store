@@ -30,9 +30,9 @@ pipeline {
         //     }
         // }
 
-        stage('Build using Docker Compose') {
+        stage('Build') {
             steps {
-                echo "🔧 Building Docker containers using Docker Compose..."
+                echo "🔧 Building..."
                 sh "docker build -f ${COMPOSE_FILE} ${IMAGE_NAME} ."
             }
         }
