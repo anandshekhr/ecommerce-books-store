@@ -18,10 +18,9 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
         COMPOSE_FILE = "deploy/docker-compose.yml"
-        IMAGE_NAME="bookstore"
-        TAG = "v${BUILD_NUMBER}"
-        VERSION_PREFIX = '1.0'
-        CUSTOM_VERSION = ''
+        IMAGE_NAME = "bookstore"
+        PORT_MAPPING = "8000:8000"
+        CONTAINER_NAME = "bookstore"
     }
 
     stages {
@@ -31,15 +30,14 @@ pipeline {
                 git url: "${GIT_REPO}"
             }
         }
+
         stage('Preparing') {
-            steps{
+            steps {
                 script {
-                    // Step 1: Set version prefix based on environment
                     def prefix = (params.ENVIRONMENT in ['Dev', 'Int']) ? '0.0' : '1.0'
                     env.VERSION_PREFIX = prefix
                     echo "📌 Version prefix set to: ${env.VERSION_PREFIX}"
 
-                    // Step 2: Get previous build number and bump patch
                     def previousBuild = currentBuild.previousBuild
                     def lastVersion = "${env.VERSION_PREFIX}.0"
 
@@ -51,51 +49,60 @@ pipeline {
                     }
 
                     def (major, minor, patch) = lastVersion.tokenize('.').collect { it as int }
-
-                    // Just increment patch here
                     patch += 1
+                    env.CUSTOM_VERSION = "${major}.${minor}.${patch}"
+                    currentBuild.displayName = "#${env.CUSTOM_VERSION}"
+                    currentBuild.description = "#${env.CUSTOM_VERSION}"
 
-                    CUSTOM_VERSION = "${major}.${minor}.${patch}"
-                    currentBuild.displayName = "#${CUSTOM_VERSION}"
-                    currentBuild.description = "#${CUSTOM_VERSION}"
+                    // Tag to pass into docker build
+                    env.TAG = "v${env.CUSTOM_VERSION}"
 
-                    echo "🔢 Computed Version: #${CUSTOM_VERSION}"
+                    echo "🔢 Computed Version: ${env.CUSTOM_VERSION}"
                 }
-
-            
             }
         }
-
-        // stage('Install Docker & Build') {
-        //     steps {
-        //         sh 'chmod +x deploy/shell/setup-and-build.sh'
-        //         sh 'deploy/shell/setup-and-build.sh'
-        //     }
-        // }
 
         stage('Build') {
             steps {
-                echo "🔧 Building..."
-                sh '''
-                    export PATH=/usr/local/bin:$PATH
+                echo "🔧 Building Docker image..."
+                sh """
+                    export PATH=/usr/local/bin:\$PATH
                     docker --version
-                    docker-compose -f ${COMPOSE_FILE} build --build-arg BUILD_NUMBER=${TAG}
-                    '''
+                    docker-compose -f ${COMPOSE_FILE} build --build-arg BUILD_NUMBER=${env.TAG}
+                """
             }
         }
 
-        // stage('(Optional) Save Image') {
-        //     when {
-        //         expression { fileExists("deploy/image/Dockerfile") }
-        //     }
-        //     steps {
-        //         echo "💾 Saving image to archive (optional)"
-        //         sh "docker save bookstore:latest -o django_app.tar"
-        //     }
-        // }
+        stage('Terraform Cleanup') {
+            when {
+                expression { params.BUILD_ACTION == 'Build and Deploy' }
+            }
+            steps {
+                echo "🧹 Stopping and removing existing container..."
+                sh """
+                    export PATH=/usr/local/bin:\$PATH
+                    docker stop ${CONTAINER_NAME} || true
+                    docker rm ${CONTAINER_NAME} || true
+                """
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression { params.BUILD_ACTION == 'Build and Deploy' }
+            }
+            steps {
+                echo "🚀 Running Docker container..."
+                sh """
+                    export PATH=/usr/local/bin:\$PATH
+                    docker-compose -f ${COMPOSE_FILE} up -d
+                """
+            }
+        }
+
         stage('Post Check') {
             steps {
-                echo """Completing..."""
+                echo "✅ Pipeline complete."
             }
         }
     }

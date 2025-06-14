@@ -1,5 +1,6 @@
 services:
   web-bookstore:
+    container_name: bookstore
     build:
       context: ..
       dockerfile: deploy/image/Dockerfile
