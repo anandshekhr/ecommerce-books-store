@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "django-app:latest"
-        CONTAINER_NAME = "django_app"
+        IMAGE_NAME = "bookstore:latest"
+        CONTAINER_NAME = "bookstore"
         PORT_MAPPING = "8000:8000"
     }
 

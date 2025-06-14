@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "django-app:latest"
-        GIT_REPO = "https://github.com/your-username/your-django-repo.git"
+        IMAGE_NAME = "bookstore:latest"
+        GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
     }
 
     stages {
