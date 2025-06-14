@@ -3,6 +3,10 @@
 # Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
+ARG BUILD_NUMBER
+LABEL build_number=${BUILD_NUMBER}
+
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

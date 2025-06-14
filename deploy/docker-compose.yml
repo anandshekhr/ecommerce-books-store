@@ -3,6 +3,9 @@ services:
     build:
       context: ..
       dockerfile: deploy/image/Dockerfile
+      args:
+        BUILD_NUMBER: ${BUILD_NUMBER}
+    image: bookstore:${BUILD_NUMBER}
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ../src:/app/bookstore

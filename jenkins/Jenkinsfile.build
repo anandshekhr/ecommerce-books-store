@@ -12,7 +12,8 @@ pipeline {
     environment {
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
         COMPOSE_FILE = "deploy/docker-compose.yml"
-        IMAGE_NAME="bookstore:latest"
+        IMAGE_NAME="bookstore"
+        TAG = "v${BUILD_NUMBER}"
     }
 
     stages {
@@ -20,6 +21,12 @@ pipeline {
             steps {
                 echo "📥 Cloning code from repository..."
                 git url: "${GIT_REPO}"
+            }
+        }
+        stage('Preparing') {
+            steps {
+                echo "🏷️ Build number: ${BUILD_NUMBER}"
+                echo "📦 Docker image tag: ${IMAGE_NAME}:${TAG}"
             }
         }
 
@@ -36,7 +43,7 @@ pipeline {
                 sh '''
                     export PATH=/usr/local/bin:$PATH
                     docker --version
-                    docker-compose -f ${COMPOSE_FILE} build
+                    docker-compose -f ${COMPOSE_FILE} build --build-arg BUILD_NUMBER=${TAG}
                     '''
             }
         }
@@ -50,6 +57,12 @@ pipeline {
         //         sh "docker save bookstore:latest -o django_app.tar"
         //     }
         // }
+        stage('Post Check') {
+            steps {
+                sh """export PATH=/usr/local/bin:$PATH
+                docker tag ${IMAGE_NAME} ${IMAGE_NAME}:${BUILD_TAG}"""
+            }
+        }
     }
 
     post {
