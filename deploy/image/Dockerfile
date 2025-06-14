@@ -39,6 +39,11 @@ ENV POSTGRES_DB='opcua'
 ENV POSTGRES_USER='postgres'
 ENV POSTGRES_HOST='host.docker.internal'
 ENV POSTGRES_PORT='5433'
+ENV ENV='dev'
 
-CMD [ "python" ,"manage.py runserver 8000"]
+COPY deploy/shell/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+
 
