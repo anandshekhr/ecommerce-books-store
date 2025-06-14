@@ -45,8 +45,8 @@ pipeline {
 
                     if (previousBuild != null) {
                         def previousDesc = previousBuild.getDescription()
-                        if (previousDesc?.startsWith('v')) {
-                            lastVersion = previousDesc.replace('v', '')
+                        if (previousDesc?.startsWith('#')) {
+                            lastVersion = previousDesc.replace('#', '')
                         }
                     }
 
@@ -56,10 +56,10 @@ pipeline {
                     patch += 1
 
                     CUSTOM_VERSION = "${major}.${minor}.${patch}"
-                    currentBuild.displayName = "v${CUSTOM_VERSION}"
-                    currentBuild.description = "v${CUSTOM_VERSION}"
+                    currentBuild.displayName = "#${CUSTOM_VERSION}"
+                    currentBuild.description = "#${CUSTOM_VERSION}"
 
-                    echo "🔢 Computed Version: v${CUSTOM_VERSION}"
+                    echo "🔢 Computed Version: #${CUSTOM_VERSION}"
                 }
 
             
