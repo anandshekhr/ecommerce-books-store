@@ -46,7 +46,7 @@ pipeline {
                     writeFile file: "${env.VERSION_FILE}", text: newVersion
 
                     // Save as build display name
-                    currentBuild.displayName = "v${newVersion}"
+                    currentBuild.displayName = "#${newVersion}"
 
                     // Optional: commit updated version to Git (requires credentials)
                     // withCredentials([usernamePassword(credentialsId: 'git-creds-id', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
