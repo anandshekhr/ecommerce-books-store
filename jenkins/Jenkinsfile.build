@@ -41,15 +41,15 @@ pipeline {
             }
         }
 
-        stage('(Optional) Save Image') {
-            when {
-                expression { fileExists("deploy/image/Dockerfile") }
-            }
-            steps {
-                echo "💾 Saving image to archive (optional)"
-                sh "docker save bookstore:latest -o django_app.tar"
-            }
-        }
+        // stage('(Optional) Save Image') {
+        //     when {
+        //         expression { fileExists("deploy/image/Dockerfile") }
+        //     }
+        //     steps {
+        //         echo "💾 Saving image to archive (optional)"
+        //         sh "docker save bookstore:latest -o django_app.tar"
+        //     }
+        // }
     }
 
     post {
