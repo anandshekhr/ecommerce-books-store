@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'docker:24.0.7-cli' // Use a Docker CLI image with Docker installed
-            args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent { label 'docker-enabled' }
 
     environment {
         IMAGE_NAME = "bookstore:latest"
