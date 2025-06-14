@@ -33,7 +33,11 @@ pipeline {
         stage('Build') {
             steps {
                 echo "🔧 Building..."
-                sh "docker build -f ${COMPOSE_FILE} ${IMAGE_NAME} ."
+                sh '''
+                    export PATH=/usr/local/bin:$PATH
+                    docker --version
+                    docker build -f ${COMPOSE_FILE} ${IMAGE_NAME} .
+                    '''
             }
         }
 
