@@ -1,6 +1,14 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['Dev', 'Int','Uat', 'Prod'],
+            description: 'Select the environment to build for'
+        )
+    }
+
     environment {
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
         COMPOSE_FILE = "deploy/docker-compose.yml"
