@@ -35,3 +35,4 @@ bs4
 python-dotenv
 pandas
 openpyxl
+mysqlclient
