@@ -1,11 +1,16 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:24.0.7-cli' // Use a Docker CLI image with Docker installed
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         IMAGE_NAME = "bookstore:latest"
         GIT_REPO = "https://github.com/anandshekhr/ecommerce-books-store.git"
         DOCKERFILE_PATH = "deploy/image/Dockerfile"
-        BUILD_CONTEXT = "."  // Or you can use `deploy/` if your build context is only that folder
+        BUILD_CONTEXT = "."
     }
 
     stages {
