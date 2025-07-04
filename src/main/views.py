@@ -28,7 +28,8 @@ from .forms import ProductForm
 from django.db.models import Q
 import uuid
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
-
+from django.shortcuts import render
+from .models import ProductMusicalInstrument, Category
 
 
 razorpay_api = razorpay.Client(
@@ -41,7 +42,7 @@ def privacy_policy(request):
     policy = get_object_or_404(LegalContent, page_type='privacy_policy')
     return render(request, 'policies/legal_content.html', {'content': policy})
 
-def terms_of_service(request):
+def terms_of_service(request):      
     terms = get_object_or_404(LegalContent, page_type='terms_of_service')
     return render(request, 'policies/legal_content.html', {'content': terms})
 
@@ -59,7 +60,7 @@ def contact_us(request):
 
 
 def item_list(request):
-    categories = ExamCategory.objects.all()
+    categories = Category.objects.all()
     items = Item.objects.filter(is_available=True)
     selected_category = request.GET.get('category')
     if selected_category:
@@ -82,12 +83,12 @@ def item_list_filter(request):
     items = Item.objects.filter(is_available=True)
     
     if category_id:
-        category_obj = ExamCategory.objects.get(pk=category_id)
+        category_obj = Category.objects.get(pk=category_id)
         items = items.filter(Q(category__id__icontains=category_obj.pk) |
                               Q(category__board__id__icontains=category_obj.pk))
     
     if pcategory_id:
-        category_obj = ExamCategory.objects.get(pk=pcategory_id)
+        category_obj = Category.objects.get(pk=pcategory_id)
         items = items.filter(Q(category__id__icontains=category_obj.pk) |
                               Q(category__board__id__icontains=category_obj.pk))
     
@@ -110,7 +111,7 @@ def item_list_filter(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    categories = ExamCategory.objects.all()
+    categories = Category.objects.all()
     return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
 
 def item_list_search(request):
@@ -330,8 +331,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
-    queryset = ExamCategory.objects.all()
-    serializer_class = ExamCategorySerializer
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
 class AddToCartView(generics.GenericAPIView):
@@ -793,7 +794,7 @@ def adminProductList(request):
 @login_required
 def adminCategoryList(request):
     if request.user.is_staff:
-        categories = ExamCategory.objects.all()
+        categories = Category.objects.all()
 
     else:
         categories = []
@@ -866,3 +867,16 @@ def select_billing_address(request, address_id):
         BillingAddress.objects.filter(id=address_id, user=request.user).update(is_default=True)
         return JsonResponse({'success': True})
 
+# Musical Instruments category and subcategory views
+def instrument(request, category_id):
+    # Fetch the parent category
+    parent_category = get_object_or_404(Category, id=category_id)
+
+    # Fetch subcategories (instruments)
+    products = ProductMusicalInstrument.objects.filter(category=parent_category)
+
+    # Render the template with the fetched data
+    return render(request, 'store/instrument_product_list.html', {
+        'parent_category': parent_category,
+        'products': products
+    })

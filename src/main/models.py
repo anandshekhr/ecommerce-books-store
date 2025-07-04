@@ -7,7 +7,6 @@ from django.urls import reverse
 from datetime import date
 from django.utils import timezone
 from decimal import Decimal
-
 from django_quill.fields import QuillField
 
 class Question(models.Model):
@@ -44,17 +43,36 @@ class Answer(models.Model):
         verbose_name_plural = _("Answers")
     
     
-class ExamCategory(models.Model):
+class Category(models.Model):
     name = models.CharField(verbose_name=_("Category"),max_length=100)
-    board = models.ForeignKey("self", verbose_name=_("Parent Category"), on_delete=models.CASCADE, default=None, null=True, blank=True)
+    parent_category = models.ForeignKey("self", verbose_name=_("Parent Category"), on_delete=models.CASCADE, default=None, null=True, blank=True)
     image = models.ImageField(_("image"), upload_to='image/',null=True, blank=True)
 
     def __str__(self):
-        return f"{self.name} { '-' + self.board.name if self.board else ''}"
+        return f"{self.name} { '-' + self.parent_category.name if self.parent_category else ''}"
     
     class Meta:
         verbose_name = _("Category")
         verbose_name_plural = _("Categories")
+        
+# musical instrument subcategory
+class ProductMusicalInstrument(models.Model):
+    category = models.ForeignKey(
+        Category, related_name="subcategories", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=100, verbose_name="Name")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Price")
+    image = models.ImageField(
+        upload_to="thumbnail/musicalinstruments", blank=True, null=True
+    )
+
+    def __str__(self):
+        return f"{self.name} - {self.category.name}"
+
+    class Meta:
+        verbose_name = "Instrument Subcategory"
+        verbose_name_plural = "Instrument Subcategories"
 
 
 class BillingAddress(models.Model):
@@ -87,7 +105,7 @@ class BillingAddress(models.Model):
 
 class Item(models.Model):
     user = models.ForeignKey(User, verbose_name=_("Owner"), on_delete=models.SET_NULL, null=True,blank=True)
-    category = models.ForeignKey(ExamCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     description = models.TextField()
     og_price = models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
@@ -229,4 +247,3 @@ class Earning(models.Model):
 
     def __str__(self):
         return f"Earnings for {self.user} from {self.item} on {self.modified_at}"
-

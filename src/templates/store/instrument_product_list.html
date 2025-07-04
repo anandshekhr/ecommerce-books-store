@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ parent_category.name }} | BookStore{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="main-container">  <!-- Flexbox wrapper added -->
+
+        <!-- Sidebar -->
+       <!-- Sidebar -->
+<aside id="sidebar" class="amazon-sidebar">
+    <h3 class="sidebar-header">Category</h3>
+    <h6 class="sidebar-title"><b>Instruments</b></h6>
+    <ul class="sidebar-list">
+        <li><a href="#" class="filter-btn" data-category="Guitar">Guitar</a></li>
+        <li><a href="#" class="filter-btn" data-category="Flute">Flute</a></li>
+        <li><a href="#" class="filter-btn" data-category="Dafli">Dafli</a></li>
+        <li><a href="#" class="filter-btn" data-category="Drum">Drum</a></li>
+        <li><a href="#" class="filter-btn" data-category="Piano">Piano</a></li>
+        <li><a href="#" class="filter-btn" data-category="Harmonium">Harmonium</a></li>
+        <li><a href="#" class="filter-btn" data-category="Tabla">Tabla</a></li>
+        <li><a href="#" class="filter-btn" data-category="Dholak">Dholak</a></li>
+        <li><a href="#" class="filter-btn" data-category="MouthOrgan">MouthOrgan</a></li>
+        <li><a href="#" class="filter-btn" data-category="Violin">Violin</a></li>
+    </ul>
+</aside>
+
+
+        <!-- Product Grid -->
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card" data-category="{{ product.name }}">
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="product-image" alt="{{ product.name }}">
+                {% endif %}
+                <div class="instrument-details">
+                    <h6 class="product-title">{{ product.name }}</h6>
+                    <div class="instrument-price">₹{{ product.price }}</div>
+                    <button class="btn btn-warning w-100">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        const productCards = document.querySelectorAll(".product-card");
+
+        filterButtons.forEach(button => {
+            button.addEventListener("click", function (e) {
+                e.preventDefault();
+                const selectedCategory = this.getAttribute("data-category");
+
+                productCards.forEach(card => {
+                    if (card.getAttribute("data-category") === selectedCategory) {
+                        card.style.display = "block";
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+            });
+        });
+    });
+</script>
+
