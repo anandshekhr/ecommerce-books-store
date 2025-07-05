@@ -1,7 +1,7 @@
 # store/serializers.py
 
 from rest_framework import serializers
-from .models import Item, Category, Order, Question, Answer, BillingAddress
+from .models import *
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -27,25 +27,25 @@ class CategorySerializer(serializers.ModelSerializer):
 class CartItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     class Meta:
-        model = Item
+        model = Book
         fields = ['id','category','title','description','og_price','price','is_free','pdf_file','thumbnail']
 
 class ItemPOSTSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Item
+        model = Book
         fields = '__all__'
 
 class ItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     class Meta:
-        model = Item
+        model = Book
         exclude = ('pdf_file',)
 
 
 class ItemOrderSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     class Meta:
-        model = Item
+        model = Book
         fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -66,3 +66,19 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillingAddress
         fields = '__all__'
+
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'name', 'description', 'price', 'image']
+
+class ElectronicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Electronic
+        fields = ['id', 'name', 'description', 'price', 'image']
+
+class MusicalInstrumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MusicalInstrument
+        fields = ['id', 'name', 'description', 'price', 'image']

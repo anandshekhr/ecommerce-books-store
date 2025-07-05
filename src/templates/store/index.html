@@ -18,248 +18,98 @@
 <meta name="twitter:description" content="Find the best books and educational material online.">
 <meta name="twitter:image" content="{% static 'assets/img/meta_image.png' %}">
 <link href="{% static "assets/css/index.css" %}" rel="stylesheet">
-
-
-
+<style>.banner-img {
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    max-height: 380px;
+    object-fit: cover;
+}
+.carousel-inner {
+    overflow: visible;
+}
+.carousel-item {
+    transition: transform 0.6s ease-in-out;
+}
+</style>
 {% endblock head %}
-{% block style %}
 
-
-
-{% endblock style %}
 {% block content %}
-<!-- Filters, Search, and Item List -->
+<!-- Banners Section: Bootstrap Carousel -->
+<div class="container mt-4">
+  <div id="bannerCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+    <div class="carousel-inner">
+      {% for banner in banners %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        <img src="{{ banner.image.url }}" class="d-block w-100 banner-img" alt="{{ banner.title }}">
+      </div>
+      {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- Horizontal Category Scroll -->
+<div class="container mt-3">
+    <h4 class="mb-3">Shop by Category</h4>
+    <div class="d-flex overflow-auto flex-row">
+        {% for category in categories %}
+            <div class="card text-center me-3" style="min-width: 150px;">
+                <a href="{% url "category-wise-products" category.id %}" class="text-decoration-none text-dark">
+                    <div class="card-body">
+                        <h6>{{ category.name }}</h6>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Advertisement Space -->
 <div class="container mt-4">
     <div class="row">
-       
-
-        
-        <!-- Filters Section -->
-        <div class="col-md-3 filter-section">
-            <h5>Filters</h5>
-            <form id="filterForm">
-                <div class="mb-3">
-                    <label for="categoryFilter" class="form-label">Category</label>
-                    <select class="form-select" id="categoryFilter" name="category" placeholder="Select Category">
-                        <option value="">All</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}">{{ category.name }}{% if category.board %} - {{ category.board }}{% endif %}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="priceFilter" class="form-label">Price Range</label>
-                    <input type="number" class="form-control" id="minPrice" name="min_price" placeholder="Min Price">
-                    <input type="number" class="form-control mt-2" id="maxPrice" name="max_price" placeholder="Max Price">
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
-            </form>
-
-            <ul style="margin-top: 10%;"><h6>Quick Filters</h6>
-                <li><a href="/item/filter/?pcategory=8" >Engineering</a></li>
-                <li><a href="/item/filter/?pcategory=11" >AI/ML</a></li>
-                <li><a href="/item/filter/?pcategory=20" >Data Science</a></li>
-                <li><a href="/item/filter/?pcategory=21" >UPSC</a></li>
-                <li><a href="/item/filter/?pcategory=22" >CTET</a></li>
-                <li><a href="/item/filter/?pcategory=23" >Bank</a></li>
-                <li><a href="/item/filter/?pcategory=3" >XII</a></li>
-                <li><a href="/item/filter/?pcategory=1" >X</a></li>
-            </ul>
-        </div>
-
-
-        <!-- Products Section -->
-        <div class="col-md-9">
-            <!-- Filter Button for Mobile (appears at the top on mobile) -->
-            <button id="filterToggleBtn" class="btn btn-primary filter-btn d-md-none" style="margin-top:-10px;">
-                <i class="fas fa-filter"></i> Filters
-            </button>
-            
-            <div id="products_item">
-            {% if products %}
-            <div class="row" id="productList">
-                <!-- Item Cards (Populated via Django or API) -->
-                {% for product in products %}
-                <div class="col-md-4 item-card">
-                    <div class="card h-107">
-                        <a href="{% url 'item-details' product.id %}"><img src="{{ product.thumbnail.url }}" class="card-img-top" alt="{{ product.title }}"></a>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.title }}
-                            <span class="card-text">{% if product.is_paperback %}(Paperback){% else %}(eBook){% endif %}</span></h5>
-                            <p class="card-text">{{ product.description|slice:":100" }}{% if product.description|length > 100 %}...{% endif %}</p>
-                            <p class="card-text-author">by {% if product.author %}<a href="#">{{ product.author|capfirst}}</a><span class="card-text"> (Author)</span>{% else %}<a href="#">{{ product.user.username|capfirst}}</a>{% endif %}</p>
-                            <div class="rating-box">
-                                <span class="rating-stars"></span>
-                                <span class="rating-number">{{product.rating}}</span>
-                            </div>
-                            <div class="card-text-price">
-                                {% if product.og_price %}
-                                <span class="text-muted original-price card-text-mrp">M.R.P.: ₹{{ product.og_price }}</span><br>
-                                {% endif %}
-                                {% if not product.is_free %}
-                                    <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">{{ product.price|floatformat:"0" }}</span></span>
-                                {% else %}
-                                    <span class="card-text-discounted"><span class="rupee-symbol">₹</span><span class="item-price">0</span></span>
-
-                                {% endif %}
-                                <div class="price-btn">
-                                    {% if product.is_free %}
-                                    <a href="{{product.pdf_file.url}}" class="btn btn-outline-success price-btn-style" title="Download now"><i class="fa fa-download" aria-hidden="true"></i></a>
-                                    
-                                    {% else %}
-                                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-outline-success price-btn-style">ADD</a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            
-
-            {% comment %} {% if products|length > 9 %} {% endcomment %}
-            <!-- Pagination -->
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if products.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ products.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.min_price %}&min_price={{ request.GET.min_price }}{% endif %}{% if request.GET.max_price %}&max_price={{ request.GET.max_price }}{% endif %}" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                            </span>
-                        </li>
-                    {% endif %}
-                    {% for num in products.paginator.page_range %}
-                    <li class="page-item {% if products.number == num %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-                    </li>
-                    {% endfor %}
-                    {% if products.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ products.next_page_number }}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                    {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                            </span>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% else %}
-            <!-- No items in the cart -->
-            <p>No relevant search item(s) found.</p>
-            <p>Tip: try entering a different search item.</p>
-            {% endif %}
-        </div>
-            {% comment %} {% endif %} {% endcomment %}
+        <div class="col-12">
+            <img src="{% static 'assets/img/ad-placeholder.jpg' %}" class="img-fluid w-100" alt="Advertisement">
         </div>
     </div>
 </div>
+
+<!-- Products Rows By Category -->
+<div class="container mt-4">
+    {% for category_name, items in categorized_products.items %}
+    <div class="mb-4">
+        <h5 class="mb-3">{{ category_name }}</h5>
+        <div class="d-flex overflow-auto">
+            {% for product in items %}
+            <div class="card me-3" style="min-width: 200px;">
+                <a href="{% url 'product-detail' product.category.slug product.id %}"><img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}"></a>
+                <div class="card-body">
+                    <h6 class="card-title">{{ product.name }}</h6>
+                    <p class="card-text">{{ product.description|slice:":60" }}{% if product.description|length > 60 %}...{% endif %}</p>
+                    <div>
+                        {% if not product.is_free %}
+                        <span class="text-muted">₹{{ product.price }}</span>
+                        {% else %}
+                        <span class="text-success">Free</span>
+                        {% endif %}
+                    </div>
+                    {% if product.is_free %}
+                        <a href="{{ product.pdf_file.url }}" class="btn btn-outline-success btn-sm mt-2"><i class="fa fa-download"></i></a>
+                    {% else %}
+                        <a href="{% url 'add_to_cart' product.category.id product.id %}" class="btn btn-outline-success btn-sm mt-2">ADD</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endblock content %}
-
-{% block MoreJs %}
-<script>
-    $(document).ready(function() {
-        // Handle filter form submission
-        $('#filterForm').submit(function(e) {
-            e.preventDefault();
-            const category = $('#categoryFilter').val();
-            const minPrice = $('#minPrice').val();
-            const maxPrice = $('#maxPrice').val();
-            const searchQuery = $('#searchInput').val();
-
-            // Send filters and search query through AJAX or refresh page with new query params
-            let filterUrl = window.location.origin + '/item/filter/?';
-            if (category) filterUrl += `category=${category}&`;
-            if (minPrice) filterUrl += `min_price=${minPrice}&`;
-            if (maxPrice) filterUrl += `max_price=${maxPrice}&`;
-            if (searchQuery) filterUrl += `q=${searchQuery}`;
-
-            window.location.href = filterUrl; // You can replace this with AJAX call if preferred
-        });
-
-        // Trigger form submit when search input is used
-        $('#searchInput').on('keypress', function(e) {
-            if (e.which == 13) {  
-                $('#filterForm').submit();
-            }
-        });
-
-        $('#categoryFilter').select2({
-            
-            });
-
-    });
-
-    document.getElementById('filterToggleBtn').addEventListener('click', function() {
-        const filterSection = document.querySelector('.filter-section');
-    
-        // Toggle the 'open' class to animate and show/hide the section
-        if (filterSection.classList.contains('open')) {
-            filterSection.classList.remove('open');
-            setTimeout(() => {
-                filterSection.style.display = 'none'; // Hide after transition
-            }, 500); // Match the transition duration (0.5s)
-        } else {
-            filterSection.style.display = 'block'; // Display before transition starts
-            setTimeout(() => {
-                filterSection.classList.add('open');
-            }, 10); // Small delay to trigger transition smoothly
-        }
-    });
-
-    function searchProducts(page = 1) {
-        const searchQuery = document.getElementById('searchInput').value;
-        const url = window.location.origin + `/item/search/?q=${searchQuery}&page=${page}`;
-    
-        // Perform an AJAX request to fetch the filtered products with pagination
-        $.ajax({
-            url: url,
-            method: 'GET',
-            success: function(response) {
-                // Replace the product list and pagination links
-                $('#products_item').html(response);
-    
-                // Re-bind the AJAX pagination handler after loading new content
-                bindAjaxPagination();
-            },
-            error: function(error) {
-                console.error("Error fetching filtered products: ", error);
-            }
-        });
-    }
-    
-    function bindAjaxPagination() {
-        // Attach event listeners to pagination links
-        $('.ajax-pagination').click(function(e) {
-            e.preventDefault();
-            const page = $(this).data('page');
-            searchProducts(page);  // Call searchProducts with the selected page number
-        });
-    }
-    
-    // Bind the pagination links on page load (initially)
-    $(document).ready(function() {
-        bindAjaxPagination();
-    
-        // Also trigger search on input change or on keypress
-        $('#searchInput').on('input', function() {
-            searchProducts();
-        });
-    });
-    
-
-    
-    
-</script>
-{% endblock MoreJs %}

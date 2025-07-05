@@ -1,0 +1,57 @@
+<!-- Modal for Adding/Editing Address -->
+<div class="modal fade" id="billingAddressModal" tabindex="-1" role="dialog" aria-labelledby="billingAddressModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="billingAddressForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="billingAddressModalLabel">Edit/Add Billing Address</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Saved Addresses Section -->
+                    <div id="existingAddresses">
+                        <h6>Saved Addresses</h6>
+                        <div style="max-height: 200px; overflow-y: auto;"> <!-- Scrollable div -->
+                            <ul id="addressList" class="list-group">
+                                <!-- Dynamically loaded addresses -->
+                            </ul>
+                        </div>
+                        <button type="button" class="btn btn-primary mt-3" id="addNewAddressBtn">Add New
+                            Address</button>
+                    </div>
+
+                    <!-- New Address Form (hidden by default) -->
+                    <div id="newAddressForm" style="display: none; margin-top: 20px;">
+                        <h6>New Address</h6>
+                        <input type="text" name="full_name" class="form-control" placeholder="Full Name"
+                            style="margin: 5px 1px;" required>
+                        <input type="text" name="street_address" class="form-control" placeholder="Street Address"
+                            style="margin: 5px 1px;" required>
+                        <input type="text" name="city" class="form-control" placeholder="City" style="margin: 5px 1px;"
+                            required>
+                        <input type="text" name="state" class="form-control" placeholder="State"
+                            style="margin: 5px 1px;">
+                        <input type="text" name="postal_code" class="form-control" placeholder="Postal Code"
+                            style="margin: 5px 1px;" required>
+                        <input type="text" name="country" class="form-control" placeholder="Country"
+                            style="margin: 5px 1px;" required>
+                        <input type="text" name="phone_number" class="form-control" placeholder="Phone Number"
+                            style="margin: 5px 1px;">
+                        <div class="form-check" style="margin: 5px 1px;">
+                            <input type="checkbox" class="form-check-input" name="is_default" id="isDefault">
+                            <label class="form-check-label" for="isDefault">Set as Default</label>
+                        </div>
+                        <button type="button" class="btn btn-secondary mt-3" id="cancelNewAddressBtn">Cancel</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save Address</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

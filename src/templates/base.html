@@ -1,6 +1,5 @@
 {% load static %}
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -8,375 +7,267 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock title %} | BookStore</title>
     <meta name="robots" content="index, follow">
-    <link href="{% static "assets/css/base.css" %}" rel="stylesheet">
+
+    <!-- External CSS -->
+    <link href="{% static 'assets/css/base.css' %}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.1/js/select2.min.js"></script>
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.7/css/dataTables.bootstrap5.css">
-    
-    <link rel="stylesheet" href="{% static 'plugins/toastr/toastr.min.css' %}">
-    <script src="{% static 'plugins/toastr/toastr.min.js' %}"></script>
+    <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.1.7/css/dataTables.bootstrap5.css" rel="stylesheet">
+    <link href="{% static 'plugins/toastr/toastr.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet">
+
     {% block head %}{% endblock head %}
+
     <style>
-        
-        
-        {% block style %}{% endblock style %}
-        
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 56px;
+        }
+
+        .sidebar {
+            height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 250px;
+            background-color: #ffffff;
+            border-right: 1px solid #ccc;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px;
+            color: #000;
+            text-decoration: none;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .toggle-sidebar {
+            cursor: pointer;
+        }
+
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.show~.main-content {
+            margin-left: 250px;
+        }
+
+        .navbar-dark,
+        .bg-primary {
+            background-color: #000 !important;
+        }
+
+        .nav-link .sidebar {
+            color: white;
+        }
+
+        .sidebar a:hover {
+            color: #ddd;
+        }
+
+        footer.bg-primary {
+            background-color: #000 !important;
+        }
+
+            {
+            % block style %
+        }
+
+            {
+            % endblock style %
+        }
     </style>
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" style="z-index:1000;">
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{% url "home-1" %}">Books Store</a>
-            {% comment %} <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            {% comment %} <span class="navbar-toggler toggle-sidebar me-2">
                 <span class="navbar-toggler-icon"></span>
-            </button> {% endcomment %}
-             <!-- Search Bar -->
-            <div class="d-flex justify-content-center w-50" style="width:50%;">
-                <input type="text" id="searchInput" class="form-control" placeholder="Search for products..." style=""  oninput="searchProducts()">
-            </div>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            </span> {% endcomment %}
+            <button class="btn btn-outline-light toggle-sidebar me-2" type="button" style="border: none;">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand" href="{% url 'home-1' %}">Books Store</a>
+            <div class="collapse navbar-collapse">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url "home-1" %}">Products</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url "question_list" %}">Q & A</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url "view_cart" %}">Cart</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url "order-history" %}">Order History</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home-1' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'view_cart' %}">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'order-history' %}">Orders</a></li>
                     {% if request.user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url "logout-view" %}">Logout</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout-view' %}">Logout</a></li>
                     {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url "login-view" %}">Login</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login-view' %}">Login</a></li>
                     {% endif %}
-                    
-                    {% if request.user.is_staff or request.user.is_superuser%} 
-                    <li class="nav-item"><a class="nav-link" href="{% url "educator-user-profile" %}">Hi, {{request.user.username|capfirst}}</a></li>
-                    {% elif request.user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" >Hi, {{request.user.username|capfirst}}</a></li>
-
-                    {% endif %}
-
                 </ul>
             </div>
         </div>
     </nav>
-    <!-- Secondary Navbar -->
-    <nav class="secondary-nav">
-        <div class="nav-container">
-            <div class="d-flex justify-content-between">
-                <ul class="nav-links">
 
-                    <!-- Musical Instruments Button -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'musical_instruments_list' category_id=1 %}"> Musical Instruments</a>
-                         <li class="nav-item">
-                        
-                        <style>
-                                /* ========== Amazon-style Layout ========== */
-                                .main-container {
-                                    display: flex;
-                                    align-items: flex-start;
-                                    max-width: 1200px;
-                                    margin: auto;
-                                    padding: 1rem;
-                                }
-                            
-                                /* ========== Amazon-style Sidebar ========== */
-                                .amazon-sidebar { 
-                                    position: sticky;
-                                    top:40px;
-                                    width: 180px;
-                                    margin-left: -180px;
-                                    background-color: #fff;
-                                    border-right: 1px solid #ddd;
-                                    padding: 20px;
-                                    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-                                    font-family: Arial, sans-serif;
-                                    flex-shrink: 0;
-                                    height: auto; /* Makes sidebar full height */
-                                    max-height: calc(200vh-40px); /* Limit height to 70% of viewport height */
-                                    overflow-y: auto;
-                                    
-                                }
-                            
-                                .sidebar-header {
-                                    font-size: 18px;
-                                    font-weight: bold;
-                                    margin-bottom: 5px;
-                                    color: #333;
-                                }
-                            
-                                .sidebar-list {
-                                    list-style: none;
-                                    padding: 0;
-                                }
-                            
-                                .sidebar-list li {
-                                    padding: 5px;
-                                    font-size: 16px;
-                                    border-radius: 5px;
-                                    transition: background 0.3s ease;
-                                }
-                            
-                                .sidebar-list li a {
-                                    text-decoration: none;
-                                    color: #007185;
-                                    display: block;
-                                }
-                            
-                                .sidebar-list li:hover {
-                                    background-color: #f3f3f3;
-                                }
-                            
-                                /* ========== Amazon-style Product Grid ========== */
-                                .product-grid {
-                                    margin-right: 10px;
-                                    display: grid;
-                                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                                    gap: 1.5rem;
-                                    padding: 1rem;
-                                    flex-grow: 1;
-                                }
-                            
-                                .product-card {
-                                    border: 1px solid #ddd;
-                                    border-radius: 8px;
-                                    overflow: hidden;
-                                    transition: transform 0.3s ease;
-                                    background: white;
-                                    text-align: center;
-                                }
-                            
-                                .product-card:hover {
-                                    transform: translateY(-5px);
-                                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                                }
-                            
-                                .product-image {
-                                    width: 100%;
-                                    height: 200px;
-                                    object-fit: contain;
-                                    padding: 1rem;
-                                    border-bottom: 1px solid #eee;
-                                }
-                            
-                                .instrument-details {
-                                    padding: 1rem;
-                                    text-align: center;
-                                }
-                            
-                                .instrument-price {
-                                    color: #B12704;
-                                    font-size: 1.2rem;
-                                    margin: 0.5rem 0;
-                                }
-                            
-                                @media (max-width: 768px) {
-                                    .main-container {
-                                        flex-direction: column;
-                                    }
-                                    
-                                    .product-grid {
-                                        grid-template-columns: repeat(2, 1fr);
-                                    }
-                            
-                                    .product-image {
-                                        height: 150px;
-                                    }
-                                }
-                            
-                                /* ========== Amazon-style Navbar ========== */
-                                .secondary-nav {
-                                    background: #232f3e;
-                                    padding: 0.5rem 0;
-                                    margin-top: 50px;
-                                    position: fixed; /* Fix it to the top */
-                                    width: 100%;
-                                    top: 0;
-                                    z-index: 1000;
-                                }
-                                body {
-                                    padding-top: 60px; /* Adjust based on navbar height */
-                                }
-                                
-                            
-                                .nav-container {
-                                    max-width: 1200px;
-                                    margin: 0 auto;
-                                }
-                            
-                                .nav-links {
-                                    display: flex;
-                                    gap: 1.5rem;
-                                    list-style: none;
-                                    margin: 0;
-                                    padding: 0 1rem;
-                                }
-                            
-                                .nav-links a, .nav-button {
-                                    color: white !important;
-                                    text-decoration: none;
-                                    padding: 0.5rem;
-                                    font-size: 14px;
-                                }
-                            
-                                .nav-links a:hover, .nav-button:hover {
-                                    outline: 1px solid white;
-                                    border-radius: 2px;
-                                }
-                            </style>
-                    </li>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    
-
-    <!-- Product Content -->
-    {% block sidenavbar %}{% endblock sidenavbar %}
-    <script src="https://accounts.google.com/gsi/client" async></script>
-    {% if not request.user.is_authenticated %}
-    <div id="g_id_onload"
-        data-client_id="749041874039-0eqc32iejd8bk0m6m8qcgtb0ib4su3j7.apps.googleusercontent.com"
-        data-login_uri="{% url 'google_login_by_token' %}"
-        data-auto_select="true">
-    </div>
-    {% endif %}
-    <div class="content-wrapper" style="margin-top:1%;margin-bottom:5%;">
-    {% block content %}{% endblock content %}
-    </div>
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center text-lg-start pt-4" style="z-index:1000;">
-        <div class="container p-4">
-            <div class="row">
-                <!-- Company Info -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">Company</h5>
-                    <ul class="list-unstyled mb-0">
-                        <li><a href="#" class="text-white">About Us</a></li>
-                        <li><a href="#" class="text-white">Careers</a></li>
-                        <li><a href="{% url "educator-admin-products" %}" class="text-white">Staff Login</a></li>
-                        <li><a href="{% url "ask_question" %}" class="text-white">Have any Doubt? Ask Us Here</a></li>
-                        <li><a href="{% url "contact-us" %}" class="text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Customer Support -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">Customer Support</h5>
-                    <ul class="list-unstyled mb-0">
-                        {% comment %} <li><a href="#" class="text-white">FAQs</a></li> {% endcomment %}
-                        <li><a href="{% url 'shipping-policy' %}" class="text-white">Shipping & Return</a></li>
-                        <li><a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a></li>
-                        <li><a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a></li>
-                        <li><a href="{% url 'refund-policy' %}" class="text-white">Refund Policy</a></li>
-                    </ul>
-                </div>
-                
-                <!-- Social Media Links -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">Follow Us</h5>
-                    <ul class="list-unstyled mb-0">
-                        <li>
-                            <a href="#" class="text-white"><i class="fab fa-facebook-f mr-2"></i>Facebook</a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white"><i class="fab fa-twitter mr-2"></i>Twitter</a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white"><i class="fab fa-instagram mr-2"></i>Instagram</a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white"><i class="fab fa-linkedin mr-2"></i>LinkedIn</a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- Payment Methods -->
-                <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
-                    <h5 class="text-uppercase">We Accept</h5>
-                    <div class="d-flex justify-content-center">
-                        <img src="{% static "assets/img/visa-logo.png" %}" alt="Visa" class="img-fluid mx-2" style="height: 40px;">
-                        <img src="{% static "assets/img/mastercard-logo.png" %}" alt="MasterCard" class="img-fluid mx-2" style="height: 40px;">
-                        <img src="{% static "assets/img/upi-logo.png" %}" alt="UPI" class="img-fluid mx-2" style="height: 40px;">
+    <!-- Sidebar -->
+    {% comment %} <div class="sidebar bg-white" id="sidebar">
+        <a href="{% url 'home-1' %}?category=books">Books</a>
+        <a href="{% url 'musical_instruments_list' category_id=1 %}">Musical Instruments</a>
+        <a href="#">Electronics</a>
+        <a href="{% url 'question_list' %}">Q & A</a>
+        <a href="{% url 'contact-us' %}">Contact Us</a>
+        style="margin-top:50%;"
+    </div> {% endcomment %}
+    <!-- Sidebar with Accordion -->
+    <div class="sidebar bg-white" id="sidebar">
+        <div class="accordion" id="categoryAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingBooks">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseBooks" aria-expanded="false" aria-controls="collapseBooks">
+                        Books
+                    </button>
+                </h2>
+                <div id="collapseBooks" class="accordion-collapse collapse" aria-labelledby="headingBooks"
+                    data-bs-parent="#categoryAccordion">
+                    <div class="accordion-body">
+                        <a href="{% url 'home-1' %}?category=fiction">Fiction</a>
+                        <a href="{% url 'home-1' %}?category=non-fiction">Non-fiction</a>
+                        <a href="{% url 'home-1' %}?category=educational">Educational</a>
                     </div>
-                    <!-- Play Store App Link Section -->
-                    <div class="text-center mt-2">
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingInstruments">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseInstruments" aria-expanded="false" aria-controls="collapseInstruments">
+                        Musical Instruments
+                    </button>
+                </h2>
+                <div id="collapseInstruments" class="accordion-collapse collapse" aria-labelledby="headingInstruments"
+                    data-bs-parent="#categoryAccordion">
+                    <div class="accordion-body">
+                        <a href="#">Guitars</a>
+                        <a href="#">Keyboards</a>
+                        <a href="#">Drums</a>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingElectronics">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseElectronics" aria-expanded="false" aria-controls="collapseElectronics">
+                        Electronics
+                    </button>
+                </h2>
+                <div id="collapseElectronics" class="accordion-collapse collapse" aria-labelledby="headingElectronics"
+                    data-bs-parent="#categoryAccordion">
+                    <div class="accordion-body">
+                        <a href="#">Mobiles</a>
+                        <a href="#">Laptops</a>
+                        <a href="#">Accessories</a>
+                    </div>
+                </div>
+            </div>
+            <div class="accordion-item">
+                <a class="accordion-button" href="{% url 'question_list' %}">Q & A</a>
+            </div>
+            <div class="accordion-item">
+                <a class="accordion-button" href="{% url 'contact-us' %}">Contact Us</a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            {% block content %}{% endblock content %}
+        </div>
+
+
+        <!-- Footer -->
+        <footer class="bg-primary text-white text-center text-lg-start mt-5" style="z-index:9999;">
+            <div class="container p-4">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <h5>Customer Support</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="{% url 'shipping-policy' %}" class="text-white">Shipping Policy</a></li>
+                            <li><a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a></li>
+                            <li><a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a></li>
+                            <li><a href="{% url 'refund-policy' %}" class="text-white">Refund Policy</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <h5>Company</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-white">About Us</a></li>
+                            <li><a href="{% url 'educator-admin-products' %}" class="text-white">Staff Login</a></li>
+                            <li><a href="{% url 'ask_question' %}" class="text-white">Ask a Question</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <h5>Download App</h5>
                         <a href="/media/apk/app-release.apk" target="_blank">
-                            <img src="{% static 'assets/img/google-play.webp' %}" alt="Get it on Google Play" class="img-fluid" style="max-width: 200px;">
+                            <img src="{% static 'assets/img/google-play.webp' %}" class="img-fluid"
+                                style="max-width: 200px;">
                         </a>
                     </div>
                 </div>
-
-
             </div>
-        </div>
-        
-        <!-- Copyright and Terms -->
-        <div class="text-center p-3 bg-secondary">
-            <p class="mb-0">&copy; 2024 VAMSCentral. All Rights Reserved. | 
-                <a href="{% url 'privacy_policy' %}" class="text-white">Privacy Policy</a> | 
-                <a href="{% url 'terms_of_service' %}" class="text-white">Terms of Service</a> |
-                <a href="{% url 'refund-policy' %}" class="text-white">Refund Policy</a> 
-            </p>
-        </div>
-    </footer>
-    
-    <!-- Add the necessary Bootstrap and FontAwesome CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
+            <div class="text-center bg-dark p-3">
+                &copy; 2024 VAMS. All rights reserved.
+            </div>
+        </footer>
+    </div>
 
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    {% comment %} <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script> {% endcomment %}
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="{% static 'plugins/toastr/toastr.min.js' %}"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
+            $('.toggle-sidebar').on('click', function () {
+                //console.log('somethisn');
+                $('#sidebar').toggleClass('show');
+            });
+
             toastr.options = {
                 "closeButton": true,
-                "debug": false,
-                "newestOnTop": true,
                 "progressBar": true,
-                "positionClass": "toast-top-right", // Adjust position if needed
-                "preventDuplicates": false,
-                "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
+                "positionClass": "toast-top-right",
                 "timeOut": "5000",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
             };
         });
     </script>
-    
-
     {% if messages %}
     {% for message in messages %}
-    <script type=text/javascript>
-      toastr.options.progressBar = true;
-      toastr.{{ message.tags }}('{{ message }}')
+    <script>
+        toastr.{ { message.tags } } ('{{ message }}');
     </script>
     {% endfor %}
     {% endif %}
-  
-    {% block MoreJs %}{% endblock MoreJs %}
 
+    {% block MoreJs %}{% endblock MoreJs %}
 </body>
 
 </html>

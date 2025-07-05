@@ -3,12 +3,11 @@
 {% block title %}Cart{% endblock title %}
 
 {% block content %}
-<!-- Cart Items -->
 <div class="container mt-4">
     {% if order %}
     <div class="billing-address-section mt-4">
         <h5>Billing Address 
-            <a><i class="fa-solid fa-pen" id="editBillingAddressButton" title="Edit/Add Address"></i></a></h5> 
+            <a><i class="fa-solid fa-pen" id="editBillingAddressButton" title="Edit/Add Address"  data-bs-toggle="modal" data-bs-target="#billingAddressModal"></i></a></h5> 
             {% if billing_address %}
             <p>{{ billing_address.full_name }}<br>
                 {{ billing_address.street_address }}, {{ billing_address.city }}, {{ billing_address.state }}, {{ billing_address.postal_code }}<br>
@@ -20,165 +19,93 @@
             {% endif %}
     </div>
     {% endif %}
-        
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-normal mb-0">Shopping Cart</h3>
-        {% if order %}
-        <div>
-          <p class="mb-0"><span class="text-muted">Sort by:</span> <a href="#!" class="text-body">price <i
-                class="fas fa-angle-down mt-1"></i></a></p>
-        </div>
-        {% endif %}
+        <!-- Left column: Cart items -->
+        <p class="mb-0 d-flex" style="float:right;">
+        <span class="text-muted">Sort by:</span> 
+        <a href="#" class="text-body">price <i class="fas fa-angle-down mt-1"></i>
+        </a>
+        </p>
+        
     </div>
-    <div style="overflow-y:scroll;overflow-x:scroll;">
-        {% if order %}
-        {% for item in order.items.all %}
-        <div class="card rounded-3 mb-4" data-id="{{ item.id }}">
-            <div class="card-body p-4">
-                <div class="row d-flex justify-content-between align-items-center">
-                    <div class="col-md-2 col-lg-2 col-xl-2">
-                        <img
-                            src="{{ item.thumbnail.url }}" alt="{{ item.title }}"
-                            class="img-fluid rounded-3" alt="Cotton T-shirt">
+
+    <div class="row">
+        
+         
+        <div class="col-lg-9" style="max-height: 70vh; overflow-y: auto;">
+            
+            {% if order %}
+            {% for item in order.items.all %}
+            <div class="card rounded-3 mb-4" data-id="{{ item.id }}">
+                <div class="card-body p-4">
+                    <div class="row d-flex justify-content-between align-items-center">
+                        <div class="col-md-2 col-lg-2 col-xl-2">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded-3">
                         </div>
-                    <div class="col-md-3 col-lg-3 col-xl-3">
-                        <p class="lead fw-normal mb-2">{{ item.title }}</p>
-                        <p><span class="text-muted">{{ item.description|slice:":100" }}{% if item.description|length > 100 %}...{% endif %}</span></p>
-                    </div>
-                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                    {% comment %} <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
-                        onclick="this.parentNode.querySelector('input[type=number]').stepDown()">
-                        <i class="fas fa-minus"></i>
-                    </button> {% endcomment %}
-    
-                    <input id="form1" min="0" name="quantity" value="1" type="number"
-                        class="form-control form-control-sm" readonly/>
-    
-                    {% comment %} <button data-mdb-button-init data-mdb-ripple-init class="btn btn-link px-2"
-                        onclick="this.parentNode.querySelector('input[type=number]').stepUp()">
-                        <i class="fas fa-plus"></i>
-                    </button> {% endcomment %}
-                    </div>
-                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                        <h5 class="mb-0">₹{{ item.price }}</h5>
-                    </div>
-                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                        <a class="text-danger remove-item" id="remove-item" ><i class="fas fa-trash fa-lg"></i></a>
+                        <div class="col-md-3 col-lg-3 col-xl-3">
+                            <p class="lead fw-normal mb-2">{{ item.product.name }}</p>
+                            <p><span class="text-muted">{{ item.product.description|slice:":100" }}{% if item.product.description|length > 100 %}...{% endif %}</span></p>
+                        </div>
+                        <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                            <input min="1" name="quantity" value="{{ item.quantity }}" type="number" class="form-control form-control-sm update-quantity" data-item-id="{{ item.id }}" />
+                        </div>
+                        <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                            <h5 class="mb-0">₹{{ item.price_at_order_time }}</h5>
+                        </div>
+                        <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                            <a class="text-danger remove-item"><i class="fas fa-trash fa-lg"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+            {% endif %}
         </div>
-        {% endfor %}
-        
-        <!-- Cart Summary -->
-        <div class="cart-summary" >
-            <div class="discount-wrapper" style="margin:2% 0px;">
-                <input type="text" class="form-control" id="discount-form" placeholder="Discount coupon"/>
-                <button  type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-success">Apply</button>
+
+        <!-- Right column: Summary -->
+        <div class="col-lg-3">
+            {% if order %}
+            <div class="cart-summary card p-4">
+                <div class="discount-wrapper mb-3 d-flex flex-column">
+                    <input type="text" class="form-control mb-2" id="discount-form" placeholder="Discount coupon"/>
+                    <button type="button" class="btn btn-success w-100">Apply</button>
+                </div>
+                <h5>Summary</h5>
+                <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
+                <a type="button" href="#" class="btn btn-primary w-100" id="rzp-button1">Proceed to Checkout</a>
             </div>
-            <h5>Summary</h5>
-            <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
-            {% comment %} <a type="button" href="{% url " checkout" order_id=order.id %}" class="btn btn-primary"
-                id="rzp-button1">Proceed to Checkout</a> {% endcomment %}
-            <a type="button" href="#" class="btn btn-primary" id="rzp-button1">Proceed to Checkout</a>
-        </div>
-        {% else %}
-        <!-- No items in the cart -->
-        <p>Your cart is empty.</p>
-        {% endif %}
-    </div>
-    
- 
-    
-    <!-- Modal for Adding/Editing Address -->
-    <div class="modal fade" id="billingAddressModal" tabindex="-1" role="dialog" aria-labelledby="billingAddressModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <form id="billingAddressForm">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="billingAddressModalLabel">Edit/Add Billing Address</h5>
-                        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <!-- Saved Addresses Section -->
-                        <div id="existingAddresses">
-                            <h6>Saved Addresses</h6>
-                            <div style="max-height: 200px; overflow-y: auto;"> <!-- Scrollable div -->
-                                <ul id="addressList" class="list-group">
-                                    <!-- Dynamically loaded addresses -->
-                                </ul>
-                            </div>
-                            <button type="button" class="btn btn-primary mt-3" id="addNewAddressBtn">Add New Address</button>
-                        </div>
-    
-                        <!-- New Address Form (hidden by default) -->
-                        <div id="newAddressForm" style="display: none; margin-top: 20px;">
-                            <h6>New Address</h6>
-                            <input type="text" name="full_name" class="form-control" placeholder="Full Name" style="margin: 5px 1px;" required>
-                            <input type="text" name="street_address" class="form-control" placeholder="Street Address" style="margin: 5px 1px;" required>
-                            <input type="text" name="city" class="form-control" placeholder="City" style="margin: 5px 1px;" required>
-                            <input type="text" name="state" class="form-control" placeholder="State" style="margin: 5px 1px;">
-                            <input type="text" name="postal_code" class="form-control" placeholder="Postal Code" style="margin: 5px 1px;" required>
-                            <input type="text" name="country" class="form-control" placeholder="Country" style="margin: 5px 1px;" required>
-                            <input type="text" name="phone_number" class="form-control" placeholder="Phone Number" style="margin: 5px 1px;">
-                            <div class="form-check" style="margin: 5px 1px;">
-                                <input type="checkbox" class="form-check-input" name="is_default" id="isDefault">
-                                <label class="form-check-label" for="isDefault">Set as Default</label>
-                            </div>
-                            <button type="button" class="btn btn-secondary mt-3" id="cancelNewAddressBtn">Cancel</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Save Address</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </form>
-            </div>
+            {% else %}
+            <p>Your cart is empty.</p>
+            {% endif %}
         </div>
     </div>
-    
+
+    {% include "store/billing_address_modal.html" %}
 
 </div>
-
-
 {% endblock content %}
 {% block MoreJs %}
-<!-- Cart and Checkout JS -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-    // Handle removing items from the cart
-    $('.remove-item').on('click', function () {
-        const row = $(this).closest('.card');
-        const itemId = row.data('id');
-        const uri = window.location.origin + '/api/v1/cart/remove/' + itemId;
-        $.ajax({
-            url: uri,
-            method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-            success: function (response) {
-                //console.log(response);
-                // Remove the item row from the table
-                row.remove();
-                if (response) {
-                    $('#subTotal').text('Subtotal: ₹' + response.total_price.toFixed(2));
-                    if (response.total_price == 0) {
-                        var checkoutButton = document.getElementById("rzp-button1");
-                        checkoutButton.disabled = true;
-                    } else {
-                        var checkoutButton = document.getElementById("rzp-button1");
-                        checkoutButton.disabled = false;
-                    }
-                }
-                alert('Item removed successfully');
-            },
-            error: function (error) {
-                alert('Failed to remove item');
-            }
-        });
+// Quantity update handler
+$('.update-quantity').on('change', function() {
+    const itemId = $(this).data('item-id');
+    const quantity = $(this).val();
+    $.ajax({
+        url: `/api/v1/cart/update/${itemId}/`,
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        data: { quantity },
+        success: function(response) {
+            location.reload();
+        },
+        error: function() {
+            alert('Failed to update quantity');
+        }
     });
-
+});
 </script>
 <script>
     var domain = window.location.origin;
@@ -301,4 +228,6 @@
     
     
 </script>
+{% comment %} {% endblock MoreJs %} {% endcomment %}
+
 {% endblock MoreJs %}

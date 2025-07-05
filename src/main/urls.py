@@ -1,7 +1,7 @@
 from django.urls import path, include
 import main.views as views
 from django.contrib import admin
-from .views import instrument
+
 
 
 
@@ -10,11 +10,13 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout-view'),
     path('signup/', views.signup_view, name='signup-view'),
     path('', views.item_list, name='home-1'),
+    path('category/<int:categoryId>', views.category_wise_products, name='category-wise-products'),
     path('item/filter/', views.item_list_filter, name='item-filter'),
     path('item/search/', views.item_list_search, name='item-search'),
-    path('item/<hashid:pk>/', views.product_detail, name='item-details'),
+    path('product/<slug:category_slug>/<int:pk>/', views.product_detail, name='product-detail'),
     path('cart/', views.view_cart, name='view_cart'),
-    path('add-to-cart/<hashid:item_id>/', views.add_to_cart, name='add_to_cart'),
+    # path('add-to-cart/<hashid:item_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/add/<int:category_id>/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('order/history/', views.order_history, name='order-history'),
     path('order/summary/<hashid:pk>/', views.order_summary, name='order-summary'),
     # path('checkout/<hashid:order_id>/', views.checkout, name='checkout'),
@@ -46,9 +48,9 @@ urlpatterns = [
     path('educator/admin/add-product/', views.add_product, name='educator-admin-add-product'),
     path('educator/admin/earnings/', views.adminEarnings, name='educator-admin-earnings'),
 
-# musical instrument 
-   
-    path('musical-instruments/<int:category_id>/', instrument, name='musical_instruments_list'),
+    # api common
+    path('api/category/<int:categoryId>/items/', views.CategoryWiseProductList.as_view(), name='category-products-api'),
+
 
 ]
 

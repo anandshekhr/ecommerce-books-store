@@ -29,7 +29,6 @@ from django.db.models import Q
 import uuid
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
 from django.shortcuts import render
-from .models import ProductMusicalInstrument, Category
 
 
 razorpay_api = razorpay.Client(
@@ -61,17 +60,39 @@ def contact_us(request):
 
 def item_list(request):
     categories = Category.objects.all()
-    items = Item.objects.filter(is_available=True)
-    selected_category = request.GET.get('category')
-    if selected_category:
-        items = items.filter(category_id=selected_category)
 
-    # Pagination
-    paginator = Paginator(items.order_by('-updated_at'), 9)  # Show 10 items per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    # Define category names to group (ensure these match your DB entries or slugs)
+    category_mapping = {
+        'Books': 'Books',
+        'Electronics': 'Electronics',
+        'Musical Instruments': 'Musical Instruments',
+    }
 
-    return render(request, 'store/index.html', {'categories': categories, 'products': page_obj})
+    categorized_products = {}
+    banners = Banner.objects.filter(active=True).order_by('-created_at')
+    for display_name, category_name in category_mapping.items():
+        category = Category.objects.filter(name__iexact=category_name).first()
+        if category and display_name == 'Books':
+            categorized_products[display_name] = Book.objects.filter(category=category).order_by('-updated_at')[:10]
+        
+        if category and display_name == 'Electronics':
+            categorized_products[display_name] = Electronic.objects.filter(category=category).order_by('-updated_at')[:10]
+        
+        if category and display_name == 'Musical Instruments':
+            categorized_products[display_name] = MusicalInstrument.objects.filter(category=category).order_by('-updated_at')[:10]
+
+    return render(request, 'store/index.html', {
+        'categories': categories,
+        'categorized_products': categorized_products,
+        'banners': banners,
+    })
+
+def category_wise_products(request, categoryId: int):
+    category = Category.objects.get(pk=categoryId)
+    context = {
+        'category':category
+    }
+    return render(request, 'store/products_on_category.html', context=context)
 
 def item_list_filter(request):
     category_id = request.GET.get('category')
@@ -80,7 +101,7 @@ def item_list_filter(request):
     max_price = request.GET.get('max_price')
     search_query = request.GET.get('q')
 
-    items = Item.objects.filter(is_available=True)
+    items = Book.objects.filter(is_available=True)
     
     if category_id:
         category_obj = Category.objects.get(pk=category_id)
@@ -117,7 +138,7 @@ def item_list_filter(request):
 def item_list_search(request):
     search_query = request.GET.get('q')
 
-    items = Item.objects.filter(is_available=True)
+    items = Book.objects.filter(is_available=True)
     
     if search_query:
         items = items.filter(
@@ -135,23 +156,68 @@ def item_list_search(request):
 
     return render(request, 'store/product_list.html', {'products': page_obj,'item_length':len(items)})
 
-def product_detail(request, pk):
-    product = get_object_or_404(Item, pk=pk)
-    relevant_products = Item.objects.filter(category = product.category)
-    return render(request, 'store/item.html', {'product': product,'pdf_id': pk,'relevant_products':relevant_products})
+def product_detail(request, category_slug, pk):
+    category = get_object_or_404(Category, slug=category_slug)
+
+    if category.name == 'Books':
+        product = get_object_or_404(Book, pk=pk, category=category)
+        relevant_products = Book.objects.filter(category=category).exclude(pk=pk)
+    elif category.name == 'Electronics':
+        product = get_object_or_404(Electronic, pk=pk, category=category)
+        relevant_products = Electronic.objects.filter(category=category).exclude(pk=pk)
+    elif category.name == 'Musical Instruments':
+        product = get_object_or_404(MusicalInstrument, pk=pk, category=category)
+        relevant_products = MusicalInstrument.objects.filter(category=category).exclude(pk=pk)
+    else:
+        product = None
+        relevant_products = []
+
+    return render(request, 'store/item.html', {
+        'product': product,
+        'category': category,
+        'pdf_id': pk,
+        'relevant_products': relevant_products
+    })
 
 @login_required(login_url='login-view')
-def add_to_cart(request, item_id):
-    item = get_object_or_404(Item, id=item_id)
-    order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
-    if order.items.filter(id=item.id).exists():
-        messages.info(request,'Item already exists in the cart.')
+def add_to_cart(request, category_id, item_id):
+    category = get_object_or_404(Category, id=category_id)
+
+    model_map = {
+        'Books': Book,
+        'Electronics': Electronic,
+        'Musical Instruments': MusicalInstrument,
+    }
+
+    model = model_map.get(category.name)
+    if not model:
+        messages.error(request, "Unsupported product category.")
         return redirect('home-1')
-        
-    order.items.add(item)
-    order.total_price = Decimal(item.price) + Decimal(order.total_price)
-    order.save()
-    messages.info(request,'Item successfully added to cart.')
+
+    product = get_object_or_404(model, id=item_id)
+    content_type = ContentType.objects.get_for_model(model)
+
+    order, created = Order.objects.get_or_create(user=request.user, payment__status=False)
+    # payment = Payment.objects.get_or_create(order=order,status=False)
+
+    # Check if already in cart
+    if order.items.filter(content_type=content_type, object_id=product.id).exists():
+        messages.info(request, f'{product.name} already exists in the cart.')
+        return redirect('view_cart')
+
+    # Add item to cart
+    OrderItem.objects.create(
+        order=order,
+        content_type=content_type,
+        object_id=product.id,
+        price_at_order_time=product.price,
+        quantity=1
+    )
+
+    # Update order total
+    order.update_total_price()
+
+    messages.success(request, f'{product.name} successfully added to cart.')
     return redirect('view_cart')
 
 @login_required(login_url='login-view')
@@ -159,7 +225,7 @@ def view_cart(request):
     try:
         address = BillingAddress.objects.get(user = request.user, is_default = True)
         # Try to get the user's active order (unpaid)
-        order = Order.objects.get(user=request.user, payment_status=False)
+        order = Order.objects.get(user=request.user, payment__status= False)
         # Check if the order has any items
         if not order.items.exists():
             # If no items in the cart, display a message
@@ -174,7 +240,7 @@ def view_cart(request):
             "receipt": order.sid,
             }
         razorpay_response = razorpay_api.order.create(data=request_data)
-        order.razorpay_order_id = razorpay_response["id"]
+        order.payment.razorpay_order_id = razorpay_response["id"]
         order.save()
         return render(request, 'store/cart.html', {'order': order,"billing_address":address,"razorpay_order_id": razorpay_response["id"],
                     "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
@@ -183,13 +249,17 @@ def view_cart(request):
         order = None  # You can customize this to fit your template logic
         return render(request, 'store/cart.html', {'order': order})
 
+@login_required(login_url='login-view')
 def order_summary(request, pk=None):
+    orders = Order.objects.filter(user=request.user, payment__status=True)
+
     if pk:
-        orders = Order.objects.filter(user=request.user, payment_status=True,pk=pk)
-        
-    else:
-        orders = None
-    return render(request, 'store/orders.html', {'orders': orders,'header':'Order Summary'})
+        orders = orders.filter(pk=pk)
+
+    return render(request, 'store/orders.html', {
+        'orders': orders,
+        'header': 'Order Summary' if pk else 'My Order History',
+    })
 
 @login_required(login_url='login-view')
 def order_history(request):
@@ -202,55 +272,6 @@ def order_history(request):
     
     return render(request, 'store/orders.html', {'orders': page_obj,'header':'Order History'})
 
-# @login_required(login_url='login-view')
-# def checkout(request,order_id):
-#     order = get_object_or_404(Order, user=request.user, payment_status=False, pk=order_id)
-#     request_data = {
-#     "amount": int(order.total_price * 100),
-#     "currency": "INR",
-#     "receipt": order.sid,
-#     }
-#     razorpay_response = razorpay_api.order.create(data=request_data)
-#     order.razorpay_order_id = razorpay_response["id"]
-#     # Phone pe
-#     unique_transaction_id = str(uuid.uuid4())
-#     order.phonepe_merchant_transaction_id = unique_transaction_id
-#     order.save()
-
-#     pay_page_request = PgPayRequest.pay_page_pay_request_builder(
-#         merchant_transaction_id=unique_transaction_id,
-#         amount=int(order.total_price * 100),
-#         merchant_user_id=id_assigned_to_user_by_merchant,
-#         merchant_order_id=order.sid,
-#         redirect_mode="POST",
-#         callback_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
-#         # redirect_mode="REDIRECT",
-#         redirect_url=request.build_absolute_uri(reverse('phonepe-payment-success', kwargs={'order_id': order.id})),
-#     )
-#     pay_page_response = phonepe_client.pay(pay_page_request)
-#     pay_page_url = pay_page_response.data.instrument_response.redirect_info.url
-
-#     if pay_page_url:
-#         # Add Payment Details
-#         phonepe_transaction_record = PhonePePaymentRequestDetail()
-#         phonepe_transaction_record.user = request.user
-#         phonepe_transaction_record.order_id = order
-#         phonepe_transaction_record.amount = order.total_price
-#         phonepe_transaction_record.success = pay_page_response.success
-#         phonepe_transaction_record.code = pay_page_response.code
-#         phonepe_transaction_record.message = pay_page_response.message
-#         phonepe_transaction_record.merchant_transaction_id = (
-#             pay_page_response.data.merchant_transaction_id
-#         )
-#         phonepe_transaction_record.transaction_id = (
-#             pay_page_response.data.transaction_id
-#         )
-#         phonepe_transaction_record.redirect_url = pay_page_url
-#         phonepe_transaction_record.save()
-
-
-#     return redirect(pay_page_url)
-
 @login_required(login_url='login-view')
 def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
@@ -258,10 +279,12 @@ def razorpay_success_redirect(request):
     order_id = request.GET.get('order_id')
     selected_billing_address = BillingAddress.objects.get(user=request.user, is_default=True)
     if request.user and order_id:
-        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
-        order.payment_status = True
-        order.razorpay_payment_id = razorpay_payment_id
+        order = Order.objects.get(user=request.user, payment__status=False,pk=order_id)
+        order.payment.status = True
+        order.payment.razorpay_payment_id = razorpay_payment_id
+        order.payment.save()
         order.address = selected_billing_address
+
         order.save()
 
     messages.success(request, "Your order was successful!")
@@ -298,13 +321,13 @@ def phonepe_success_redirect(request, order_id):
 @login_required(login_url='login-view')
 def view_pdf(request, item_id):
     order = get_object_or_404(Order, user=request.user, payment_status=True)
-    item = get_object_or_404(Item, id=item_id, order=order)
-    return render(request, 'store/view_pdf.html', {'pdf_file': item.pdf_file.url})
+    Book = get_object_or_404(Book, id=item_id, order=order)
+    return render(request, 'store/view_pdf.html', {'pdf_file': Book.pdf_file.url})
 
 
 class ItemGetAPI(generics.ListAPIView):
     permission_classes = (AllowAny,)
-    queryset = Item.objects.all()
+    queryset = Book.objects.all()
     serializer_class = ItemSerializer
 
 class ItemGetDetailAPI(APIView):
@@ -314,7 +337,7 @@ class ItemGetDetailAPI(APIView):
     def get(self, request):
         id = request.GET.get('id')
         if id:
-            queryset = Item.objects.get(id=id)
+            queryset = Book.objects.get(id=id)
             serializer = ItemSerializer(queryset)
             return Response(serializer.data,status=200)
         
@@ -322,7 +345,7 @@ class ItemGetDetailAPI(APIView):
 
 class ItemPostAPI(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
-    queryset = Item.objects.all()
+    queryset = Book.objects.all()
     serializer_class = ItemSerializer
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -340,19 +363,19 @@ class AddToCartView(generics.GenericAPIView):
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
     def post(self, request, item_id):
-        item = get_object_or_404(Item, id=item_id)
+        Book = get_object_or_404(Book, id=item_id)
         order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
         
-        if order.items.filter(id=item.id).exists():
+        if order.items.filter(id=Book.id).exists():
             return Response({
-                'message': 'Item is already in the cart','total_price': order.total_price
+                'message': 'Book is already in the cart','total_price': order.total_price
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        order.items.add(item)
-        total_price = Decimal(order.total_price) + Decimal(item.price) if not item.is_free else Decimal(0.00)
+        order.items.add(Book)
+        total_price = Decimal(order.total_price) + Decimal(Book.price) if not Book.is_free else Decimal(0.00)
         order.total_price = total_price
         order.save()
-        return Response({'message': 'Item added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
+        return Response({'message': 'Book added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
 
 class RemoveFromCartView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
@@ -360,14 +383,14 @@ class RemoveFromCartView(generics.GenericAPIView):
 
 
     def post(self, request, item_id):
-        item = get_object_or_404(Item, id=item_id)
+        Book = get_object_or_404(Book, id=item_id)
         order = get_object_or_404(Order, user=request.user, payment_status=False)
-        if item in order.items.all():
-            order.items.remove(item)
-            order.total_price -= item.price if not item.is_free else 0.00
+        if Book in order.items.all():
+            order.items.remove(Book)
+            order.total_price -= Book.price if not Book.is_free else 0.00
             order.save()
-            return Response({'message': 'Item removed from cart','total_price': order.total_price}, status=status.HTTP_200_OK)
-        return Response({'message': 'Item not in cart','total_price': order.total_price}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Book removed from cart','total_price': order.total_price}, status=status.HTTP_200_OK)
+        return Response({'message': 'Book not in cart','total_price': order.total_price}, status=status.HTTP_400_BAD_REQUEST)
     
 
 class CartView(generics.GenericAPIView):
@@ -382,7 +405,7 @@ class CartView(generics.GenericAPIView):
             total_price = order.total_price
             item_count = items.count()
 
-            # Serialize the item data
+            # Serialize the Book data
             serialized_items = ItemSerializer(items, many=True)
 
             #razorpay
@@ -474,7 +497,7 @@ class FilterItemsView(generics.ListAPIView):
         Optionally filters the items by category based on the 'category_id' parameter
         passed in the URL.
         """
-        queryset = Item.objects.all()
+        queryset = Book.objects.all()
         category_id = self.request.query_params.get('category', None)
 
         if category_id is not None:
@@ -483,7 +506,7 @@ class FilterItemsView(generics.ListAPIView):
         return queryset
 
 class SearchAPI(generics.ListAPIView):
-    queryset = Item.objects.all()
+    queryset = Book.objects.all()
     serializer_class = ItemSerializer
     permission_classes = (AllowAny,)
     filter_backends = [filters.SearchFilter]
@@ -654,7 +677,7 @@ def add_answer(request, question_id):
             return redirect('question_detail', question_id=question.id)
 
 def pdf_viewer(request, item_id):
-    item = get_object_or_404(Item, id=item_id)
+    Book = get_object_or_404(Book, id=item_id)
     last_page = request.session.get('pdf_last_page', 1)
 
     # If a new page number is posted (e.g., via AJAX), update the session
@@ -662,9 +685,9 @@ def pdf_viewer(request, item_id):
         page_number = request.POST.get('page_number')
         request.session['pdf_last_page'] = page_number
     
-    if item.pdf_file:
+    if Book.pdf_file:
         context = {
-            'pdf_url': item.pdf_file.url,
+            'pdf_url': Book.pdf_file.url,
             'last_page': last_page
         }
         return render(request, 'viewer/pdf_viewer.html', context)
@@ -677,7 +700,7 @@ def serve_pdf(request, pdf_id):
     from django.http import FileResponse, Http404
     try:
         # Replace this with your logic to retrieve the PDF file
-        pdf = get_object_or_404(Item, id=pdf_id)
+        pdf = get_object_or_404(Book, id=pdf_id)
         pdf_path = pdf.pdf_file.path  # Get file path of the PDF
 
         # Ensure the file exists
@@ -697,7 +720,7 @@ def totalPagePages(request, pdf_id):
     """
     Serve a single page of the PDF and the total page count to the frontend.
     """
-    pdf = get_object_or_404(Item, id=pdf_id)
+    pdf = get_object_or_404(Book, id=pdf_id)
     pdf_path = pdf.pdf_file.path 
 
     # Open the PDF and extract the specific page
@@ -721,7 +744,7 @@ def serve_pdf_page(request, pdf_id):
         page_num = int(request.GET.get('page', 1))
     except ValueError:
         page_num = 1
-    pdf = get_object_or_404(Item, id=pdf_id)
+    pdf = get_object_or_404(Book, id=pdf_id)
     pdf_path = pdf.pdf_file.path 
 
     # Open the PDF and extract the specific page
@@ -785,7 +808,7 @@ class UnsubscribeView(generics.CreateAPIView):
 @login_required
 def adminProductList(request):
     if request.user.is_staff:
-        products = Item.objects.filter(user=request.user.id)
+        products = Book.objects.filter(user=request.user.id)
     else:
         products = []
         messages.error(request,'You donot have permission to view this page')
@@ -806,9 +829,9 @@ def add_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            product = form.save(commit=False)
-            product.user = request.user
-            product.save()
+            Book = form.save(commit=False)
+            Book.user = request.user
+            Book.save()
             return redirect('educator-admin-products')
     else:
         form = ProductForm()
@@ -867,16 +890,69 @@ def select_billing_address(request, address_id):
         BillingAddress.objects.filter(id=address_id, user=request.user).update(is_default=True)
         return JsonResponse({'success': True})
 
-# Musical Instruments category and subcategory views
-def instrument(request, category_id):
-    # Fetch the parent category
-    parent_category = get_object_or_404(Category, id=category_id)
 
-    # Fetch subcategories (instruments)
-    products = ProductMusicalInstrument.objects.filter(category=parent_category)
+class CategoryWiseProductList(APIView):
+    permission_classes = (AllowAny,)
 
-    # Render the template with the fetched data
-    return render(request, 'store/instrument_product_list.html', {
-        'parent_category': parent_category,
-        'products': products
-    })
+    class CustomPagination(PageNumberPagination):
+        page_size = 12
+        page_size_query_param = 'page_size'
+
+    def get_serializer_class(self, category_name):
+        if category_name == 'Books':
+            return BookSerializer
+        elif category_name == 'Electronics':
+            return ElectronicSerializer
+        elif category_name == 'Musical Instruments':
+            return MusicalInstrumentSerializer
+        return None
+
+    def get_queryset(self, category, request):
+        min_price = request.GET.get('min_price')
+        max_price = request.GET.get('max_price')
+        is_paperback = request.GET.get('is_paperback')
+        search = request.GET.get('q')
+
+        if category.name == 'Books':
+            queryset = Book.objects.filter(category=category)
+            if is_paperback in ['true', 'false']:
+                queryset = queryset.filter(is_paperback=(is_paperback == 'true'))
+            if search:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) |
+                    Q(description__icontains=search)
+                )
+        elif category.name == 'Electronics':
+            queryset = Electronic.objects.filter(category=category)
+        elif category.name == 'Musical Instruments':
+            queryset = MusicalInstrument.objects.filter(category=category)
+        else:
+            return []
+
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+
+        if hasattr(queryset, 'order_by'):
+            queryset = queryset.order_by('-updated_at')
+
+        return queryset
+
+    def get(self, request, categoryId: int):
+        try:
+            category = Category.objects.get(pk=categoryId)
+        except Category.DoesNotExist:
+            return Response({"detail": "Category not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        queryset = self.get_queryset(category, request)
+        serializer_class = self.get_serializer_class(category.name)
+
+        if not serializer_class:
+            return Response({"detail": "No serializer defined for this category."}, status=status.HTTP_400_BAD_REQUEST)
+
+        paginator = self.CustomPagination()
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        serializer = serializer_class(paginated_queryset, many=True)
+
+        return paginator.get_paginated_response(serializer.data)

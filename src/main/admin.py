@@ -1,26 +1,41 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, Category, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer, Earning,ProductMusicalInstrument
+from .models import *
 
-@admin.register(Item)
+@admin.register(Book)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('id','title','price','pdf_file','is_available')
-    search_fields = ('id','title','price')
-    sortable_by = ('id','title','price')    
+    list_display = ('id','name','price','stock')
+    search_fields = ('id','name','price')
+    sortable_by = ('id','name','price') 
+
+@admin.register(Electronic)
+class ElectronicAdmin(admin.ModelAdmin):
+    list_display = ('id','name','price') 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     pass
+
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    pass
+    
+
+
     
 class ProductImageAdmin(admin.ModelAdmin):
     pass
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','user','total_price','payment_status','created_at')
-    search_fields = ('id','user','total_price','payment_status','created_at')
-    sortable_by = ('id','user','total_price','payment_status','created_at')
+    list_display = ('id','user','total_price','created_at')
+    search_fields = ('id','user','total_price','created_at')
+    sortable_by = ('id','user','total_price','created_at')
     
 @admin.register(LegalContent)
 class LegalContentAdmin(admin.ModelAdmin):
@@ -47,12 +62,20 @@ class EarningAdmin(admin.ModelAdmin):
     
 # Musical instrument category and subcategory
 
-@admin.register(ProductMusicalInstrument)
+@admin.register(MusicalInstrument)
 class ProductMusicalInstrumentAdmin(admin.ModelAdmin): 
+    pass
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
     pass
 
 
 
+# User Related 
+@admin.register(BillingAddress)
+class BillingAddressAdmin(admin.ModelAdmin):
+    list_display = ('user','full_name','is_default','updated_at')
     
 
     
