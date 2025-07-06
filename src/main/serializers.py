@@ -1,7 +1,7 @@
 # store/serializers.py
 
 from rest_framework import serializers
-from .models import Item, ExamCategory, Order, Question, Answer, BillingAddress
+from .models import *
 
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -17,35 +17,35 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'content', 'posted_by', 'created_at', 'answers']
 
 
-class ExamCategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = ExamCategory
+        model = Category
         fields = '__all__'
 
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    category = ExamCategorySerializer()
+    category = CategorySerializer()
     class Meta:
-        model = Item
+        model = Book
         fields = ['id','category','title','description','og_price','price','is_free','pdf_file','thumbnail']
 
 class ItemPOSTSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Item
+        model = Book
         fields = '__all__'
 
 class ItemSerializer(serializers.ModelSerializer):
-    category = ExamCategorySerializer()
+    category = CategorySerializer()
     class Meta:
-        model = Item
-        exclude = ('pdf_file',)
+        model = Book
+        fields = '__all__'
 
 
 class ItemOrderSerializer(serializers.ModelSerializer):
-    category = ExamCategorySerializer()
+    category = CategorySerializer()
     class Meta:
-        model = Item
+        model = Book
         fields = '__all__'
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -66,3 +66,23 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = BillingAddress
         fields = '__all__'
+
+
+class BookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'name', 'description', 'price', 'image']
+
+class ElectronicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Electronic
+        fields = ['id', 'name', 'description', 'price', 'image']
+
+class MusicalInstrumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MusicalInstrument
+        fields = ['id', 'name', 'description', 'price', 'image']
+
+class ItemAllCategorySerializer(serializers.Serializer):
+    type = serializers.CharField()
+    data = serializers.DictField()

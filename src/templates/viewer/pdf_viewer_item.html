@@ -1,17 +1,17 @@
 {% block pdf_view %}
-<div class="container">
-    <div class="pdf-controls">
-        <button id="prev-page" class="btn btn-secondary">Previous</button>
+<div class="container-fluid">
+    <!-- Navigation Controls -->
+    <div class="pdf-controls d-flex justify-content-center align-items-center gap-3 mb-3">
+        <button id="prev-page" class="btn btn-secondary btn-sm">Previous</button>
         <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
-        <button id="next-page" class="btn btn-secondary">Next</button>
+        <button id="next-page" class="btn btn-secondary btn-sm">Next</button>
     </div>
 
-    <!-- PDF container with loader overlay -->
-    <div class="pdf-render-m" style="position: relative; width: fit-content;">
-        <!-- Canvas for PDF rendering -->
-        <canvas id="pdf-render"></canvas>
+    <!-- PDF Container -->
+    <div class="pdf-render-m d-flex justify-content-center" style="position: relative; max-height: 75vh; overflow-y: auto;">
+        <canvas id="pdf-render" style="max-width: 100%; height: auto;"></canvas>
 
-        <!-- Loader GIF with grey background -->
+        <!-- Loader -->
         <div id="loader"
             style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center;">
             <img src="/static/assets/img/loader.gif" alt="Loading..." />
@@ -19,115 +19,84 @@
     </div>
 </div>
 
+<!-- PDF.js Script -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
 <script>
     let pdfDoc = null,
         pageNum = 1,
         pageIsRendering = false,
         pageNumIsPending = null,
-        scale = 4,
         canvas = document.getElementById('pdf-render'),
         ctx = canvas.getContext('2d'),
         startPage = 1,
-        endPage = 50;  // Placeholder, will be updated dynamically
+        endPage = 50;
 
     const loader = document.getElementById('loader');
     const url = '/serve-pdf-page/{{ pdf_id }}?page=';
 
-    // Function to show loader
-    const showLoader = () => {
-        loader.style.display = 'flex';  // Display loader with flex for centering
-    };
+    // Loader control
+    const showLoader = () => loader.style.display = 'flex';
+    const hideLoader = () => loader.style.display = 'none';
 
-    // Function to hide loader
-    const hideLoader = () => {
-        loader.style.display = 'none';
-    };
+    const renderPage = num => {
+        pageIsRendering = true;
+        showLoader();
 
-    // Function to fetch and render the PDF page, along with total page count
-    // Function to fetch and render the PDF page, along with total page count
-    
-// Function to render the PDF page
-const renderPage = num => {
-    pageIsRendering = true;
-    showLoader(); // Show loader before fetching the page
+        fetch(`${url}${num}`, {
+            method: 'GET',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load page');
 
-    // Fetch specific page from the server
-    fetch(`${url}${num}`, {
-        method: 'GET',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}'
-        }
-    })
-    .then(response => {
-        // Check if the response contains the total pages
-        if (!response.ok) {
-            throw new Error('Failed to load page');
-        }
+            if (!pdfDoc && response.headers.has('X-Total-Pages')) {
+                const totalPages = parseInt(response.headers.get('X-Total-Pages'));
+                if (totalPages < 20) {
+                    endPage = Math.ceil(totalPages * 0.5);
+                } else if (totalPages < 50) {
+                    endPage = Math.ceil(totalPages * 0.2);
+                } else {
+                    endPage = Math.ceil(totalPages * 0.1);
+                }
+                document.getElementById('page-count').textContent = endPage;
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            return pdfjsLib.getDocument(blobUrl).promise;
+        })
+        .then(pdf => {
+            pdfDoc = pdf;
+            return pdf.getPage(1);
+        })
+        .then(page => {
+            const modalWidth = document.querySelector('.pdf-render-m').clientWidth;
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = (modalWidth / viewport.width) * 0.95;
+            const scaledViewport = page.getViewport({ scale });
 
-        // Get total pages from the custom header if it's the first page request
-        if (!pdfDoc && response.headers.has('X-Total-Pages')) {
-            const totalPages = parseInt(response.headers.get('X-Total-Pages'));
-            if (totalPages < 20 ) {
-                endPage = Math.ceil(totalPages * 0.5); 
-            } else if (totalPages < 50 ) {
-                endPage = Math.ceil(totalPages * 0.2); 
-            } else {
-            endPage = Math.ceil(totalPages * 0.1); 
-            } 
-            document.getElementById('page-count').textContent = endPage;
-        }
-        return response.blob();
-    })
-    .then(blob => {
-        const blobUrl = URL.createObjectURL(blob);
-        return pdfjsLib.getDocument(blobUrl).promise;
-    })
-    .then(pdfDoc_ => {
-        pdfDoc = pdfDoc_;
+            canvas.height = scaledViewport.height;
+            canvas.width = scaledViewport.width;
 
-        // Ensure num is within the valid range
-        if (num < 1 || num > endPage ) {
-            throw new Error(`Invalid page request: ${num}. Max page allowed: ${endPage}, total pages: ${totalPages}`);
-        }
-
-        return pdfDoc.getPage(1);
-    })
-    .then(page => {
-        // Render the page
-        const viewport = page.getViewport({ scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        const renderCtx = {
-            canvasContext: ctx,
-            viewport
-        };
-
-        page.render(renderCtx).promise.then(() => {
+            return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+        })
+        .then(() => {
             pageIsRendering = false;
-            hideLoader(); // Hide loader when the page is rendered
+            hideLoader();
+            document.getElementById('page-num').textContent = pageNum;
 
             if (pageNumIsPending !== null) {
                 renderPage(pageNumIsPending);
                 pageNumIsPending = null;
             }
+        })
+        .catch(err => {
+            console.error('Error loading PDF page:', err);
+            hideLoader();
         });
+    };
 
-        document.getElementById('page-num').textContent = num;
-    })
-    .catch(error => {
-        console.error('Error loading page:', error);
-        pageIsRendering = false;
-        hideLoader(); // Hide loader on error
-    });
-};
-
-
-    // Show the next page
-
-
-    // Function to queue rendering of the page
     const queueRenderPage = num => {
         if (pageIsRendering) {
             pageNumIsPending = num;
@@ -136,74 +105,44 @@ const renderPage = num => {
         }
     };
 
-    // Load the first page initially
-    const loadFirstPage = () => {
-        pageNum = 1;
-        renderPage(pageNum);
-    };
-
-    // Show the previous page
     const showPrevPage = () => {
         if (pageNum <= startPage) return;
         pageNum--;
         queueRenderPage(pageNum);
     };
 
-    // Show the next page
-    {% comment %} const showNextPage = () => {
+    const showNextPage = () => {
         if (pageNum >= endPage) return;
         pageNum++;
         queueRenderPage(pageNum);
-    }; {% endcomment %}
-    const showNextPage = () => {
-        if (pageNum >= endPage) {
-            return;
-        }
-        pageNum++;
-        queueRenderPage(pageNum);
     };
-
-    // Swipe detection for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const handleGesture = () => {
-        if (touchEndX < touchStartX) showNextPage(); // Swipe left -> next page
-        if (touchEndX > touchStartX) showPrevPage(); // Swipe right -> previous page
-    };
-
-    // Prevent whole page from scrolling horizontally
-    document.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    });
-
-    document.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleGesture();
-    });
-
-    document.body.style.overflowX = 'hidden'; // Prevent horizontal scrolling of the body
-
-    // Hide navigation buttons on mobile view
-    const checkScreenSize = () => {
-        if (window.innerWidth <= 768) {
-            document.querySelector('.pdf-controls').style.display = 'none';
-        } else {
-            document.querySelector('.pdf-controls').style.display = 'flex';
-        }
-    };
-
-    // Load the first page on page load
-    document.addEventListener('DOMContentLoaded', () => {
-        loadFirstPage();
-        checkScreenSize();
-    });
-
-    // Handle screen resize
-    window.addEventListener('resize', checkScreenSize);
 
     // Button events
     document.getElementById('prev-page').addEventListener('click', showPrevPage);
     document.getElementById('next-page').addEventListener('click', showNextPage);
+
+    // Swipe support
+    let touchStartX = 0, touchEndX = 0;
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX);
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        if (touchEndX < touchStartX) showNextPage();
+        if (touchEndX > touchStartX) showPrevPage();
+    });
+
+    // Hide horizontal scroll
+    document.body.style.overflowX = 'hidden';
+
+    const checkScreenSize = () => {
+        const controls = document.querySelector('.pdf-controls');
+        controls.style.display = window.innerWidth <= 768 ? 'none' : 'flex';
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderPage(pageNum);
+        checkScreenSize();
+    });
+
+    window.addEventListener('resize', checkScreenSize);
 </script>
 {% endblock pdf_view %}

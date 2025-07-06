@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Item
+from .models import BookVariant, Product
 
 class ProductForm(forms.ModelForm):
     description = forms.CharField(
@@ -10,8 +10,14 @@ class ProductForm(forms.ModelForm):
             'cols': 50, 
         })
     )
-    class Meta:
-        model = Item
-        fields = ['title', 'description','category' ,'thumbnail','pdf_file','price', 'og_price','is_free','is_downloadable']  
 
-    
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'category', 'image']
+
+class BookVariantForm(forms.ModelForm):
+    class Meta:
+        model = BookVariant
+        fields = ['pdf_file', 'price', 'sku', 'is_free', 'is_downloadable']
+
+

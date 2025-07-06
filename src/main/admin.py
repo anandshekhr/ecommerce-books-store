@@ -1,29 +1,64 @@
 # store/admin.py
 
 from django.contrib import admin
-from .models import Item, ExamCategory, Order, LegalContent,PhonePePaymentRequestDetail, ProductImage, Question, Answer, Earning
+from .models import *
 
-@admin.register(Item)
+@admin.register(Book)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ('id','title','price','pdf_file','is_available')
-    search_fields = ('id','title','price')
-    sortable_by = ('id','title','price')    
+    list_display = ('id','name','price','stock')
+    search_fields = ('id','name','price')
+    sortable_by = ('id','name','price')
 
-@admin.register(ExamCategory)
-class ExamCategoryAdmin(admin.ModelAdmin):
-    list_display = ('id','name','board')
-    search_fields = ('id','name','board')
-    sortable_by = ('id','name','board')
+@admin.register(BookVariant)
+class BookVariantAdmin(admin.ModelAdmin):
+    list_display = ('product','format','pdf_file')
     
+ 
+@admin.register(Electronic)
+class ElectronicAdmin(admin.ModelAdmin):
+    list_display = ('id','name','price') 
+
+@admin.register(ElectronicsVariant)
+class ElectronicsVariantAdmin(admin.ModelAdmin):
+    pass
+    
+
+
+# Musical instrument category and subcategory
+
+@admin.register(MusicalInstrument)
+class ProductMusicalInstrumentAdmin(admin.ModelAdmin): 
+    pass
+
+@admin.register(MusicalInstrumentVariant)
+class MusicalInstrumentVariantAdmin(admin.ModelAdmin):
+    pass
+    
+
+
 @admin.register(ProductImage)
 class ProductImageAdmin(admin.ModelAdmin):
-    list_display = ('id','product','image')
+    list_display = ('product','content_type','image')
+    
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(SubCategory)
+class SubCategoryAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    pass  
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','user','total_price','payment_status','created_at')
-    search_fields = ('id','user','total_price','payment_status','created_at')
-    sortable_by = ('id','user','total_price','payment_status','created_at')
+    list_display = ('id','user','total_price','created_at')
+    search_fields = ('id','user','total_price','created_at')
+    sortable_by = ('id','user','total_price','created_at')
     
 @admin.register(LegalContent)
 class LegalContentAdmin(admin.ModelAdmin):
@@ -49,8 +84,17 @@ class EarningAdmin(admin.ModelAdmin):
     pass
     
 
-    
 
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    pass
+
+
+
+# User Related 
+@admin.register(BillingAddress)
+class BillingAddressAdmin(admin.ModelAdmin):
+    list_display = ('user','full_name','is_default','updated_at')
     
 
     
