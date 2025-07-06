@@ -105,7 +105,7 @@ class Banner(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             # Automatically generate slug from name if not provided
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
 

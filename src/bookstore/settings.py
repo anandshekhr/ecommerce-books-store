@@ -25,14 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = "e9k3(0a+$z-7#@+7s84y97s23@)o1&v=8tq5ozuxg-4!$quvxa"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if os.environ.get('ENV') == 'dev' else False
+DEBUG = True #if os.environ.get('ENV') == 'dev' else False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar123.pythonanywhere.com','www.vamsbookstore.in','192.168.29.161']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'ashekhar.pythonanywhere.com','www.vamsbookstore.in','192.168.29.161']
 CSRF_TRUSTED_ORIGINS = [
-    'https://ashekhar123.pythonanywhere.com',
+    'https://ashekhar.pythonanywhere.com',
     'https://www.vamsbookstore.in'
 ]
 
@@ -62,22 +62,18 @@ INSTALLED_APPS = [
     "middlewares",
     'django_celery_results',
     'django_celery_beat',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
-    'bookstore',
-
-    # Allauth apps
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',  # Add Google provider
-
+    'allauth.socialaccount.providers.google'
+    # 'dj_rest_auth',
+    # 'dj_rest_auth.registration'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-     'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -111,24 +107,16 @@ WSGI_APPLICATION = 'bookstore.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# if DEBUG:
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'ashekhar$vams-books-store',
+            'USER': 'ashekhar',
+            'PASSWORD': '1@V@MSots1#',
+            'HOST': 'ashekhar.mysql.pythonanywhere-services.com',
+            # 'PORT': '3306',
     }
 }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.mysql',  
-#             'NAME': os.environ.get('DB_NAME'),         
-#             'USER': os.environ.get('DB_USER'),          
-#             'PASSWORD': os.environ.get('DB_PASSWORD'),  
-#             'HOST': os.environ.get('DB_HOST'),                   
-#             # 'PORT': os.environ.get('DB_PORT'),                       
-#         }
-#     }
 
 
 # Password validation
