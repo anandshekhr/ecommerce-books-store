@@ -39,7 +39,7 @@ class ItemSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     class Meta:
         model = Book
-        exclude = ('pdf_file',)
+        fields = '__all__'
 
 
 class ItemOrderSerializer(serializers.ModelSerializer):
@@ -82,3 +82,7 @@ class MusicalInstrumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicalInstrument
         fields = ['id', 'name', 'description', 'price', 'image']
+
+class ItemAllCategorySerializer(serializers.Serializer):
+    type = serializers.CharField()
+    data = serializers.DictField()

@@ -58,7 +58,7 @@
         }
 
         .sidebar a:hover {
-            background-color: #f1f1f1;
+            background-color:rgb(5, 4, 4);
         }
 
         .toggle-sidebar {
@@ -149,9 +149,9 @@
                 <div id="collapseBooks" class="accordion-collapse collapse" aria-labelledby="headingBooks"
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
-                        <a href="{% url 'home-1' %}?category=fiction">Fiction</a>
-                        <a href="{% url 'home-1' %}?category=non-fiction">Non-fiction</a>
-                        <a href="{% url 'home-1' %}?category=educational">Educational</a>
+                        {% for sub in books_subcategories %}
+                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -165,9 +165,9 @@
                 <div id="collapseInstruments" class="accordion-collapse collapse" aria-labelledby="headingInstruments"
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
-                        <a href="#">Guitars</a>
-                        <a href="#">Keyboards</a>
-                        <a href="#">Drums</a>
+                        {% for sub in mi_subcategories %}
+                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -181,9 +181,9 @@
                 <div id="collapseElectronics" class="accordion-collapse collapse" aria-labelledby="headingElectronics"
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
-                        <a href="#">Mobiles</a>
-                        <a href="#">Laptops</a>
-                        <a href="#">Accessories</a>
+                        {% for sub in ele_subcategories %}
+                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

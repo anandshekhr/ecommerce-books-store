@@ -7,11 +7,40 @@ from .models import *
 class ItemAdmin(admin.ModelAdmin):
     list_display = ('id','name','price','stock')
     search_fields = ('id','name','price')
-    sortable_by = ('id','name','price') 
+    sortable_by = ('id','name','price')
 
+@admin.register(BookVariant)
+class BookVariantAdmin(admin.ModelAdmin):
+    list_display = ('product','format','pdf_file')
+    
+ 
 @admin.register(Electronic)
 class ElectronicAdmin(admin.ModelAdmin):
     list_display = ('id','name','price') 
+
+@admin.register(ElectronicsVariant)
+class ElectronicsVariantAdmin(admin.ModelAdmin):
+    pass
+    
+
+
+# Musical instrument category and subcategory
+
+@admin.register(MusicalInstrument)
+class ProductMusicalInstrumentAdmin(admin.ModelAdmin): 
+    pass
+
+@admin.register(MusicalInstrumentVariant)
+class MusicalInstrumentVariantAdmin(admin.ModelAdmin):
+    pass
+    
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('product','content_type','image')
+    
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -23,13 +52,7 @@ class SubCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    pass
-    
-
-
-    
-class ProductImageAdmin(admin.ModelAdmin):
-    pass
+    pass  
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -60,11 +83,7 @@ class AnswerAdmin(admin.ModelAdmin):
 class EarningAdmin(admin.ModelAdmin):
     pass
     
-# Musical instrument category and subcategory
 
-@admin.register(MusicalInstrument)
-class ProductMusicalInstrumentAdmin(admin.ModelAdmin): 
-    pass
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):

@@ -8,7 +8,7 @@ from datetime import date
 from django.utils import timezone
 from decimal import Decimal
 from django_quill.fields import QuillField
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
@@ -50,7 +50,7 @@ class Answer(models.Model):
 class Category(models.Model):
     name = models.CharField(verbose_name=_("Category"), max_length=100)
     image = models.ImageField(_("Image"), upload_to='image/', null=True, blank=True)
-    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"))
+    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"),null=True,blank=True)
 
     def __str__(self):
         return self.name
@@ -70,7 +70,7 @@ class SubCategory(models.Model):
     name = models.CharField(_("SubCategory"), max_length=50)
     parent_category = models.ForeignKey(Category, verbose_name=_("Category"), on_delete=models.CASCADE)
     image = models.ImageField(_("Image"), upload_to='image/subcategory/', null=True, blank=True)
-    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"))
+    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"),null=True,blank=True)
 
 
     def __str__(self):
@@ -95,7 +95,7 @@ class Banner(models.Model):
     image = models.ImageField(upload_to='banners/')
     link = models.URLField(blank=True, null=True)
     active = models.BooleanField(default=True)
-    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"))
+    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"),null=True,blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -107,18 +107,35 @@ class Banner(models.Model):
             # Automatically generate slug from name if not provided
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+
+# ---------- PRODUCT IMAGES ----------
+
+class ProductImage(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    product = GenericForeignKey('content_type', 'object_id')
+
+    image = models.ImageField(upload_to='item_images/', max_length=500)
+
+    def __str__(self):
+        return f"{self.product.name} Image"
+
+    class Meta:
+        verbose_name = _("Product Image")
+        verbose_name_plural = _("Product Images")
     
 # ---------- ABSTRACT PRODUCT MODEL ----------
-
 class Product(models.Model):
     name = models.CharField(max_length=255)
     category = models.ForeignKey(Category, verbose_name=_("Category"), on_delete=models.CASCADE)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
-    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"))
+    slug = models.SlugField(unique=True, max_length=120, verbose_name=_("Slug"),null=True,blank=True)
 
     image = models.ImageField(upload_to='products/')
+    images = GenericRelation(ProductImage, related_query_name='images')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
 
@@ -176,6 +193,25 @@ class MusicalInstrument(Product):
         verbose_name = "Musical Instrument"
         verbose_name_plural = "Musical Instruments"
 
+class MusicalInstrumentVariant(models.Model):
+    product = models.ForeignKey(MusicalInstrument, verbose_name=_("Product"), on_delete=models.CASCADE, related_name="variants")
+    color = models.CharField(_("Color"), max_length=50, null=True)
+    image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    stock = models.PositiveIntegerField(default=0)
+    sku = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(_("CreatedAt"), auto_now=False, auto_now_add=True)
+    modified_at = models.DateTimeField(_("ModifiedAt"), auto_now=True, auto_now_add=False)
+
+    class Meta:
+        verbose_name = _("MusicalInstrumentVariant")
+        verbose_name_plural = _("MusicalInstrumentVariants")
+
+    def __str__(self):
+        return self.product.name
+
+    def get_absolute_url(self):
+        return reverse("MusicalInstrumentVariant_detail", kwargs={"pk": self.pk})
 
 # ---------- ELECTRONIC PRODUCT ----------
 
@@ -184,23 +220,25 @@ class Electronic(Product):
     model = models.CharField(max_length=255, blank=True, null=True)
     warranty_period = models.CharField(max_length=100)
 
-
-# ---------- PRODUCT IMAGES ----------
-
-class ProductImage(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    product = GenericForeignKey('content_type', 'object_id')
-
-    image = models.ImageField(upload_to='item_images/', max_length=500)
-
-    def __str__(self):
-        return f"{self.product.name} Image"
+class ElectronicsVariant(models.Model):
+    product = models.ForeignKey(Electronic, verbose_name=_("Product"), on_delete=models.CASCADE, related_name="variants")
+    color = models.CharField(_("Color"), max_length=50, null=True)
+    image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    stock = models.PositiveIntegerField(default=0)
+    sku = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(_("CreatedAt"), auto_now=False, auto_now_add=True)
+    modified_at = models.DateTimeField(_("ModifiedAt"), auto_now=True, auto_now_add=False)
 
     class Meta:
-        verbose_name = _("Product Image")
-        verbose_name_plural = _("Product Images")
+        verbose_name = _("ElectronicsVariant")
+        verbose_name_plural = _("ElectronicsVariants")
 
+    def __str__(self):
+        return self.product.name
+
+    def get_absolute_url(self):
+        return reverse("ElectronicsVariant_detail", kwargs={"pk": self.pk})
 
 # ---------- BILLING ADDRESS ----------
 
@@ -234,7 +272,7 @@ class BillingAddress(models.Model):
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     address = models.ForeignKey(BillingAddress, verbose_name=_("Billing Address"), on_delete=models.CASCADE, null=True, blank=True)
-
+    payment_status = models.BooleanField(_("Payment Status"), default=False)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

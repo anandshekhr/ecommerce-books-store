@@ -18,7 +18,8 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include, register_converter
-from main import views
+from api import views
+from main import views as v
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -60,7 +61,7 @@ API_URL = 'api/v1/'
 
 
 router = DefaultRouter()
-router.register(r'orders', views.OrderViewSet)
+# router.register(r'orders', views.OrderViewSet)
 router.register(r'categories', views.CategoryViewSet)
 
 admin.site.site_header = "VAMS Book Store"
@@ -70,32 +71,20 @@ admin.site.site_title = "VAMS Book Store"
 
 urlpatterns = [
     # main 
-    path('admin/', admin.site.urls), 
     path('', include('main.urls')), 
-    path('robots.txt', views.robots_txt),
+    path('admin/', admin.site.urls), 
+    path('robots.txt', v.robots_txt),
     path('sitemap.xml', cache_page(0)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('ebook/admin/', admin.site.urls),
     path('volt/', include('admin_volt.urls')),
-    path('', include('main.urls')),
     path('educator/accounts/', include('accounts.urls')),
-    path( API_URL +'search', views.SearchAPI.as_view()),
-    path( API_URL +'address', views.UserAddressAPI.as_view()),
-    path( API_URL +'cart', views.CartView.as_view()),
-    path( API_URL +'order', views.OrderHistory.as_view()),
-    path( API_URL +'items', views.ItemGetAPI.as_view()),
-    path( API_URL +'items/detail', views.ItemGetDetailAPI.as_view()),
-    path( API_URL +'items/add', views.ItemPostAPI.as_view()),
-    path( API_URL +'list-items', views.FilterItemsView.as_view()),
-    path( API_URL +'checkout', views.CheckoutView.as_view()),
-    path( API_URL +'cart/add/<int:item_id>', views.AddToCartView.as_view()),
-    path( API_URL +'cart/remove/<int:item_id>', views.RemoveFromCartView.as_view()),
-    path( API_URL +'razorpay/confirm-payment', views.PaymentSuccessRazorpay.as_view()),
-    path( API_URL +'news/', include('news.urls')),
+    path( API_URL, include('api.urls')),
     path( API_URL, include(router.urls)),
     path( API_URL, include('middlewares.urls')),
-    path( 'data/', include('marketing.urls')),
+    path( API_URL +'news/', include('news.urls')),
     path( API_URL + 'accounts/', include('dj_rest_auth.urls')), 
     path( API_URL + 'accounts/register/', include('dj_rest_auth.registration.urls')),
+    path('data/', include('marketing.urls')),
     path('accounts/', include('allauth.urls')), 
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

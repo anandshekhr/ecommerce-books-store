@@ -105,7 +105,7 @@
         if (loading || endOfData) return;
         loading = true;
 
-        let url = `/api/category/{{ category.id }}/items/?page=${page}`;
+        let url = `/api/v1/category/{{ category.id }}/items/?page=${page}`;
         Object.keys(filters).forEach(key => {
             if (filters[key]) url += `&${key}=${filters[key]}`;
         });

@@ -72,16 +72,8 @@
     </div>
 </div>
 
-<!-- Advertisement Space -->
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <img src="{% static 'assets/img/ad-placeholder.jpg' %}" class="img-fluid w-100" alt="Advertisement">
-        </div>
-    </div>
-</div>
 
-<!-- Products Rows By Category -->
+
 <div class="container mt-4">
     {% for category_name, items in categorized_products.items %}
     <div class="mb-4">
@@ -89,7 +81,9 @@
         <div class="d-flex overflow-auto">
             {% for product in items %}
             <div class="card me-3" style="min-width: 200px;">
-                <a href="{% url 'product-detail' product.category.slug product.id %}"><img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}"></a>
+                <a href="{% url 'product-detail' product.category.slug product.id %}">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 180px; object-fit: contain;">
+                </a>
                 <div class="card-body">
                     <h6 class="card-title">{{ product.name }}</h6>
                     <p class="card-text">{{ product.description|slice:":60" }}{% if product.description|length > 60 %}...{% endif %}</p>
@@ -111,5 +105,14 @@
         </div>
     </div>
     {% endfor %}
+</div>
+
+<!-- Advertisement Space -->
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <img src="{% static 'assets/img/ad-placeholder.jpg' %}" class="img-fluid w-100" alt="Advertisement">
+        </div>
+    </div>
 </div>
 {% endblock content %}

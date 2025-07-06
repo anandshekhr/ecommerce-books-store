@@ -80,15 +80,29 @@ def item_list(request):
         
         if category and display_name == 'Musical Instruments':
             categorized_products[display_name] = MusicalInstrument.objects.filter(category=category).order_by('-updated_at')[:10]
+    
+    books_subcategory = SubCategory.objects.filter(parent_category__name='Books')
+    mi_subcategory = SubCategory.objects.filter(parent_category__name='Musical Instruments')
+    ele_subcategory = SubCategory.objects.filter(parent_category__name='Electronics')
 
     return render(request, 'store/index.html', {
         'categories': categories,
         'categorized_products': categorized_products,
         'banners': banners,
+        'books_subcategories':books_subcategory,
+        'mi_subcategories':mi_subcategory,
+        'ele_subcategories':ele_subcategory
     })
 
 def category_wise_products(request, categoryId: int):
     category = Category.objects.get(pk=categoryId)
+    context = {
+        'category':category
+    }
+    return render(request, 'store/products_on_category.html', context=context)
+
+def category_wise_products_get_object(request,subCategoryName: str):
+    category = SubCategory.objects.get(name__icontains= subCategoryName)
     context = {
         'category':category
     }
@@ -159,24 +173,41 @@ def item_list_search(request):
 def product_detail(request, category_slug, pk):
     category = get_object_or_404(Category, slug=category_slug)
 
-    if category.name == 'Books':
-        product = get_object_or_404(Book, pk=pk, category=category)
-        relevant_products = Book.objects.filter(category=category).exclude(pk=pk)
-    elif category.name == 'Electronics':
-        product = get_object_or_404(Electronic, pk=pk, category=category)
-        relevant_products = Electronic.objects.filter(category=category).exclude(pk=pk)
-    elif category.name == 'Musical Instruments':
-        product = get_object_or_404(MusicalInstrument, pk=pk, category=category)
-        relevant_products = MusicalInstrument.objects.filter(category=category).exclude(pk=pk)
+    # Map categories to product and variant models
+    category_map = {
+        'Books': Book,
+        'Electronics': Electronic,
+        'Musical Instruments': MusicalInstrument
+    }
+
+    category_variant_map = {
+        'Books': BookVariant,
+        'Electronics': ElectronicsVariant,
+        'Musical Instruments': MusicalInstrumentVariant
+    }
+
+    # Get the product model and variant model for this category
+    product_model = category_map.get(category.name)
+    variant_model = category_variant_map.get(category.name)
+
+    product = get_object_or_404(product_model, pk=pk, category=category)
+
+    # Get variantId from query param (not URL path)
+    variant_id = request.GET.get('variant')
+
+    if variant_id:
+        selected_variant = get_object_or_404(variant_model, pk=variant_id, product=product)
     else:
-        product = None
-        relevant_products = []
+        selected_variant = product.variants.first()
+
+    relevant_products = product_model.objects.filter(category=category).exclude(pk=pk)
 
     return render(request, 'store/item.html', {
         'product': product,
-        'category': category,
-        'pdf_id': pk,
-        'relevant_products': relevant_products
+        'category': category, 
+        'pdf_id': selected_variant.pk,
+        'selected_variant': selected_variant,
+        'relevant_products': relevant_products,
     })
 
 @login_required(login_url='login-view')
@@ -197,8 +228,8 @@ def add_to_cart(request, category_id, item_id):
     product = get_object_or_404(model, id=item_id)
     content_type = ContentType.objects.get_for_model(model)
 
-    order, created = Order.objects.get_or_create(user=request.user, payment__status=False)
-    # payment = Payment.objects.get_or_create(order=order,status=False)
+    order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
+    payment = Payment.objects.get_or_create(order=order,status=False)
 
     # Check if already in cart
     if order.items.filter(content_type=content_type, object_id=product.id).exists():
@@ -225,7 +256,7 @@ def view_cart(request):
     try:
         address = BillingAddress.objects.get(user = request.user, is_default = True)
         # Try to get the user's active order (unpaid)
-        order = Order.objects.get(user=request.user, payment__status= False)
+        order = Order.objects.get(user=request.user, payment_status= False)
         # Check if the order has any items
         if not order.items.exists():
             # If no items in the cart, display a message
@@ -284,26 +315,13 @@ def razorpay_success_redirect(request):
         order.payment.razorpay_payment_id = razorpay_payment_id
         order.payment.save()
         order.address = selected_billing_address
-
+        order.payment_status = True
         order.save()
 
     messages.success(request, "Your order was successful!")
     return redirect("order-summary", pk=order.id)
 
-class PaymentSuccessRazorpay(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,SessionAuthentication)
-    def post(self,request):
-        razorpay_order_id = request.data.get("razorpay_order_id")
-        razorpay_payment_id = request.data.get("razorpay_payment_id")
-        order_id = request.data.get('order_id')
-        if order_id:
-            order_id = int(order_id)
-        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
-        order.payment_status = True
-        order.razorpay_payment_id = razorpay_payment_id
-        order.save()
-        return Response({'message':'Payment Successful. Redirecting to Order Summary.'})
+
 
 
 @csrf_exempt
@@ -325,192 +343,6 @@ def view_pdf(request, item_id):
     return render(request, 'store/view_pdf.html', {'pdf_file': Book.pdf_file.url})
 
 
-class ItemGetAPI(generics.ListAPIView):
-    permission_classes = (AllowAny,)
-    queryset = Book.objects.all()
-    serializer_class = ItemSerializer
-
-class ItemGetDetailAPI(APIView):
-    permission_classes = (AllowAny,)
-    serializer_class = ItemSerializer
-
-    def get(self, request):
-        id = request.GET.get('id')
-        if id:
-            queryset = Book.objects.get(id=id)
-            serializer = ItemSerializer(queryset)
-            return Response(serializer.data,status=200)
-        
-        
-
-class ItemPostAPI(generics.CreateAPIView):
-    permission_classes = (IsAuthenticated,)
-    queryset = Book.objects.all()
-    serializer_class = ItemSerializer
-
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
-
-class CategoryViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-
-
-class AddToCartView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-
-    def post(self, request, item_id):
-        Book = get_object_or_404(Book, id=item_id)
-        order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
-        
-        if order.items.filter(id=Book.id).exists():
-            return Response({
-                'message': 'Book is already in the cart','total_price': order.total_price
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        order.items.add(Book)
-        total_price = Decimal(order.total_price) + Decimal(Book.price) if not Book.is_free else Decimal(0.00)
-        order.total_price = total_price
-        order.save()
-        return Response({'message': 'Book added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
-
-class RemoveFromCartView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-
-
-    def post(self, request, item_id):
-        Book = get_object_or_404(Book, id=item_id)
-        order = get_object_or_404(Order, user=request.user, payment_status=False)
-        if Book in order.items.all():
-            order.items.remove(Book)
-            order.total_price -= Book.price if not Book.is_free else 0.00
-            order.save()
-            return Response({'message': 'Book removed from cart','total_price': order.total_price}, status=status.HTTP_200_OK)
-        return Response({'message': 'Book not in cart','total_price': order.total_price}, status=status.HTTP_400_BAD_REQUEST)
-    
-
-class CartView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-
-
-    def get(self, request, *args, **kwargs):
-        try:
-            order = Order.objects.get(user=request.user, payment_status=False)
-            items = order.items.all()
-            total_price = order.total_price
-            item_count = items.count()
-
-            # Serialize the Book data
-            serialized_items = ItemSerializer(items, many=True)
-
-            #razorpay
-
-            request_data = {
-            "amount": int(order.total_price * 100) if int(order.total_price) > 0 else 100,
-            "currency": "INR",
-            "receipt": order.sid,
-            }
-            razorpay_response = razorpay_api.order.create(data=request_data)
-            order.razorpay_order_id = razorpay_response["id"]
-            order.save()
-
-            return Response({
-                'items': serialized_items.data,
-                'total_price': total_price,
-                'item_count': item_count,
-                "razorpay_order_id": razorpay_response["id"],
-                "razorpay_key_id": settings.RAZORPAY_API_KEY,
-                "order_id":order.pk
-            }, status=status.HTTP_200_OK)
-
-        except Order.DoesNotExist:
-            return Response({
-                'message': 'No active order found.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-# store/api_views.py
-class OrderHistory(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (BasicAuthentication,TokenAuthentication,SessionAuthentication)
-    pagination_class = PageNumberPagination
-    
-    def get_queryset(self):
-        return Order.objects.all()
-    
-    def get(self, request):
-        queryset = self.get_queryset()
-        data = queryset.filter(user=request.user,payment_status = True)
-        paginator = self.pagination_class()
-        result = paginator.paginate_queryset(data, request)
-        serializer = OrderSerializer(result,many=True)
-        return paginator.get_paginated_response(serializer.data)
-
-
-class CheckoutView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-
-    serializer_class = OrderSerializer
-
-    def get(self, request, *args, **kwargs):
-        try:
-            # Get the user's current order
-            order = Order.objects.get(user=request.user, payment_status=False)
-
-            # Ensure there are items in the cart before proceeding to checkout
-            if not order.items.exists():
-                return Response({
-                    'message': 'Your cart is empty. Add items to proceed to checkout.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            request_data = {
-            "amount": int(order.total_price * 100),
-            "currency": "INR",
-            "receipt": order.sid,
-            }
-            razorpay_response = razorpay_api.order.create(data=request_data)
-            order.razorpay_order_id = razorpay_response["id"]
-            order.save()
-            serializer = self.get_serializer(order)
-
-            
-            return Response({'order': serializer.data ,"razorpay_order_id": razorpay_response["id"],
-                   "razorpay_key_id": settings.RAZORPAY_API_KEY}, status=status.HTTP_200_OK)
-
-        except Order.DoesNotExist:
-            return Response({
-                'message': 'No active order found for checkout.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-
-class FilterItemsView(generics.ListAPIView):
-    permission_classes = [AllowAny]
-    serializer_class = ItemSerializer
-
-    def get_queryset(self):
-        """
-        Optionally filters the items by category based on the 'category_id' parameter
-        passed in the URL.
-        """
-        queryset = Book.objects.all()
-        category_id = self.request.query_params.get('category', None)
-
-        if category_id is not None:
-            queryset = queryset.filter(category__id=category_id)
-        
-        return queryset
-
-class SearchAPI(generics.ListAPIView):
-    queryset = Book.objects.all()
-    serializer_class = ItemSerializer
-    permission_classes = (AllowAny,)
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['category__name', 'title','price']
     
 
 def login_view(request):
@@ -745,7 +577,12 @@ def serve_pdf_page(request, pdf_id):
     except ValueError:
         page_num = 1
     pdf = get_object_or_404(Book, id=pdf_id)
-    pdf_path = pdf.pdf_file.path 
+    pdf_variants = pdf.variants.filter(format='ebook').first()
+    if pdf_variants:
+        pdf_path = pdf_variants.pdf_file.path 
+    else: 
+        pdf_path= None
+        return JsonResponse({"error": "PDF not found"}, status=404)
 
     # Open the PDF and extract the specific page
     if os.path.exists(pdf_path):
@@ -790,19 +627,7 @@ def Error404(request):
     return render(request, 'error/504.html',context,status=404)
 
 
-class UnsubscribeView(generics.CreateAPIView):
-    permission_classes = (AllowAny,)
-    serializer_class = UnsubscribeSerializer
-    def post(self, request):
-        serializer = UnsubscribeSerializer(data=request.data)
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            # Check if the email is already unsubscribed
-            if not UnsubscribedEmail.objects.filter(email=email).exists():
-                UnsubscribedEmail.objects.create(email=email)
-                return Response({'message': 'You have been successfully unsubscribed.'}, status=status.HTTP_200_OK)
-            return Response({'message': 'Email is already unsubscribed.'}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @login_required
@@ -848,12 +673,7 @@ def adminEarnings(request):
         messages.error('You are not authorized to view this page')
     return render(request, 'educator/earnings.html',{'earnings':earning,'selected':'earning'})
 
-class UserAddressAPI(generics.ListCreateAPIView):
-    queryset = BillingAddress.objects.all()
-    serializer_class = AddressSerializer
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,SessionAuthentication)
-    pagination_class = PageNumberPagination
+
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -891,68 +711,5 @@ def select_billing_address(request, address_id):
         return JsonResponse({'success': True})
 
 
-class CategoryWiseProductList(APIView):
-    permission_classes = (AllowAny,)
 
-    class CustomPagination(PageNumberPagination):
-        page_size = 12
-        page_size_query_param = 'page_size'
-
-    def get_serializer_class(self, category_name):
-        if category_name == 'Books':
-            return BookSerializer
-        elif category_name == 'Electronics':
-            return ElectronicSerializer
-        elif category_name == 'Musical Instruments':
-            return MusicalInstrumentSerializer
-        return None
-
-    def get_queryset(self, category, request):
-        min_price = request.GET.get('min_price')
-        max_price = request.GET.get('max_price')
-        is_paperback = request.GET.get('is_paperback')
-        search = request.GET.get('q')
-
-        if category.name == 'Books':
-            queryset = Book.objects.filter(category=category)
-            if is_paperback in ['true', 'false']:
-                queryset = queryset.filter(is_paperback=(is_paperback == 'true'))
-            if search:
-                queryset = queryset.filter(
-                    Q(name__icontains=search) |
-                    Q(description__icontains=search)
-                )
-        elif category.name == 'Electronics':
-            queryset = Electronic.objects.filter(category=category)
-        elif category.name == 'Musical Instruments':
-            queryset = MusicalInstrument.objects.filter(category=category)
-        else:
-            return []
-
-        if min_price:
-            queryset = queryset.filter(price__gte=min_price)
-        if max_price:
-            queryset = queryset.filter(price__lte=max_price)
-
-        if hasattr(queryset, 'order_by'):
-            queryset = queryset.order_by('-updated_at')
-
-        return queryset
-
-    def get(self, request, categoryId: int):
-        try:
-            category = Category.objects.get(pk=categoryId)
-        except Category.DoesNotExist:
-            return Response({"detail": "Category not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        queryset = self.get_queryset(category, request)
-        serializer_class = self.get_serializer_class(category.name)
-
-        if not serializer_class:
-            return Response({"detail": "No serializer defined for this category."}, status=status.HTTP_400_BAD_REQUEST)
-
-        paginator = self.CustomPagination()
-        paginated_queryset = paginator.paginate_queryset(queryset, request)
-        serializer = serializer_class(paginated_queryset, many=True)
-
-        return paginator.get_paginated_response(serializer.data)
+# class 
