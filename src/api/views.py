@@ -116,6 +116,16 @@ class ItemPostAPI(generics.CreateAPIView):
     queryset = Book.objects.all()
     serializer_class = ItemSerializer
 
+class ElectronicPostAPI(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = Electronic.objects.all()
+    serializer_class = ElectronicSerializer
+
+class MusicalInstrumentPostAPI(generics.CreateAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = MusicalInstrument.objects.all()
+    serializer_class = MusicalInstrumentSerializer
+
 class OrderViewSet(generics.ListAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
