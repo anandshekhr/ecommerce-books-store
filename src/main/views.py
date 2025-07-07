@@ -254,7 +254,7 @@ def add_to_cart(request, category_id, item_id):
 @login_required(login_url='login-view')
 def view_cart(request):
     try:
-        address = BillingAddress.objects.get(user = request.user, is_default = True)
+        address, _ = BillingAddress.objects.get_or_create(user = request.user, is_default = True)
         # Try to get the user's active order (unpaid)
         order = Order.objects.get(user=request.user, payment_status= False)
         # Check if the order has any items

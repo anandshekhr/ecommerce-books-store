@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 import razorpay
+from django.db.models import F
 from django.conf import settings
 from main.models import *
 from main.serializers import *
@@ -136,39 +137,80 @@ class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
 
 
-class AddToCartView(generics.GenericAPIView):
+class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
-    def post(self, request, item_id):
-        Book = get_object_or_404(Book, id=item_id)
+    def post(self, request):
+        category_id = request.data.get('category_id',None)
+        item_id = request.data.get('item_id',None)
+        quantity = request.data.get('quantity',None)
+
+        category = get_object_or_404(Category, id=category_id)
+
+        model, serializer = MODEL_MAP.get(category.name)
+        if not model:
+            return Response({'message':'Invalid category.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        product = get_object_or_404(model, id=item_id)
+        content_type = ContentType.objects.get_for_model(model)
         order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
+        payment = Payment.objects.get_or_create(order=order,status=False)
         
-        if order.items.filter(id=Book.id).exists():
-            return Response({
-                'message': 'Book is already in the cart','total_price': order.total_price
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        order.items.add(Book)
-        total_price = Decimal(order.total_price) + Decimal(Book.price) if not Book.is_free else Decimal(0.00)
-        order.total_price = total_price
-        order.save()
-        return Response({'message': 'Book added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
+        if order.items.filter(content_type=content_type, object_id=product.id).exists():
+            updated_count = OrderItem.objects.filter(
+                order=order,
+                content_type=content_type,
+                object_id=product.id
+            ).update(quantity=quantity if quantity else F('quantity') + 1)
+        else:
+            # Add item to cart
+            OrderItem.objects.create(
+                order=order,
+                content_type=content_type,
+                object_id=product.id,
+                price_at_order_time=product.price,
+                quantity= quantity if quantity else 1
+            )
+        # Update order total
+        order.update_total_price()
+        return Response({'message': f'{product.name} added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
 
-class RemoveFromCartView(generics.GenericAPIView):
+class RemoveFromCartView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
+    def delete(self, request, category_id, item_id):
 
-    def post(self, request, item_id):
-        Book = get_object_or_404(Book, id=item_id)
-        order = get_object_or_404(Order, user=request.user, payment_status=False)
-        if Book in order.items.all():
-            order.items.remove(Book)
-            order.total_price -= Book.price if not Book.is_free else 0.00
-            order.save()
-            return Response({'message': 'Book removed from cart','total_price': order.total_price}, status=status.HTTP_200_OK)
-        return Response({'message': 'Book not in cart','total_price': order.total_price}, status=status.HTTP_400_BAD_REQUEST)
+        if not category_id or not item_id:
+            return Response({'message': 'category_id and item_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        category = get_object_or_404(Category, id=category_id)
+
+        model, serializer = MODEL_MAP.get(category.name)
+        if not model:
+            return Response({'message': 'Invalid category.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        product = get_object_or_404(model, id=item_id)
+        content_type = ContentType.objects.get_for_model(model)
+
+        try:
+            order = Order.objects.get(user=request.user, payment_status=False)
+        except Order.DoesNotExist:
+            return Response({'message': 'No active cart found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            order_item = OrderItem.objects.get(order=order, content_type=content_type, object_id=product.id)
+        except OrderItem.DoesNotExist:
+            return Response({'message': f'{product.name} not in cart.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        order_item.delete()
+
+        # Update order total
+        order.update_total_price()
+
+        return Response({'message': f'{product.name} removed from cart.', 'total_price': order.total_price}, status=status.HTTP_204_NO_CONTENT)
+
     
 
 class CartView(generics.GenericAPIView):

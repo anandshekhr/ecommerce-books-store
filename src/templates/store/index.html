@@ -89,15 +89,20 @@
                     <p class="card-text">{{ product.description|slice:":60" }}{% if product.description|length > 60 %}...{% endif %}</p>
                     <div>
                         {% if not product.is_free %}
-                        <span class="text-muted">₹{{ product.price }}</span>
-                        {% else %}
-                        <span class="text-success">Free</span>
+                            <span class="text-muted">₹{{ product.price }}</span>
+                        {% else %}  
+                            <span class="text-success">Free</span>
                         {% endif %}
                     </div>
                     {% if product.is_free %}
                         <a href="{{ product.pdf_file.url }}" class="btn btn-outline-success btn-sm mt-2"><i class="fa fa-download"></i></a>
                     {% else %}
-                        <a href="{% url 'add_to_cart' product.category.id product.id %}" class="btn btn-outline-success btn-sm mt-2">ADD</a>
+                        <button class="btn btn-outline-success btn-sm mt-2"
+                                onclick="addToCart({{ product.category.id }}, {{ product.id }})">
+                            ADD
+                        </button>
+                        <a href="{% url 'add_to_cart' product.category.id product.id %}" class="btn btn-outline-primary btn-sm mt-2">BUY NOW</a>
+
                     {% endif %}
                 </div>
             </div>
@@ -116,3 +121,29 @@
     </div>
 </div>
 {% endblock content %}
+{% block MoreJs %}
+<script>
+function addToCart(categoryId, itemId, quantity = 1) {
+    fetch("{% url 'add-to-cart-api' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: JSON.stringify({
+            category_id: categoryId,
+            item_id: itemId,
+            quantity: quantity
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        toastr.success(data.message || "Item added to cart!");
+    })
+    .catch(error => {
+        toastr.error("Failed to add item to cart.");
+        console.error("Error:", error);
+    });
+}
+</script>
+{% endblock MoreJs %}
