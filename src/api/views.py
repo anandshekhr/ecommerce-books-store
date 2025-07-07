@@ -136,6 +136,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+class SubCategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = (AllowAny,)
+    queryset = SubCategory.objects.all()
+    serializer_class = SubCategorySerializer
+
 
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]

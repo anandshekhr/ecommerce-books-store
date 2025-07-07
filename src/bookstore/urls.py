@@ -63,6 +63,7 @@ API_URL = 'api/v1/'
 router = DefaultRouter()
 # router.register(r'orders', views.OrderViewSet)
 router.register(r'categories', views.CategoryViewSet)
+router.register(r'sub-categories', views.SubCategoryViewSet)
 
 admin.site.site_header = "VAMS Book Store"
 admin.site.index_title = "VAMS Book Store"
