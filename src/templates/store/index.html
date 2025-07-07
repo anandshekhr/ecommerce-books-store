@@ -89,7 +89,7 @@
                     <p class="card-text">{{ product.description|slice:":60" }}{% if product.description|length > 60 %}...{% endif %}</p>
                     <div>
                         {% if not product.is_free %}
-                            <span class="text-muted">₹{{ product.price }}</span>
+                            <span class="text-muted">₹{{ product.price|floatformat:"0" }}</span>
                         {% else %}  
                             <span class="text-success">Free</span>
                         {% endif %}

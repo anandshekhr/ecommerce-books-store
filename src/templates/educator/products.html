@@ -24,7 +24,7 @@
                 </a></td>
                 <td>{{product.title}}</td>
                 <td>{{product.category}}</td>
-                <td>{{product.price}}</td>
+                <td>{{product.price|floatformat:"0"}}</td>
                 <td>{{product.created_at}}</td>
             </tr>
             {% endfor %}

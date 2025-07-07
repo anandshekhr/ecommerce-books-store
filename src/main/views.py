@@ -205,7 +205,7 @@ def product_detail(request, category_slug, pk):
     return render(request, 'store/item.html', {
         'product': product,
         'category': category, 
-        'pdf_id': selected_variant.pk,
+        'pdf_id': selected_variant.pk if selected_variant else 1,
         'selected_variant': selected_variant,
         'relevant_products': relevant_products,
     })

@@ -36,7 +36,7 @@
                 {% endif %}
                 <div class="instrument-details">
                     <h6 class="product-title">{{ product.name }}</h6>
-                    <div class="instrument-price">₹{{ product.price }}</div>
+                    <div class="instrument-price">₹{{ product.price|floatformat:"0" }}</div>
                     <button class="btn btn-warning w-100">
                         <i class="fas fa-shopping-cart"></i> Add to Cart
                     </button>
