@@ -415,7 +415,7 @@ login_required(login_url='login-view')
 def logout_view(request):
     # Log the user out
     logout(request)
-    
+    messages.success(request, 'User logget out successfully.')
     # Redirect to the login page or any other page
     return redirect('home-1')
 

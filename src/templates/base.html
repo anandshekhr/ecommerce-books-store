@@ -260,12 +260,13 @@
         });
     </script>
     {% if messages %}
-    {% for message in messages %}
     <script>
-        toastr.{ { message.tags } } ('{{ message }}');
+        {% for message in messages %}
+            toastr["{{ message.tags }}"]("{{ message|escapejs }}");
+        {% endfor %}
     </script>
-    {% endfor %}
     {% endif %}
+
 
     {% block MoreJs %}{% endblock MoreJs %}
 </body>
