@@ -144,6 +144,8 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name'] 
 
 
 class AddToCartView(APIView):
