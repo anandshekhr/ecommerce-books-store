@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework import generics, status, filters
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
@@ -135,6 +136,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['name'] 
 
 class SubCategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
