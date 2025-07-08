@@ -75,17 +75,17 @@ class AddressSerializer(serializers.ModelSerializer):
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ['id', 'name', 'description', 'price', 'image']
+        fields = ['id', 'name', 'description', 'price', 'image','category','stock']
 
 class ElectronicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Electronic
-        fields = ['id', 'name', 'description', 'price', 'image']
+        fields = ['id', 'name', 'description', 'price', 'image','category','stock','brand','warranty_period']
 
 class MusicalInstrumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicalInstrument
-        fields = ['id', 'name', 'description', 'price', 'image']
+        fields = ['id', 'name', 'description', 'price', 'image','category','stock']
 
 class ItemAllCategorySerializer(serializers.Serializer):
     type = serializers.CharField()
