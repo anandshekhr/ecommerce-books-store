@@ -80,7 +80,7 @@ class BookSerializer(serializers.ModelSerializer):
 class ElectronicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Electronic
-        fields = ['id', 'name', 'description', 'price', 'image','category','stock','brand','warranty_period']
+        fields = ['id', 'name', 'description', 'price', 'image','category','stock','brand','warranty_period','sub_category']
 
 class MusicalInstrumentSerializer(serializers.ModelSerializer):
     class Meta:
