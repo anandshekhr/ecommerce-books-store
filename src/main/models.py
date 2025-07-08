@@ -216,6 +216,7 @@ class MusicalInstrumentVariant(models.Model):
 # ---------- ELECTRONIC PRODUCT ----------
 
 class Electronic(Product):
+    sub_category = models.ForeignKey(SubCategory, related_name="electronics", on_delete=models.CASCADE)
     brand = models.CharField(max_length=255,blank=True, null=True)
     model = models.CharField(max_length=255, blank=True, null=True)
     warranty_period = models.CharField(max_length=100,blank=True, null=True)
