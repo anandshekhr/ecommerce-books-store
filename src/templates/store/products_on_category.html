@@ -1,12 +1,23 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block title %}Category Items{% endblock title %}
 
 {% block head %}
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 <style>
+    html, body {
+    height: auto;
+    overflow-y: auto;
+}#productContainer {
+    overflow-y: auto;
+    max-height: calc(100vh - 200px); /* or similar */
+}
+
+
     .product-card {
-        width: 180px;
+        width: 220px;
         border: 1px solid #e0e0e0;
         border-radius: 10px;
         padding: 10px;
@@ -14,6 +25,9 @@
         background-color: #fff;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         transition: 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     .product-card img {
         max-width: 100%;
@@ -29,6 +43,11 @@
         font-size: 14px;
         font-weight: 500;
         margin-top: 8px;
+    }
+    .product-description {
+        font-size: 12px;
+        color: #555;
+        margin-top: 4px;
     }
     .product-price {
         font-size: 13px;
@@ -96,43 +115,63 @@
 
 {% block MoreJs %}
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
     let currentPage = 1;
     let loading = false;
     let endOfData = false;
+    let appliedFilters = {};
 
     function fetchProducts(page = 1, filters = {}) {
-        if (loading || endOfData) return;
-        loading = true;
+    if (loading || endOfData) return;
+    loading = true;
 
-        let url = `/api/v1/category/{{ category.id }}/items/?page=${page}`;
-        Object.keys(filters).forEach(key => {
-            if (filters[key]) url += `&${key}=${filters[key]}`;
-        });
+    let url = `/api/v1/category/{{ category.id }}/items/?page=${page}`;
+    Object.keys(filters).forEach(key => {
+        if (filters[key]) url += `&${key}=${filters[key]}`;
+    });
 
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.results.length) {
-                    endOfData = true;
-                }
-                data.results.forEach(item => {
-                    const card = `<div class="product-card">
-                        <a href="/product/{{category.slug}}/${item.id}/">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="product-name">${item.name}</div>
-                            <div class="product-price">₹${item.price}</div>
-                        </a>
-                    </div>`;
-                    document.getElementById('productContainer').insertAdjacentHTML('beforeend', card);
-                });
-                loading = false;
-            })
-            .catch(err => {
-                console.error("Error:", err);
-                loading = false;
+    fetch(url)
+        .then(res => {
+            if (!res.ok) {
+                console.warn("Fetch failed or returned error code:", res.status);
+                endOfData = true; // stop further fetching
+                return { results: [] };
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (!data.results || !data.results.length) {
+                endOfData = true;
+                return;
+            }
+
+            data.results.forEach(item => {
+                const card = `<div class="product-card">
+                    <a href="/product/{{category.slug}}/${item.id}/">
+                        <img src="${item.image}" alt="${item.name}">
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">₹${item.price}</div>
+                        <div class="product-description">${item.description?.slice(0, 60) || ''}</div>
+                        <div class="mt-2">
+                            <button class="btn btn-sm btn-outline-success" onclick="addToCart(${item.category}, ${item.id})">ADD</button>
+                            <a href="/buy/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
+                        </div>
+                    </a>
+                </div>`;
+                document.getElementById('productContainer').insertAdjacentHTML('beforeend', card);
             });
-    }
+        })
+        .catch(err => {
+            console.error("Fetch error:", err);
+            endOfData = true; // stop on error
+        })
+        .finally(() => {
+            loading = false;
+        });
+}
+
 
     document.getElementById('toggleFilterBtn').addEventListener('click', () => {
         const panel = document.getElementById('filterPanel');
@@ -142,22 +181,47 @@
     document.getElementById('filterForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const formData = new FormData(this);
-        const filters = Object.fromEntries(formData.entries());
+        appliedFilters = Object.fromEntries(formData.entries());
         document.getElementById('productContainer').innerHTML = '';
         currentPage = 1;
         endOfData = false;
-        fetchProducts(currentPage, filters);
+        fetchProducts(currentPage, appliedFilters);
     });
 
-    // Infinite scroll
+    // Infinite Scroll
     window.addEventListener('scroll', () => {
-        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-            currentPage++;
-            fetchProducts(currentPage);
+        if ((window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 150)) {
+            if (!loading && !endOfData) {
+                currentPage++;
+                fetchProducts(currentPage, appliedFilters);
+            }
         }
     });
 
-    // Initial load
+    function addToCart(categoryId, itemId, quantity = 1) {
+        fetch("{% url 'add-to-cart-api' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+                category_id: categoryId,
+                item_id: itemId,
+                quantity: quantity
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            toastr.success(data.message || "Item added to cart!");
+        })
+        .catch(error => {
+            toastr.error("Failed to add item to cart.");
+            console.error("Error:", error);
+        });
+    }
+
+    // Initial Load
     fetchProducts();
 </script>
 {% endblock MoreJs %}
