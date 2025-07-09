@@ -81,17 +81,18 @@ def item_list(request):
         if category and display_name == 'Musical Instruments':
             categorized_products[display_name] = MusicalInstrument.objects.filter(category=category).order_by('-updated_at')[:10]
     
-    books_subcategory = SubCategory.objects.filter(parent_category__name='Books')
-    mi_subcategory = SubCategory.objects.filter(parent_category__name='Musical Instruments')
-    ele_subcategory = SubCategory.objects.filter(parent_category__name='Electronics')
+    # books_subcategory = SubCategory.objects.filter(parent_category__name='Books')
+    # mi_subcategory = SubCategory.objects.filter(parent_category__name='Musical Instruments')
+    # ele_subcategory = SubCategory.objects.filter(parent_category__name='Electronics')
 
     return render(request, 'store/index.html', {
         'categories': categories,
         'categorized_products': categorized_products,
-        'banners': banners,
-        'books_subcategories':books_subcategory,
-        'mi_subcategories':mi_subcategory,
-        'ele_subcategories':ele_subcategory
+        'banners': banners
+        # ,
+        # 'books_subcategories':books_subcategory,
+        # 'mi_subcategories':mi_subcategory,
+        # 'ele_subcategories':ele_subcategory
     })
 
 def category_wise_products(request, categoryId: int):
