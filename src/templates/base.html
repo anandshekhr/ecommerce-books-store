@@ -150,7 +150,7 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in books_subcategories %}
-                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -166,7 +166,7 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in mi_subcategories %}
-                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -182,7 +182,7 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in ele_subcategories %}
-                            <a href="{% url 'home-1' %}?category={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>

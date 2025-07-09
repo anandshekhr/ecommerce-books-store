@@ -102,12 +102,14 @@ def category_wise_products(request, categoryId: int):
     }
     return render(request, 'store/products_on_category.html', context=context)
 
-def category_wise_products_get_object(request,subCategoryName: str):
-    category = SubCategory.objects.get(name__icontains= subCategoryName)
+def subcategory_wise_products(request):
+    subcategory_name = request.GET.get('subcategory')
+    sub_category = SubCategory.objects.get(name__icontains= subcategory_name)
     context = {
-        'category':category
+        'category':sub_category.parent_category,
+        'sub_category':sub_category
     }
-    return render(request, 'store/products_on_category.html', context=context)
+    return render(request, 'store/products_on_subcategory.html', context=context)
 
 def item_list_filter(request):
     category_id = request.GET.get('category')

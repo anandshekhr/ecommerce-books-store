@@ -12,7 +12,7 @@ urlpatterns = [
     
     # home page
     path('', views.item_list, name='home-1'),
-    path('?subcategory=<str:subCategoryId>', views.category_wise_products, name='category-wise-products'),
+    path('subcategory/', views.subcategory_wise_products, name='sub-category-wise-products'),
     path('category/<int:categoryId>', views.category_wise_products, name='category-wise-products'),
     
     # product details

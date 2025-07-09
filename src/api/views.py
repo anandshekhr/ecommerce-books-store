@@ -386,6 +386,7 @@ class CategoryWiseProductList(APIView):
         max_price = request.GET.get('max_price')
         is_paperback = request.GET.get('is_paperback')
         search = request.GET.get('q')
+        sub_category = request.GET.get('sub_category')
 
         if category.name == 'Books':
             queryset = Book.objects.filter(category=category)
@@ -407,6 +408,8 @@ class CategoryWiseProductList(APIView):
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
+        if sub_category:
+            queryset = queryset.filter(sub_category__name=sub_category)
 
         if hasattr(queryset, 'order_by'):
             queryset = queryset.order_by('-updated_at')
