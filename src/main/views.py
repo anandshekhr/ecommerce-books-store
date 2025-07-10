@@ -173,7 +173,7 @@ def item_list_search(request):
 
     return render(request, 'store/product_list.html', {'products': page_obj,'item_length':len(items)})
 
-def product_detail(request, category_slug, pk):
+def product_detail(request, category_slug, product_slug):
     category = get_object_or_404(Category, slug=category_slug)
 
     # Map categories to product and variant models
@@ -193,7 +193,7 @@ def product_detail(request, category_slug, pk):
     product_model = category_map.get(category.name)
     variant_model = category_variant_map.get(category.name)
 
-    product = get_object_or_404(product_model, pk=pk, category=category)
+    product = get_object_or_404(product_model, slug=product_slug, category=category)
 
     # Get variantId from query param (not URL path)
     variant_id = request.GET.get('variant')
@@ -203,7 +203,7 @@ def product_detail(request, category_slug, pk):
     else:
         selected_variant = product.variants.first()
 
-    relevant_products = product_model.objects.filter(category=category).exclude(pk=pk)
+    relevant_products = product_model.objects.filter(category=category).exclude(slug=product_slug)[:10]
 
     return render(request, 'store/item.html', {
         'product': product,

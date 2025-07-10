@@ -149,14 +149,14 @@
 
             data.results.forEach(item => {
                 const card = `<div class="product-card">
-                    <a href="/product/{{category.slug}}/${item.id}/">
+                    <a href="/product/{{category.slug}}/${item.slug}/">
                         <img src="${item.image}" alt="${item.name}">
                         <div class="product-name">${item.name}</div>
                         <div class="product-price">₹${item.price}</div>
                         <div class="product-description">${item.description?.slice(0, 60) || ''}</div>
                         <div class="mt-2">
                             <button class="btn btn-sm btn-outline-success" onclick="addToCart(${item.category}, ${item.id})">ADD</button>
-                            <a href="/buy/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
+                            <a href="/cart/add/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
                         </div>
                     </a>
                 </div>`;

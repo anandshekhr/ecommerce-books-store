@@ -16,7 +16,7 @@ urlpatterns = [
     path('category/<int:categoryId>', views.category_wise_products, name='category-wise-products'),
     
     # product details
-    path('product/<slug:category_slug>/<int:pk>/', views.product_detail, name='product-detail'),
+    path('product/<slug:category_slug>/<slug:product_slug>/', views.product_detail, name='product-detail'),
     path('pdf/<hashid:item_id>/', views.view_pdf, name='view_pdf'),
 
     
