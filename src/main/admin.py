@@ -48,7 +48,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id','name','parent_category')
+    search_fields = ('id','name','parent_category')
+    sortable_by = ('id','name','parent_category')
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
