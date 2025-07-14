@@ -31,6 +31,7 @@ from django.contrib.sitemaps.views import sitemap
 from main.sitemaps import ProductSitemap
 from django.conf.urls import handler404, handler500
 from django.views.decorators.cache import cache_page
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication, BasicAuthentication
 
 
 sitemaps = {
@@ -54,6 +55,7 @@ schema_view = get_schema_view(
    ),
    public=False,
    permission_classes=(permissions.IsAdminUser,),
+   authentication_classes=(SessionAuthentication, TokenAuthentication, BasicAuthentication),
 )
 
 
