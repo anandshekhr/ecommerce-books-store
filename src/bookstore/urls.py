@@ -45,11 +45,11 @@ register_converter(HashIdConverter, "hashid")
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Snippets API",
+      title="eStore API",
       default_version='v1',
-      description="Test description",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@snippets.local"),
+      description="eStore API",
+      terms_of_service="https://www.vamsbookstore.in/policies/terms/",
+      contact=openapi.Contact(email="info@vamsmechatronica.in"),
       license=openapi.License(name="BSD License"),
    ),
    public=False,
