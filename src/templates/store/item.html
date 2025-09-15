@@ -98,7 +98,7 @@
                         <h6 class="card-title">{{ variant.get_format_display|default:variant.sku }}</h6>
                         <p class="card-text">₹{{ variant.price|floatformat:"0" }}</p>
                         <p class="text-muted">Stock: {{ variant.stock }}</p>
-                        <a href="{% url 'product-detail' product.category.slug product.id %}?variant={{ variant.id }}" class="btn btn-outline-primary btn-sm">View</a>
+                        <a href="{% url 'product-detail' product.category.slug product.slug %}?variant={{ variant.id }}" class="btn btn-outline-primary btn-sm">View</a>
                     </div>
                 </div>
                 {% endfor %}

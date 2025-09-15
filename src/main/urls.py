@@ -25,6 +25,7 @@ urlpatterns = [
     path('cart/', views.view_cart, name='view_cart'),
     # path('add-to-cart/<hashid:item_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/add/<int:category_id>/<int:item_id>/', views.add_to_cart, name='add_to_cart'),
+    path('cart/delete/<int:item_id>/', views.delete_from_cart, name='delete_from_cart'),
     path('order/history/', views.order_history, name='order-history'),
     path('view-pdf/<hashid:item_id>/', views.pdf_viewer, name='pdf_viewer'),
     path('order/summary/<hashid:pk>/', views.order_summary, name='order-summary'),

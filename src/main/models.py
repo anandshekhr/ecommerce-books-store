@@ -12,6 +12,25 @@ from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.utils.text import slugify
 
+import uuid
+import random
+import string
+
+def generate_sku(prefix: str = "", length: int = 8) -> str:
+    """
+    Generate a unique SKU string.
+
+    :param prefix: Optional prefix for the SKU (e.g., category code like "ELEC").
+    :param length: Length of the random alphanumeric part.
+    :return: SKU string like "ELEC-AB12CD34".
+    """
+    # Generate random uppercase letters + digits
+    random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+    if prefix:
+        return f"{prefix}-{random_part}"
+    return random_part
+
+
 class Question(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
@@ -152,6 +171,7 @@ class Product(models.Model):
 # ---------- BOOK PRODUCT ----------
 
 class Book(Product):
+    sub_category = models.ForeignKey(SubCategory, related_name="books_category", on_delete=models.CASCADE, null=True, blank=True, default="")
     author = models.CharField(_("Author"), max_length=100, blank=True)
     isbn_10 = models.CharField(_("ISBN-10"), max_length=20, blank=True)
     isbn_13 = models.CharField(_("ISBN-13"), max_length=20, blank=True)
@@ -159,6 +179,9 @@ class Book(Product):
     publisher = models.CharField(_("Publisher"), max_length=100, blank=True)
     publication_date = models.CharField(_("Publication Date"), max_length=50, blank=True)
     rating = models.DecimalField(_("Ratings"), max_digits=2, decimal_places=1, default=5.0)
+
+    def __str__(self):
+        return f"{self.name} - {self.author} - {self.sub_category.name}"
 
 
 class BookVariant(models.Model):
@@ -172,9 +195,15 @@ class BookVariant(models.Model):
     is_downloadable = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
-    sku = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, unique=True,null=True,blank=True)
     pdf_file = models.FileField(upload_to='pdfs/', max_length=500, null=True, blank=True)
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            # Automatically generate slug from name if not provided
+            self.sku = generate_sku(prefix="VAMS-B",length=6)
+        super().save(*args, **kwargs)
 
 
 # ---------- MUSICAL INSTRUMENT PRODUCT ----------
@@ -199,7 +228,7 @@ class MusicalInstrumentVariant(models.Model):
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
-    sku = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, unique=True,null=True,blank=True)
     created_at = models.DateTimeField(_("CreatedAt"), auto_now=False, auto_now_add=True)
     modified_at = models.DateTimeField(_("ModifiedAt"), auto_now=True, auto_now_add=False)
 
@@ -212,6 +241,12 @@ class MusicalInstrumentVariant(models.Model):
 
     def get_absolute_url(self):
         return reverse("MusicalInstrumentVariant_detail", kwargs={"pk": self.pk})
+    
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            # Automatically generate slug from name if not provided
+            self.sku = generate_sku(prefix="VAMS-MI",length=6)
+        super().save(*args, **kwargs)
 
 # ---------- ELECTRONIC PRODUCT ----------
 
@@ -221,13 +256,16 @@ class Electronic(Product):
     model = models.CharField(max_length=255, blank=True, null=True)
     warranty_period = models.CharField(max_length=100,blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.name} - {self.sub_category.name}"
+
 class ElectronicsVariant(models.Model):
     product = models.ForeignKey(Electronic, verbose_name=_("Product"), on_delete=models.CASCADE, related_name="variants")
     color = models.CharField(_("Color"), max_length=50, null=True)
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
-    sku = models.CharField(max_length=100, unique=True)
+    sku = models.CharField(max_length=100, unique=True,null=True,blank=True)
     created_at = models.DateTimeField(_("CreatedAt"), auto_now=False, auto_now_add=True)
     modified_at = models.DateTimeField(_("ModifiedAt"), auto_now=True, auto_now_add=False)
 
@@ -240,6 +278,12 @@ class ElectronicsVariant(models.Model):
 
     def get_absolute_url(self):
         return reverse("ElectronicsVariant_detail", kwargs={"pk": self.pk})
+    
+    def save(self, *args, **kwargs):
+        if not self.sku:
+            # Automatically generate slug from name if not provided
+            self.sku = generate_sku(prefix="VAMS-EI",length=6)
+        super().save(*args, **kwargs)
 
 # ---------- BILLING ADDRESS ----------
 

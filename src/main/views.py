@@ -216,43 +216,51 @@ def product_detail(request, category_slug, product_slug):
 @login_required(login_url='login-view')
 def add_to_cart(request, category_id, item_id):
     category = get_object_or_404(Category, id=category_id)
+    variant_id = request.GET.get('variant')  # variant id must be passed in querystring
 
-    model_map = {
-        'Books': Book,
-        'Electronics': Electronic,
-        'Musical Instruments': MusicalInstrument,
+    # Map category to variant model
+    variant_model_map = {
+        'Books': BookVariant,
+        'Electronics': ElectronicsVariant,
+        'Musical Instruments': MusicalInstrumentVariant,
     }
 
-    model = model_map.get(category.name)
-    if not model:
+    variant_model = variant_model_map.get(category.name)
+    if not variant_model:
         messages.error(request, "Unsupported product category.")
         return redirect('home-1')
 
-    product = get_object_or_404(model, id=item_id)
-    content_type = ContentType.objects.get_for_model(model)
+    # We always get the variant
+    variant = get_object_or_404(variant_model, id=variant_id)
 
+    # Generic foreign key setup
+    content_type = ContentType.objects.get_for_model(variant_model)
+
+    # Get or create an open order (cart)
     order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
-    payment = Payment.objects.get_or_create(order=order,status=False)
+    Payment.objects.get_or_create(order=order, defaults={'user': request.user, 'gateway': 'cash'})  # or however you init Payment
 
-    # Check if already in cart
-    if order.items.filter(content_type=content_type, object_id=product.id).exists():
-        messages.info(request, f'{product.name} already exists in the cart.')
-        return redirect('view_cart')
-
-    # Add item to cart
-    OrderItem.objects.create(
-        order=order,
-        content_type=content_type,
-        object_id=product.id,
-        price_at_order_time=product.price,
-        quantity=1
-    )
+    # Check if variant already in cart
+    existing_item = order.items.filter(content_type=content_type, object_id=variant.id).first()
+    if existing_item:
+        existing_item.quantity += 1
+        existing_item.save()
+        messages.info(request, f'{variant.product.name} quantity updated in the cart.')
+    else:
+        OrderItem.objects.create(
+            order=order,
+            content_type=content_type,
+            object_id=variant.id,
+            price_at_order_time=variant.price or 0,
+            quantity=1
+        )
+        messages.success(request, f'{variant.product.name} successfully added to cart.')
 
     # Update order total
     order.update_total_price()
 
-    messages.success(request, f'{product.name} successfully added to cart.')
     return redirect('view_cart')
+
 
 @login_required(login_url='login-view')
 def view_cart(request):
@@ -282,6 +290,30 @@ def view_cart(request):
         # If no order exists, set order to None or an empty order object
         order = None  # You can customize this to fit your template logic
         return render(request, 'store/cart.html', {'order': order})
+
+@login_required(login_url='login-view')
+def delete_from_cart(request, item_id):
+    """
+    Remove an OrderItem from the user's open cart.
+    """
+    # Find the user's active order
+    order = Order.objects.filter(user=request.user, payment_status=False).first()
+    if not order:
+        messages.error(request, "You have no active cart.")
+        return redirect('view_cart')
+
+    # Find the item within this order
+    order_item = get_object_or_404(OrderItem, id=item_id, order=order)
+
+    # Delete it
+    order_item.delete()
+
+    # Update order total
+    order.update_total_price()
+
+    messages.success(request, "Item removed from cart.")
+    return redirect('view_cart')
+
 
 @login_required(login_url='login-view')
 def order_summary(request, pk=None):
@@ -512,7 +544,7 @@ def add_answer(request, question_id):
             return redirect('question_detail', question_id=question.id)
 
 def pdf_viewer(request, item_id):
-    Book = get_object_or_404(Book, id=item_id)
+    book = get_object_or_404(BookVariant, id=item_id)
     last_page = request.session.get('pdf_last_page', 1)
 
     # If a new page number is posted (e.g., via AJAX), update the session
@@ -520,9 +552,9 @@ def pdf_viewer(request, item_id):
         page_number = request.POST.get('page_number')
         request.session['pdf_last_page'] = page_number
     
-    if Book.pdf_file:
+    if book.pdf_file:
         context = {
-            'pdf_url': Book.pdf_file.url,
+            'pdf_url': book.pdf_file.url,
             'last_page': last_page
         }
         return render(request, 'viewer/pdf_viewer.html', context)

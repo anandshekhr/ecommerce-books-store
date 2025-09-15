@@ -42,11 +42,11 @@
                 <div class="card-body p-4">
                     <div class="row d-flex justify-content-between align-items-center">
                         <div class="col-md-2 col-lg-2 col-xl-2">
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="img-fluid rounded-3">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.product.name }}" class="img-fluid rounded-3">
                         </div>
                         <div class="col-md-3 col-lg-3 col-xl-3">
-                            <p class="lead fw-normal mb-2">{{ item.product.name }}</p>
-                            <p><span class="text-muted">{{ item.product.description|slice:":100" }}{% if item.product.description|length > 100 %}...{% endif %}</span></p>
+                            <p class="lead fw-normal mb-2">{{ item.product.product.name }}</p>
+                            <p><span class="text-muted">{{ item.product.product.description|slice:":100" }}{% if item.product.description|length > 100 %}...{% endif %}</span></p>
                         </div>
                         <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
                             <input min="1" name="quantity" value="{{ item.quantity }}" type="number" class="form-control form-control-sm update-quantity" data-item-id="{{ item.id }}" />
@@ -55,7 +55,7 @@
                             <h5 class="mb-0">₹{{ item.price_at_order_time|floatformat:"0" }}</h5>
                         </div>
                         <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                            <a class="text-danger remove-item"><i class="fas fa-trash fa-lg"></i></a>
+                            <a href="{% url "delete_from_cart" item.id %}"class="text-danger remove-item"><i class="fas fa-trash fa-lg"></i></a>
                         </div>
                     </div>
                 </div>

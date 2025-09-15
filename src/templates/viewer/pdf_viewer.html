@@ -1,168 +1,110 @@
-{% extends "base.html" %}
-{% block title %}PDF Viewer{% endblock title %}
-{% block style %}
-        #pdf-render {
-            width: 100%;
-            height: auto;
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .pdf-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-        }
-        .pdf-controls input {
-            width: 50px;
-            text-align: center;
-        }
-        .zoom-controls {
-            display: flex;
-            gap: 10px;
-        }
-    {% endblock style %}
-{% block content %}
-    <div class="container">
-        <h2>PDF Viewer</h2>
-        <div class="pdf-controls">
-            <button id="prev-page" class="btn btn-secondary">Previous</button>
-            <span>Page: <span id="page-num"></span> / <span id="page-count"></span></span>
-            <div class="d-flex align-items-center">
-                <input type="number" class="form-control mr-2" id="page-input" min="1" placeholder="Page" style="width: 100px;">
-                <button id="jump-to-page" class="btn btn-primary">Go to Page</button>
-            </div>
-            <button id="next-page" class="btn btn-secondary">Next</button>
-        </div>
-        {% comment %} <div class="zoom-controls">
-            <button id="zoom-in" class="btn btn-secondary">Clear In</button>
-            <button id="zoom-out" class="btn btn-secondary">Clear Out</button>
-            <button id="fit-to-screen" class="btn btn-secondary">Fit to Screen</button>
-        </div> {% endcomment %}
-        <canvas id="pdf-render"></canvas>
-    </div>
-    {% endblock content %}
-{% block MoreJs %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
-    <script>
-        // URL of the PDF file
-        const url = '{{ pdf_url }}'; // Pass the PDF URL from Django view
+<div class="container-fluid">
+  <div class="pdf-controls d-flex justify-content-center align-items-center gap-3 mb-3">
+  <button id="prev-page-top" class="btn btn-secondary btn-sm">Previous</button>
+  <span>Page: <span id="page-num-top"></span> / <span id="page-count-top"></span></span>
+  <button id="next-page-top" class="btn btn-secondary btn-sm">Next</button>
+</div>
 
-        let pdfDoc = null,
-            pageNum = 1,
-            pageIsRendering = false,
-            pageNumIsPending = null,
-            scale = 5.0,  // Initial scale value
-            canvas = document.getElementById('pdf-render'),
-            ctx = canvas.getContext('2d');
+<div class="pdf-render-m d-flex justify-content-center"
+     style="position: relative; max-height: 80vh; overflow-y:auto;">
+  <canvas id="pdf-canvas" style="max-width: 100%; height: auto;"></canvas>
 
-        // Render the page
-        const renderPage = num => {
-            pageIsRendering = true;
+  <div id="loader"
+       style="position: absolute; top:0;left:0;right:0;bottom:0;
+              background:rgba(128,128,128,.7);display:none;
+              justify-content:center;align-items:center;">
+    <img src="/static/assets/img/loader.gif" alt="Loading..." />
+  </div>
+</div>
 
-            // Get page
-            pdfDoc.getPage(num).then(page => {
-                const viewport = page.getViewport({ scale });
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
+<div class="pdf-controls d-flex justify-content-center align-items-center gap-3 mb-3">
+  <button id="prev-page-bottom" class="btn btn-secondary btn-sm">Previous</button>
+  <span>Page: <span id="page-num-bottom"></span> / <span id="page-count-bottom"></span></span>
+  <button id="next-page-bottom" class="btn btn-secondary btn-sm">Next</button>
+</div>
 
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport
-                };
+</div>
 
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.0.279/pdf.min.js"></script>
+<script>
+const url = '{{ pdf_url }}';
+let pdfDoc = null,
+    pageNum = 1,
+    pageIsRendering = false,
+    pageNumIsPending = null,
+    canvas = document.getElementById('pdf-canvas'),
+    ctx = canvas.getContext('2d');
 
-                    if (pageNumIsPending !== null) {
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-                });
+const loader = document.getElementById('loader');
+const showLoader = () => loader.style.display = 'flex';
+const hideLoader = () => loader.style.display = 'none';
 
-                // Output current page
-                document.getElementById('page-num').textContent = num;
-            });
-        };
+// render a single page into the single canvas
+function renderPage(num) {
+  pageIsRendering = true;
+  showLoader();
 
-        // Check for pages rendering
-        const queueRenderPage = num => {
-            if (pageIsRendering) {
-                pageNumIsPending = num;
-            } else {
-                renderPage(num);
-            }
-        };
+  pdfDoc.getPage(num).then(page => {
+    const containerWidth = document.querySelector('.pdf-render-m').clientWidth;
+    const viewport = page.getViewport({ scale: 1 });
+    const scale = (containerWidth / viewport.width) * 0.98;
+    const scaledViewport = page.getViewport({ scale });
 
-        // Show Previous page
-        const showPrevPage = () => {
-            if (pageNum <= 1) {
-                return;
-            }
-            pageNum--;
-            queueRenderPage(pageNum);
-        };
+    canvas.height = scaledViewport.height;
+    canvas.width = scaledViewport.width;
 
-        // Show Next page
-        const showNextPage = () => {
-            if (pageNum >= pdfDoc.numPages) {
-                return;
-            }
-            pageNum++;
-            queueRenderPage(pageNum);
-        };
+    return page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+  }).then(() => {
+    pageIsRendering = false;
+    hideLoader();
+    // update both sets of counters
+    document.getElementById('page-num-top').textContent = num;
+    document.getElementById('page-num-bottom').textContent = num;
 
-        // Jump to a specific page
-        const jumpToPage = () => {
-            const pageInput = document.getElementById('page-input');
-            const pageNumber = parseInt(pageInput.value);
+    if (pageNumIsPending !== null) {
+      renderPage(pageNumIsPending);
+      pageNumIsPending = null;
+    }
+  });
+}
 
-            if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= pdfDoc.numPages) {
-                pageNum = pageNumber;
-                queueRenderPage(pageNum);
-            } else {
-                alert('Invalid page number');
-            }
-        };
+function queueRenderPage(num) {
+  if (pageIsRendering) {
+    pageNumIsPending = num;
+  } else {
+    renderPage(num);
+  }
+}
 
-        // Zoom In
-        const zoomIn = () => {
-            scale += 0.2;  // Increase scale by 0.2
-            queueRenderPage(pageNum);
-        };
+// buttons
+function showPrevPage() {
+  if (pageNum <= 1) return;
+  pageNum--;
+  queueRenderPage(pageNum);
+}
+function showNextPage() {
+  if (pageNum >= pdfDoc.numPages) return;
+  pageNum++;
+  queueRenderPage(pageNum);
+}
 
-        // Zoom Out
-        const zoomOut = () => {
-            if (scale > 0.5) {
-                scale -= 0.2;  // Decrease scale by 0.2
-                queueRenderPage(pageNum);
-            }
-        };
+// attach handlers to both sets
+document.getElementById('prev-page-top').addEventListener('click', showPrevPage);
+document.getElementById('next-page-top').addEventListener('click', showNextPage);
+document.getElementById('prev-page-bottom').addEventListener('click', showPrevPage);
+document.getElementById('next-page-bottom').addEventListener('click', showNextPage);
 
-        // Fit to Screen
-        const fitToScreen = () => {
-            const containerWidth = document.querySelector('.container').clientWidth;
-            pdfDoc.getPage(pageNum).then(page => {
-                const viewport = page.getViewport({ scale: 1 });
-                scale = containerWidth / viewport.width;  // Fit the width of the PDF to the container width
-                queueRenderPage(pageNum);
-            });
-        };
+// load PDF
+pdfjsLib.getDocument(url).promise.then(pdf => {
+  pdfDoc = pdf;
+  document.getElementById('page-count-top').textContent = pdfDoc.numPages;
+  document.getElementById('page-count-bottom').textContent = pdfDoc.numPages;
+  renderPage(pageNum);
+});
 
-        // Get Document
-        pdfjsLib.getDocument(url).promise.then(pdfDoc_ => {
-            pdfDoc = pdfDoc_;
-            document.getElementById('page-count').textContent = pdfDoc.numPages;
+// re-render on window resize to keep scale responsive
+window.addEventListener('resize', () => {
+  if (pdfDoc) queueRenderPage(pageNum);
+});
 
-            renderPage(pageNum);
-        });
-
-        // Button events
-        document.getElementById('prev-page').addEventListener('click', showPrevPage);
-        document.getElementById('next-page').addEventListener('click', showNextPage);
-        document.getElementById('jump-to-page').addEventListener('click', jumpToPage);
-        document.getElementById('zoom-in').addEventListener('click', zoomIn);
-        document.getElementById('zoom-out').addEventListener('click', zoomOut);
-        document.getElementById('fit-to-screen').addEventListener('click', fitToScreen);
-    </script>
-    {% endblock MoreJs %}
+</script>
