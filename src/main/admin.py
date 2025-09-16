@@ -58,9 +58,13 @@ class BannerAdmin(admin.ModelAdmin):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id','user','total_price','created_at')
+    list_display = ('id','user','total_price','payment_status','created_at')
     search_fields = ('id','user','total_price','created_at')
     sortable_by = ('id','user','total_price','created_at')
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order','product','quantity')
     
 @admin.register(LegalContent)
 class LegalContentAdmin(admin.ModelAdmin):

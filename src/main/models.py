@@ -361,18 +361,10 @@ class Payment(models.Model):
     ]
 
     order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='payment')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-
     gateway = models.CharField(max_length=50, choices=GATEWAY_CHOICES)
     status = models.BooleanField(_("Payment Status"), default=False)
-
     razorpay_order_id = models.CharField(_("RazorPay Order Id"), max_length=500, null=True, blank=True)
     razorpay_payment_id = models.CharField(_("RazorPay Payment Id"), max_length=500, null=True, blank=True)
-
-    phonepe_id = models.CharField(_("PhonePe Payment Id"), max_length=100, null=True, blank=True)
-    phonepe_merchant_transaction_id = models.CharField(_("PhonePe Transaction Id"), max_length=36, null=True, blank=True)
-
-    stripe_charge_id = models.CharField(_("Stripe Charge ID"), max_length=255, null=True, blank=True)
 
     code = models.CharField(_("Response Code"), max_length=50, blank=True, null=True)
     message = models.TextField(_("Message"), blank=True, null=True)
