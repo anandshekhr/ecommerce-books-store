@@ -6,7 +6,7 @@ from .models import *
 from .serializers import *
 from django.contrib.auth.decorators import login_required
 from rest_framework.pagination import PageNumberPagination
-from django.conf import settings
+# from django.conf import settings
 from decimal import Decimal
 from rest_framework import viewsets
 from rest_framework.views import APIView
@@ -20,7 +20,7 @@ from datetime import datetime
 from django.contrib import auth, messages
 from decimal import Decimal
 from django.contrib.auth import authenticate, login,logout
-from django.shortcuts import render, redirect
+# from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.urls import reverse
@@ -28,7 +28,15 @@ from .forms import ProductForm
 from django.db.models import Q
 import uuid
 from django.views.decorators.csrf import csrf_protect,csrf_exempt
-from django.shortcuts import render
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Category, Order, BillingAddress
+from .services.cart_service import CartService
+from .services.payment_service import PaymentService
+from django.core.paginator import Paginator
+from django.conf import settings
 
 
 razorpay_api = razorpay.Client(
@@ -213,149 +221,87 @@ def product_detail(request, category_slug, product_slug):
         'relevant_products': relevant_products,
     })
 
+
 @login_required(login_url='login-view')
 def add_to_cart(request, category_id, item_id):
     category = get_object_or_404(Category, id=category_id)
-    variant_id = request.GET.get('variant')  # variant id must be passed in querystring
-
-    # Map category to variant model
-    variant_model_map = {
-        'Books': BookVariant,
-        'Electronics': ElectronicsVariant,
-        'Musical Instruments': MusicalInstrumentVariant,
-    }
-
-    variant_model = variant_model_map.get(category.name)
-    if not variant_model:
-        messages.error(request, "Unsupported product category.")
-        return redirect('home-1')
-
-    # We always get the variant
-    variant = get_object_or_404(variant_model, id=variant_id)
-
-    # Generic foreign key setup
-    content_type = ContentType.objects.get_for_model(variant_model)
-
-    # Get or create an open order (cart)
-    order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
-    Payment.objects.get_or_create(order=order, defaults={'user': request.user, 'gateway': 'cash'})  # or however you init Payment
-
-    # Check if variant already in cart
-    existing_item = order.items.filter(content_type=content_type, object_id=variant.id).first()
-    if existing_item:
-        existing_item.quantity += 1
-        existing_item.save()
-        messages.info(request, f'{variant.product.name} quantity updated in the cart.')
-    else:
-        OrderItem.objects.create(
-            order=order,
-            content_type=content_type,
-            object_id=variant.id,
-            price_at_order_time=variant.price or 0,
-            quantity=1
-        )
-        messages.success(request, f'{variant.product.name} successfully added to cart.')
-
-    # Update order total
-    order.update_total_price()
-
+    variant_id = request.GET.get('variant')
+    try:
+        order, msg = CartService.add_item(request.user, category, variant_id)
+        messages.success(request, msg)
+    except ValueError as e:
+        messages.error(request, str(e))
     return redirect('view_cart')
 
 
 @login_required(login_url='login-view')
 def view_cart(request):
     try:
-        address, _ = BillingAddress.objects.get_or_create(user = request.user, is_default = True)
-        # Try to get the user's active order (unpaid)
-        order = Order.objects.get(user=request.user, payment_status= False)
-        # Check if the order has any items
+        address, _ = BillingAddress.objects.get_or_create(user=request.user, is_default=True)
+        order = Order.objects.get(user=request.user, payment_status=False)
         if not order.items.exists():
-            # If no items in the cart, display a message
             messages.warning(request, 'Your cart is empty. Please add items to your cart.')
-            return render(request, 'store/cart.html', {
-                'order': None,  # No active order with items
-                'message': "Your cart is empty. Please add items to your cart."
-            })
-        request_data = {
-            "amount": int(order.total_price * 100) if order.total_price > 1.00 else 100,
-            "currency": "INR",
-            "receipt": order.sid,
-            }
-        razorpay_response = razorpay_api.order.create(data=request_data)
+            return render(request, 'store/cart.html', {'order': None})
+
+        razorpay_response = PaymentService.create_razorpay_order(order)
         order.payment.razorpay_order_id = razorpay_response["id"]
         order.save()
-        return render(request, 'store/cart.html', {'order': order,"billing_address":address,"razorpay_order_id": razorpay_response["id"],
-                    "razorpay_key_id": settings.RAZORPAY_API_KEY,'total_amount':int(order.total_price) * 10000,'order_id':order.pk})
+
+        return render(request, 'store/cart.html', {
+            'order': order,
+            'billing_address': address,
+            'razorpay_order_id': razorpay_response["id"],
+            'razorpay_key_id': settings.RAZORPAY_API_KEY,
+            'total_amount': int(order.total_price * 100),
+            'order_id': order.pk
+        })
     except Order.DoesNotExist:
-        # If no order exists, set order to None or an empty order object
-        order = None  # You can customize this to fit your template logic
-        return render(request, 'store/cart.html', {'order': order})
+        return render(request, 'store/cart.html', {'order': None})
+
 
 @login_required(login_url='login-view')
 def delete_from_cart(request, item_id):
-    """
-    Remove an OrderItem from the user's open cart.
-    """
-    # Find the user's active order
-    order = Order.objects.filter(user=request.user, payment_status=False).first()
-    if not order:
-        messages.error(request, "You have no active cart.")
-        return redirect('view_cart')
-
-    # Find the item within this order
-    order_item = get_object_or_404(OrderItem, id=item_id, order=order)
-
-    # Delete it
-    order_item.delete()
-
-    # Update order total
-    order.update_total_price()
-
-    messages.success(request, "Item removed from cart.")
+    try:
+        CartService.remove_item(request.user, item_id)
+        messages.success(request, "Item removed from cart.")
+    except ValueError as e:
+        messages.error(request, str(e))
     return redirect('view_cart')
 
 
 @login_required(login_url='login-view')
 def order_summary(request, pk=None):
     orders = Order.objects.filter(user=request.user, payment__status=True)
-
     if pk:
         orders = orders.filter(pk=pk)
-
     return render(request, 'store/orders.html', {
         'orders': orders,
-        'header': 'Order Summary' if pk else 'My Order History',
+        'header': 'Order Summary' if pk else 'My Order History'
     })
+
 
 @login_required(login_url='login-view')
 def order_history(request):
-    orders = Order.objects.filter(user=request.user,payment_status=True).order_by('-created_at')
-    
-    # Pagination: 10 orders per page
+    orders = Order.objects.filter(user=request.user, payment_status=True).order_by('-created_at')
     paginator = Paginator(orders, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
-    return render(request, 'store/orders.html', {'orders': page_obj,'header':'Order History'})
+    return render(request, 'store/orders.html', {'orders': page_obj, 'header': 'Order History'})
+
 
 @login_required(login_url='login-view')
 def razorpay_success_redirect(request):
     razorpay_order_id = request.GET.get("razorpay_order_id")
     razorpay_payment_id = request.GET.get("razorpay_payment_id")
     order_id = request.GET.get('order_id')
+
     selected_billing_address = BillingAddress.objects.get(user=request.user, is_default=True)
     if request.user and order_id:
-        order = Order.objects.get(user=request.user, payment__status=False,pk=order_id)
-        order.payment.status = True
-        order.payment.razorpay_payment_id = razorpay_payment_id
-        order.payment.save()
-        order.address = selected_billing_address
-        order.payment_status = True
-        order.save()
+        order = get_object_or_404(Order, user=request.user, payment__status=False, pk=order_id)
+        PaymentService.mark_payment_success(order, razorpay_order_id, razorpay_payment_id, selected_billing_address)
 
     messages.success(request, "Your order was successful!")
     return redirect("order-summary", pk=order.id)
-
 
 
 

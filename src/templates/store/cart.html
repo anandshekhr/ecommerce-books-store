@@ -52,7 +52,7 @@
                             <input min="1" name="quantity" value="{{ item.quantity }}" type="number" class="form-control form-control-sm update-quantity" data-item-id="{{ item.id }}" />
                         </div>
                         <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                            <h5 class="mb-0">₹{{ item.price_at_order_time|floatformat:"0" }}</h5>
+                            <h5 class="mb-0">₹{{ item.price_at_order_time|floatformat:0 }}</h5>
                         </div>
                         <div class="col-md-1 col-lg-1 col-xl-1 text-end">
                             <a href="{% url "delete_from_cart" item.id %}"class="text-danger remove-item"><i class="fas fa-trash fa-lg"></i></a>
@@ -73,7 +73,7 @@
                     <button type="button" class="btn btn-success w-100">Apply</button>
                 </div>
                 <h5>Summary</h5>
-                <p id="subTotal">Subtotal: ₹{{ order.total_price }}</p>
+                <p id="subTotal">Subtotal: ₹{{ order.total_price|floatformat:0 }}</p>
                 <a type="button" href="#" class="btn btn-primary w-100" id="rzp-button1">Proceed to Checkout</a>
             </div>
             {% else %}

@@ -147,124 +147,126 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['name'] 
 
+from main.services.cart_service import CartService
 
 class AddToCartView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
     def post(self, request):
-        category_id = request.data.get('category_id',None)
-        item_id = request.data.get('item_id',None)
-        quantity = request.data.get('quantity',None)
+        category_id = request.data.get('category_id')
+        variant_id = request.data.get('item_id')  # item_id is variant_id here
 
+        if not category_id or not variant_id:
+            return Response({'message': 'category_id and item_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # category model stays the same
         category = get_object_or_404(Category, id=category_id)
 
-        model, serializer = MODEL_MAP.get(category.name)
-        if not model:
-            return Response({'message':'Invalid category.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        product = get_object_or_404(model, id=item_id)
-        content_type = ContentType.objects.get_for_model(model)
-        order, created = Order.objects.get_or_create(user=request.user, payment_status=False)
-        payment = Payment.objects.get_or_create(order=order,status=False)
-        
-        if order.items.filter(content_type=content_type, object_id=product.id).exists():
-            updated_count = OrderItem.objects.filter(
-                order=order,
-                content_type=content_type,
-                object_id=product.id
-            ).update(quantity=quantity if quantity else F('quantity') + 1)
-        else:
-            # Add item to cart
-            OrderItem.objects.create(
-                order=order,
-                content_type=content_type,
-                object_id=product.id,
-                price_at_order_time=product.price,
-                quantity= quantity if quantity else 1
-            )
-        # Update order total
-        order.update_total_price()
-        return Response({'message': f'{product.name} added to cart','total_price': order.total_price}, status=status.HTTP_200_OK)
+        try:
+            order, message = CartService.add_item(request.user, category, variant_id)
+        except ValueError as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'message': message, 'total_price': order.total_price}, status=status.HTTP_200_OK)
+
+from main.services.cart_service import CartService
 
 class RemoveFromCartView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
-    def delete(self, request, category_id, item_id):
-
-        if not category_id or not item_id:
-            return Response({'message': 'category_id and item_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        category = get_object_or_404(Category, id=category_id)
-
-        model, serializer = MODEL_MAP.get(category.name)
-        if not model:
-            return Response({'message': 'Invalid category.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        product = get_object_or_404(model, id=item_id)
-        content_type = ContentType.objects.get_for_model(model)
+    def delete(self, request, item_id):
+        """
+        Now we only need item_id because CartService already knows the order.
+        """
+        if not item_id:
+            return Response({'message': 'item_id is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            order = Order.objects.get(user=request.user, payment_status=False)
-        except Order.DoesNotExist:
-            return Response({'message': 'No active cart found.'}, status=status.HTTP_404_NOT_FOUND)
+            order = CartService.remove_item(request.user, item_id)
+        except ValueError as e:
+            return Response({'message': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-        try:
-            order_item = OrderItem.objects.get(order=order, content_type=content_type, object_id=product.id)
-        except OrderItem.DoesNotExist:
-            return Response({'message': f'{product.name} not in cart.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Item removed from cart.', 'total_price': order.total_price},
+                        status=status.HTTP_200_OK)
 
-        order_item.delete()
-
-        # Update order total
-        order.update_total_price()
-
-        return Response({'message': f'{product.name} removed from cart.', 'total_price': order.total_price}, status=status.HTTP_204_NO_CONTENT)
-
-    
+from main.services.payment_service import PaymentService
 
 class CartView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
 
+    def get(self, request, *args, **kwargs):
+        order = Order.objects.filter(user=request.user, payment_status=False).first()
+        if not order:
+            return Response({'message': 'No active order found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        items = order.items.all()
+        serialized_items = ItemSerializer(items, many=True)
+
+        # Create razorpay order through service
+        razorpay_response = PaymentService.create_razorpay_order(order)
+        order.razorpay_order_id = razorpay_response["id"]
+        order.save()
+
+        return Response({
+            'items': serialized_items.data,
+            'total_price': order.total_price,
+            'item_count': items.count(),
+            'razorpay_order_id': razorpay_response["id"],
+            'razorpay_key_id': settings.RAZORPAY_API_KEY,
+            'order_id': order.pk
+        }, status=status.HTTP_200_OK)
+
+from main.services.payment_service import PaymentService
+
+class CheckoutView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+    serializer_class = OrderSerializer
 
     def get(self, request, *args, **kwargs):
-        try:
-            order = Order.objects.get(user=request.user, payment_status=False)
-            items = order.items.all()
-            total_price = order.total_price
-            item_count = items.count()
+        order = Order.objects.filter(user=request.user, payment_status=False).first()
+        if not order:
+            return Response({'message': 'No active order found for checkout.'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Serialize the Book data
-            serialized_items = ItemSerializer(items, many=True)
+        if not order.items.exists():
+            return Response({'message': 'Your cart is empty. Add items to proceed to checkout.'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            #razorpay
+        razorpay_response = PaymentService.create_razorpay_order(order)
+        order.razorpay_order_id = razorpay_response["id"]
+        order.save()
+        serializer = self.get_serializer(order)
 
-            request_data = {
-            "amount": int(order.total_price * 100) if int(order.total_price) > 0 else 100,
-            "currency": "INR",
-            "receipt": order.sid,
-            }
-            razorpay_response = razorpay_api.order.create(data=request_data)
-            order.razorpay_order_id = razorpay_response["id"]
-            order.save()
+        return Response({
+            'order': serializer.data,
+            'razorpay_order_id': razorpay_response["id"],
+            'razorpay_key_id': settings.RAZORPAY_API_KEY
+        }, status=status.HTTP_200_OK)
 
-            return Response({
-                'items': serialized_items.data,
-                'total_price': total_price,
-                'item_count': item_count,
-                "razorpay_order_id": razorpay_response["id"],
-                "razorpay_key_id": settings.RAZORPAY_API_KEY,
-                "order_id":order.pk
-            }, status=status.HTTP_200_OK)
 
-        except Order.DoesNotExist:
-            return Response({
-                'message': 'No active order found.'
-            }, status=status.HTTP_404_NOT_FOUND)
+from main.services.payment_service import PaymentService
 
-# store/api_views.py
+class PaymentSuccessRazorpay(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication, SessionAuthentication)
+
+    def post(self, request):
+        razorpay_order_id = request.data.get("razorpay_order_id")
+        razorpay_payment_id = request.data.get("razorpay_payment_id")
+        order_id = request.data.get('order_id')
+        billing_address_id = request.data.get('billing_address_id')  # optional
+
+        order = get_object_or_404(Order, user=request.user, payment_status=False, pk=order_id)
+        billing_address = None
+        if billing_address_id:
+            billing_address = get_object_or_404(BillingAddress, pk=billing_address_id, user=request.user)
+
+        PaymentService.mark_payment_success(order, razorpay_order_id, razorpay_payment_id, billing_address)
+
+        return Response({'message': 'Payment Successful. Redirecting to Order Summary.'}, status=status.HTTP_200_OK)
 class OrderHistory(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (BasicAuthentication,TokenAuthentication,SessionAuthentication)
@@ -280,45 +282,6 @@ class OrderHistory(APIView):
         result = paginator.paginate_queryset(data, request)
         serializer = OrderSerializer(result,many=True)
         return paginator.get_paginated_response(serializer.data)
-
-
-class CheckoutView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
-
-    serializer_class = OrderSerializer
-
-    def get(self, request, *args, **kwargs):
-        try:
-            # Get the user's current order
-            order = Order.objects.get(user=request.user, payment_status=False)
-
-            # Ensure there are items in the cart before proceeding to checkout
-            if not order.items.exists():
-                return Response({
-                    'message': 'Your cart is empty. Add items to proceed to checkout.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            request_data = {
-            "amount": int(order.total_price * 100),
-            "currency": "INR",
-            "receipt": order.sid,
-            }
-            razorpay_response = razorpay_api.order.create(data=request_data)
-            order.razorpay_order_id = razorpay_response["id"]
-            order.save()
-            serializer = self.get_serializer(order)
-
-            
-            return Response({'order': serializer.data ,"razorpay_order_id": razorpay_response["id"],
-                   "razorpay_key_id": settings.RAZORPAY_API_KEY}, status=status.HTTP_200_OK)
-
-        except Order.DoesNotExist:
-            return Response({
-                'message': 'No active order found for checkout.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-
 class FilterItemsView(generics.ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = ItemSerializer
@@ -434,17 +397,3 @@ class CategoryWiseProductList(APIView):
 
         return paginator.get_paginated_response(serializer.data)
 
-class PaymentSuccessRazorpay(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,SessionAuthentication)
-    def post(self,request):
-        razorpay_order_id = request.data.get("razorpay_order_id")
-        razorpay_payment_id = request.data.get("razorpay_payment_id")
-        order_id = request.data.get('order_id')
-        if order_id:
-            order_id = int(order_id)
-        order = Order.objects.get(user=request.user, payment_status=False,pk=order_id)
-        order.payment_status = True
-        order.razorpay_payment_id = razorpay_payment_id
-        order.save()
-        return Response({'message':'Payment Successful. Redirecting to Order Summary.'})
