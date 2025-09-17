@@ -3,7 +3,6 @@
 {% block title %}{{ product.name|truncatechars:10 }}{% endblock title %}
 
 {% block head %}
-<!-- Meta Description -->
 <meta name="description" content="{{ product.description|truncatechars:150 }}">
 <meta property="og:title" content="{{ product.name }}">
 <meta property="og:description" content="{{ product.description|truncatechars:150 }}">
@@ -19,130 +18,169 @@
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
 <link href="{% static "assets/css/base.css" %}" rel="stylesheet">
 <link href="{% static "assets/css/item.css" %}" rel="stylesheet">
+<style>
+  /* keep related product images uniform */
+  .related-img {
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+  }
+  .variant-badge {
+    position: absolute;
+    top: .5rem;
+    left: .5rem;
+  }
+</style>
 {% endblock head %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="row">
-        <!-- Left: Product Images -->
-        <div class="col-md-3" style="margin-top:5%;">
-            <div class="text-center">
-                <img id="main-product-image" src="{{ product.image.url }}" class="img-fluid rounded shadow mb-3" style="max-height: 250px; object-fit: contain;" alt="{{ product.name }}">
-            </div>
-            {% if product.images.all %}
-            <div class="d-flex overflow-auto">
-                {% for image in product.images.all %}
-                <img src="{{ image.image.url }}" class="img-thumbnail me-2 thumb-image" style="width: 64px; height: 64px; cursor: pointer; object-fit: cover;" onclick="document.getElementById('main-product-image').src='{{ image.image.url }}'">
-                {% endfor %}
-            </div>
-            {% endif %}
+  <div class="row g-4">
+    <!-- LEFT -->
+    <div class="col-md-3">
+      <div class="text-center">
+        <img id="main-product-image"
+             src="{{ product.image.url }}"
+             class="img-fluid rounded shadow-sm mb-3"
+             style="max-height:250px;object-fit:contain"
+             alt="{{ product.name }}">
+      </div>
+      {% if product.images.all %}
+      <div class="d-flex overflow-auto">
+        {% for image in product.images.all %}
+        <img src="{{ image.image.url }}"
+             class="img-thumbnail me-2 thumb-image"
+             style="width:64px;height:64px;cursor:pointer;object-fit:cover"
+             onclick="document.getElementById('main-product-image').src='{{ image.image.url }}'">
+        {% endfor %}
+      </div>
+      {% endif %}
 
-            {% if selected_variant and selected_variant.format == 'ebook' %}
-            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#pdfModal">Preview PDF</button>
-            <div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">PDF Preview</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body p-0" style="max-height: 70vh; overflow-y: auto;">
-                            {% include "viewer/pdf_viewer_item.html" %}
-                        </div>
-                    </div>
-                </div>
+      {% if selected_variant and selected_variant.format == 'ebook' %}
+      <button class="btn btn-primary mt-3 w-100" data-bs-toggle="modal" data-bs-target="#pdfModal">Preview PDF</button>
+      <div class="modal fade" id="pdfModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">PDF Preview</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            {% endif %}
+            <div class="modal-body p-0" style="max-height:100%;overflow-y:auto;">
+              {% include "viewer/pdf_viewer_item.html" %}
+            </div>
+          </div>
         </div>
-
-        <!-- Middle: Product Info -->
-        <div class="col-md-6 item">
-            <h1>{{ product.name }}</h1>
-            <p>{{ product.description }}</p>
-            <hr>
-
-            {% if product.category.name == 'Books' %}
-            <p><strong>Author:</strong> {{ product.author }}</p>
-            <p><strong>ISBN-10:</strong> {{ product.isbn_10 }} | <strong>ISBN-13:</strong> {{ product.isbn_13 }}</p>
-            <p><strong>Edition:</strong> {{ product.edition }}</p>
-            <p><strong>Publisher:</strong> {{ product.publisher }}</p>
-            <p><strong>Publication Date:</strong> {{ product.publication_date }}</p>
-            <p><strong>Rating:</strong> {{ product.rating }}</p>
-            {% elif product.category.name == 'Musical Instruments' or product.category.name == 'Electronics' %}
-            <p><strong>Brand:</strong> {{ product.brand }}</p>
-            <p><strong>Model:</strong> {{ product.model }}</p>
-            {% if product.category.name == 'Musical Instruments' %}
-            <p><strong>Instrument Type:</strong> {{ product.instrument_type }}</p>
-            <p><strong>Material:</strong> {{ product.material }}</p>
-            {% else %}
-            <p><strong>Warranty:</strong> {{ product.warranty_period }}</p>
-            {% endif %}
-            {% endif %}
-            {% if selected_variant %}
-            <h5 class="mt-3">Price: ₹{{ selected_variant.price|floatformat:"0" }}</h5>
-            {% else %}
-            <h5 class="mt-3">Price: ₹{{ product.price|floatformat:"0" }}</h5>
-
-            {% endif %}
-            {% comment %} <p><strong>Stock:</strong> {{ selected_variant.stock }}</p> {% endcomment %}
-
-            <a href="{% url 'add_to_cart' product.category.id product.id %}?variant={{ selected_variant.id }}" class="btn btn-success mt-2">Add to Cart</a>
-
-            {% if product.variants.all.count > 1 %}
-            <hr class="my-4">
-            <h4 class="mb-3">Available Variants</h4>
-            <div class="d-flex flex-wrap gap-3">
-                {% for variant in product.variants.all %}
-                <div class="card" style="min-width: 180px;">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ variant.get_format_display|default:variant.sku }}</h6>
-                        <p class="card-text">₹{{ variant.price|floatformat:"0" }}</p>
-                        <p class="text-muted">Stock: {{ variant.stock }}</p>
-                        <a href="{% url 'product-detail' product.category.slug product.slug %}?variant={{ variant.id }}" class="btn btn-outline-primary btn-sm">View</a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <hr class="my-4">
-            <div class="mt-4">
-                <h5>More Details</h5>
-                <p>{{ product.long_description|default:product.description }}</p>
-            </div>
-        </div>
-
-        <!-- Right: Shipping Details -->
-        <div class="col-md-3">
-            <div class="border rounded p-3 bg-light">
-                <h5>Shipping & Delivery</h5>
-                <ul class="list-unstyled">
-                    <li><strong>Delivery:</strong> 3-7 Business Days</li>
-                    <li><strong>Free Shipping:</strong> on orders over ₹499</li>
-                    <li><strong>Return Policy:</strong> 7-Day Easy Returns</li>
-                </ul>
-                <p class="text-muted small">Note: Delivery times may vary by location and availability.</p>
-            </div>
-        </div>
+      </div>
+      {% endif %}
     </div>
 
-    <!-- Related Products -->
-    {% if relevant_products %}
-    <hr class="my-5">
-    <h4 class="mb-3">Related Products</h4>
-    <div class="d-flex overflow-auto">
-        {% for rel in relevant_products %}
-        <div class="card me-3" style="min-width: 200px;">
-            <a href="{% url 'product-detail' rel.category.slug rel.id %}"><img src="{{ rel.image.url }}" class="card-img-top" alt="{{ rel.name }}"></a>
+    <!-- MIDDLE -->
+    <div class="col-md-6">
+      <h1 class="mb-3">{{ product.name }}</h1>
+      <p class="text-muted">{{ product.description }}</p>
+      <hr>
+
+      {% if product.category.name == 'Books' %}
+      <p><strong>Author:</strong> {{ product.author }}</p>
+      <p><strong>ISBN-10:</strong> {{ product.isbn_10 }} | <strong>ISBN-13:</strong> {{ product.isbn_13 }}</p>
+      <p><strong>Edition:</strong> {{ product.edition }}</p>
+      <p><strong>Publisher:</strong> {{ product.publisher }}</p>
+      <p><strong>Publication Date:</strong> {{ product.publication_date }}</p>
+      <p><strong>Rating:</strong> {{ product.rating }}</p>
+      {% elif product.category.name in 'Musical Instruments,Electronics' %}
+      <p><strong>Brand:</strong> {{ product.brand }}</p>
+      <p><strong>Model:</strong> {{ product.model }}</p>
+      {% if product.category.name == 'Musical Instruments' %}
+      <p><strong>Instrument Type:</strong> {{ product.instrument_type }}</p>
+      <p><strong>Material:</strong> {{ product.material }}</p>
+      {% else %}
+      <p><strong>Warranty:</strong> {{ product.warranty_period }}</p>
+      {% endif %}
+      {% endif %}
+
+      {% if selected_variant %}
+      <h5 class="mt-3">Price: ₹{{ selected_variant.price|floatformat:"0" }}</h5>
+      {% else %}
+      <h5 class="mt-3">Price: ₹{{ product.price|floatformat:"0" }}</h5>
+      {% endif %}
+
+      <a href="{% url 'add_to_cart' product.category.id product.id %}?variant={{ selected_variant.id }}"
+         class="btn btn-success mt-2">
+        <i class="fa fa-shopping-cart me-1"></i>Add to Cart
+      </a>
+
+      {% if product.variants.all.count > 1 %}
+      <hr class="my-4">
+      <h4 class="mb-3">Available Variants</h4>
+      <div class="row row-cols-2 g-3">
+        {% for variant in product.variants.all %}
+        <div class="col">
+          <div class="card h-100 position-relative">
             <div class="card-body">
-                <h6 class="card-title">{{ rel.name|truncatechars:40 }}</h6>
-                <p class="card-text">{{ rel.description|truncatechars:50 }}</p>
-                <p><strong>₹{{ rel.price|floatformat:"0" }}</strong></p>
-                <a href="{% url 'add_to_cart' rel.category.id rel.id %}" class="btn btn-outline-primary btn-sm">Add</a>
+              <span class="badge bg-info variant-badge">{{ variant.get_format_display|default:variant.sku }}</span>
+              <p class="card-text mt-4">₹{{ variant.price|floatformat:"0" }}</p>
+              <p class="text-muted small">Stock: {{ variant.stock }}</p>
+              <a href="{% url 'product-detail' product.category.slug product.slug %}?variant={{ variant.id }}"
+                 class="btn btn-outline-primary btn-sm">View</a>
             </div>
+          </div>
         </div>
         {% endfor %}
+      </div>
+      {% endif %}
+
+      <hr class="my-4">
+      <div>
+        <h5>More Details</h5>
+        <p>{{ product.long_description|default:product.description }}</p>
+      </div>
     </div>
-    {% endif %}
+
+    <!-- RIGHT -->
+    <div class="col-md-3">
+      <div class="border rounded p-3 bg-light shadow-sm">
+        <h5 class="mb-3">Shipping & Delivery</h5>
+        <ul class="list-unstyled mb-0">
+          <li><strong>Delivery:</strong> 3-7 Business Days</li>
+          <li><strong>Free Shipping:</strong> on orders over ₹499</li>
+          <li><strong>Return Policy:</strong> 7-Day Easy Returns</li>
+        </ul>
+        <p class="text-muted small mt-2">Delivery times may vary by location and availability.</p>
+      </div>
+    </div>
+  </div>
+
+  {% if relevant_products %}
+  <hr class="my-5">
+  <h4 class="mb-3">Related Products</h4>
+  <div class="d-flex overflow-auto">
+    {% for rel in relevant_products %}
+    <div class="card me-3 position-relative" style="min-width:200px;max-width:200px;">
+      {% if rel.format %}
+        {% if rel.format == 'paperback' %}
+          <span class="badge bg-primary variant-badge">{{ rel.get_format_display }}</span>
+        {% elif rel.format == 'hardcover' %}
+          <span class="badge bg-warning text-dark variant-badge">{{ rel.get_format_display }}</span>
+        {% elif rel.format == 'ebook' %}
+          <span class="badge bg-success variant-badge">{{ rel.get_format_display }}</span>
+        {% else %}
+          <span class="badge bg-secondary variant-badge">{{ rel.get_format_display }}</span>
+        {% endif %}
+      {% endif %}
+      <a href="{% url 'product-detail' rel.product.category.slug rel.product.slug %}?variant={{ rel.id }}">
+        <img src="{{ rel.image.url }}" class="card-img-top related-img" alt="{{ rel.name }}">
+      </a>
+      <div class="card-body">
+        <h6 class="card-title">{{ rel.name|truncatechars:40 }}</h6>
+        <p class="card-text text-muted small">{{ rel.product.description|truncatechars:50 }}</p>
+        <p class="fw-bold mb-2">₹{{ rel.price|floatformat:"0" }}</p>
+        <a href="{% url 'add_to_cart' rel.product.category.id rel.id %}" class="btn btn-outline-primary btn-sm w-100">
+          <i class="fa fa-shopping-cart me-1"></i>Add
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 </div>
 {% endblock content %}

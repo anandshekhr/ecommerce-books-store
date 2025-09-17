@@ -198,6 +198,8 @@ class BookVariant(models.Model):
     sku = models.CharField(max_length=100, unique=True,null=True,blank=True)
     pdf_file = models.FileField(upload_to='pdfs/', max_length=500, null=True, blank=True)
     image = models.ImageField(upload_to='variant_images/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated At"), auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.sku:

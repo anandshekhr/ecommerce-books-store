@@ -81,13 +81,13 @@ def item_list(request):
     for display_name, category_name in category_mapping.items():
         category = Category.objects.filter(name__iexact=category_name).first()
         if category and display_name == 'Books':
-            categorized_products[display_name] = Book.objects.filter(category=category).order_by('-updated_at')[:10]
+            categorized_products[display_name] = BookVariant.objects.filter(product__category=category).order_by('-updated_at')[:10]
         
         if category and display_name == 'Electronics':
-            categorized_products[display_name] = Electronic.objects.filter(category=category).order_by('-updated_at')[:10]
+            categorized_products[display_name] = ElectronicsVariant.objects.filter(product__category=category).order_by('-modified_at')[:10]
         
         if category and display_name == 'Musical Instruments':
-            categorized_products[display_name] = MusicalInstrument.objects.filter(category=category).order_by('-updated_at')[:10]
+            categorized_products[display_name] = MusicalInstrumentVariant.objects.filter(product__category=category).order_by('-modified_at')[:10]
     
     # books_subcategory = SubCategory.objects.filter(parent_category__name='Books')
     # mi_subcategory = SubCategory.objects.filter(parent_category__name='Musical Instruments')
@@ -197,7 +197,6 @@ def product_detail(request, category_slug, product_slug):
         'Musical Instruments': MusicalInstrumentVariant
     }
 
-    # Get the product model and variant model for this category
     product_model = category_map.get(category.name)
     variant_model = category_variant_map.get(category.name)
 
@@ -205,22 +204,30 @@ def product_detail(request, category_slug, product_slug):
 
     # Get variantId from query param (not URL path)
     variant_id = request.GET.get('variant')
-
     if variant_id:
         selected_variant = get_object_or_404(variant_model, pk=variant_id, product=product)
     else:
         selected_variant = product.variants.first()
 
-    relevant_products = product_model.objects.filter(category=category).exclude(slug=product_slug)[:10]
+    # ---- RELEVANT PRODUCTS FILTER ----
+    qs = variant_model.objects.filter(product__category=category).exclude(pk=selected_variant.pk)
+
+    # Example: filter by author for Books, brand for Electronics, etc.
+    if hasattr(product, 'author') and product.author:
+        qs = qs.filter(author=product.author)
+    elif hasattr(product, 'brand') and product.brand:
+        qs = qs.filter(brand=product.brand)
+    # (Add more conditions depending on your model fields)
+
+    relevant_products = qs[:10]
 
     return render(request, 'store/item.html', {
         'product': product,
-        'category': category, 
-        'pdf_id': selected_variant.pk if selected_variant else 1,
+        'category': category,
+        'pdf_id': selected_variant.pk if selected_variant else None,
         'selected_variant': selected_variant,
         'relevant_products': relevant_products,
     })
-
 
 @login_required(login_url='login-view')
 def add_to_cart(request, category_id, item_id):
@@ -557,8 +564,8 @@ def serve_pdf_page(request, pdf_id):
         page_num = int(request.GET.get('page', 1))
     except ValueError:
         page_num = 1
-    pdf = get_object_or_404(Book, id=pdf_id)
-    pdf_variants = pdf.variants.filter(format='ebook').first()
+    pdf = get_object_or_404(BookVariant, id=pdf_id)
+    pdf_variants = pdf
     if pdf_variants:
         pdf_path = pdf_variants.pdf_file.path 
     else: 
