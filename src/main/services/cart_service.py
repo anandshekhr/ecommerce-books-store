@@ -26,7 +26,7 @@ class CartService:
 
         content_type = ContentType.objects.get_for_model(variant_model)
         order, created = Order.objects.get_or_create(user=user, payment_status=False)
-        Payment.objects.get_or_create(order=order, defaults={'user': user, 'gateway': 'cash'})
+        Payment.objects.get_or_create(order=order, defaults={'gateway': 'razorpay'})
 
         existing_item = order.items.filter(content_type=content_type, object_id=variant.id).first()
         if existing_item:
