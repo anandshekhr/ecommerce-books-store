@@ -7,72 +7,31 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 <style>
-    html, body {
-    height: auto;
-    overflow-y: auto;
-}#productContainer {
-    overflow-y: auto;
-    max-height: calc(100vh - 200px); /* or similar */
-}
+    * {
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 
-
-    .product-card {
-        width: 220px;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 10px;
-        margin: 10px;
-        background-color: #fff;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        transition: 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    a {
+        text-decoration: none;
     }
-    .product-card img {
-        max-width: 100%;
-        height: 140px;
-        object-fit: contain;
-        border-radius: 5px;
-    }
-    .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-    }
-    .product-name {
-        font-size: 14px;
-        font-weight: 500;
-        margin-top: 8px;
-    }
-    .product-description {
-        font-size: 12px;
-        color: #555;
-        margin-top: 4px;
-    }
-    .product-price {
-        font-size: 13px;
-        color: #28a745;
-        margin-top: 4px;
-    }
-    #filterPanel {
-        position: fixed;
-        top: 70px;
-        right: 0;
-        width: 280px;
-        max-height: 90vh;
+    html,
+    body {
+        height: auto;
         overflow-y: auto;
-        background: #fff;
-        border-left: 1px solid #ccc;
-        padding: 20px;
-        display: none;
-        z-index: 1030;
+        font-family: 'Roboto', sans-serif;
+
     }
-    #toggleFilterBtn {
-        position: fixed;
-        top: 80px;
-        right: 10px;
-        z-index: 1040;
+
+    #productContainer {
+        overflow-y: auto;
+        max-height: calc(100vh - 200px);
+        /* or similar */
     }
+
+    
 </style>
 {% endblock head %}
 
@@ -124,53 +83,73 @@
     let appliedFilters = {};
 
     function fetchProducts(page = 1, filters = {}) {
-    if (loading || endOfData) return;
-    loading = true;
+        if (loading || endOfData) return;
+        loading = true;
 
-    let url = `/api/v1/category/{{ category.id }}/items/?page=${page}`;
-    Object.keys(filters).forEach(key => {
-        if (filters[key]) url += `&${key}=${filters[key]}`;
-    });
+        let url = `/api/v1/category/{{ category.id }}/items/?page=${page}`;
+        Object.keys(filters).forEach(key => {
+            if (filters[key]) url += `&${key}=${filters[key]}`;
+        });
 
-    fetch(url)
-        .then(res => {
-            if (!res.ok) {
-                console.warn("Fetch failed or returned error code:", res.status);
-                endOfData = true; // stop further fetching
-                return { results: [] };
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (!data.results || !data.results.length) {
-                endOfData = true;
-                return;
-            }
+        fetch(url)
+            .then(res => {
+                if (!res.ok) {
+                    console.warn("Fetch failed or returned error code:", res.status);
+                    endOfData = true; // stop further fetching
+                    return { results: [] };
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data.results || !data.results.length) {
+                    endOfData = true;
+                    return;
+                }
 
-            data.results.forEach(item => {
-                const card = `<div class="product-card">
-                    <a href="/product/{{category.slug}}/${item.slug}/">
+                data.results.forEach(item => {
+                    const card = `<div class="product-card">
+                <a href="/product/{{category.slug}}/${item.slug}/">
+                    <div class="badge">New</div>
+                    <div class="product-tumb">
                         <img src="${item.image}" alt="${item.name}">
-                        <div class="product-name">${item.name}</div>
-                        <div class="product-price">₹${item.price}</div>
-                        <div class="product-description">${item.description?.slice(0, 60) || ''}</div>
-                        <div class="mt-2">
-                            <button class="btn btn-sm btn-outline-success" onclick="addToCart(${item.category}, ${item.id})">ADD</button>
-                            <a href="/cart/add/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
+                    </div>
+                    <div class="product-details">
+                        <span class="product-catagory">${item.category_name}</span>
+                        <h4><a href="/product/{{category.slug}}/${item.slug}/">${item.name}</a></h4>
+                        <p>${item.description?.slice(0, 60) || ''}</p>
+                        <div class="product-bottom-details">
+                            <div class="product-price"><small>₹${item.price}</small>₹${item.price}</div>
+                            <div class="product-links">
+                                <a href="#" onclick="addToCart(${item.category}, ${item.id})"><i class="fa fa-heart"></i></a>
+                                <a href="/cart/add/${item.category}/?variant=${item.id}"><i class="fa fa-shopping-cart"></i></a>
+                            </div>
                         </div>
+                    </div>
                     </a>
                 </div>`;
-                document.getElementById('productContainer').insertAdjacentHTML('beforeend', card);
+                    /*const card = `<div class="product-card">
+                        <a href="/product/{{category.slug}}/${item.slug}/">
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="product-name">${item.name}</div>
+                            <div class="product-price">₹${item.price}</div>
+                            <div class="product-description">${item.description?.slice(0, 60) || ''}</div>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-outline-success" onclick="addToCart(${item.category}, ${item.id})">ADD</button>
+                                <a href="/cart/add/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
+                            </div>
+                        </a>
+                    </div>`;*/
+                    document.getElementById('productContainer').insertAdjacentHTML('beforeend', card);
+                });
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                endOfData = true; // stop on error
+            })
+            .finally(() => {
+                loading = false;
             });
-        })
-        .catch(err => {
-            console.error("Fetch error:", err);
-            endOfData = true; // stop on error
-        })
-        .finally(() => {
-            loading = false;
-        });
-}
+    }
 
 
     document.getElementById('toggleFilterBtn').addEventListener('click', () => {
@@ -211,14 +190,14 @@
                 quantity: quantity
             }),
         })
-        .then(response => response.json())
-        .then(data => {
-            toastr.success(data.message || "Item added to cart!");
-        })
-        .catch(error => {
-            toastr.error("Failed to add item to cart.");
-            console.error("Error:", error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                toastr.success(data.message || "Item added to cart!");
+            })
+            .catch(error => {
+                toastr.error("Failed to add item to cart.");
+                console.error("Error:", error);
+            });
     }
 
     // Initial Load

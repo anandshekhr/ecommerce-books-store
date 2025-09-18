@@ -30,7 +30,7 @@
                                     <a href="{{product.pdf_file.url}}" class="btn btn-outline-success price-btn-style" title="Download now"><i class="fa fa-download" aria-hidden="true"></i></a>
                                     
                                     {% else %}
-                                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-outline-success price-btn-style">ADD</a>
+                                    <a href="{% url 'add_to_cart' product.category.id %}?variant={{product.id}}" class="btn btn-outline-success price-btn-style">ADD</a>
                                     {% endif %}
                                 </div>
                             </div>

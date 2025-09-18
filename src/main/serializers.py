@@ -75,9 +75,14 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
+    def get_category_name(self, obj):
+        return obj.category.name
+    
     class Meta:
         model = Book
-        fields = ['id', 'name', 'description', 'price','slug' ,'image','category','stock']
+        fields = ['id', 'name', 'description', 'price','slug' ,'image','category','category_name','stock']
 
 class BookVariantSerializer(serializers.ModelSerializer):
     class Meta:

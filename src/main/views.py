@@ -230,7 +230,7 @@ def product_detail(request, category_slug, product_slug):
     })
 
 @login_required(login_url='login-view')
-def add_to_cart(request, category_id, item_id):
+def add_to_cart(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     variant_id = request.GET.get('variant')
     try:

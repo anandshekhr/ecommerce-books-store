@@ -21,16 +21,107 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700" rel="stylesheet">
 
     {% block head %}{% endblock head %}
 
     <style>
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: #f8f9fa;
             padding-top: 56px;
         }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            line-height: 1.2;
+            margin: 0 0 10px 0;
+            font-weight: normal;
+        }
+
+        h1 .title-callout,
+        h2 .title-callout,
+        h3 .title-callout,
+        h4 .title-callout,
+        h5 .title-callout,
+        h6 .title-callout {
+            color: var(--cp-color-blue);
+        }
+
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: var(--cp-font-family);
+        }
+
+        h1,
+        .h1 {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-family: var(--cp-font-family-header);
+            line-height: 1.1;
+            font-size: 3rem;
+        }
+
+        @media (max-width: 550px) {
+
+            h1,
+            .h1 {
+                font-size: 2.2rem;
+            }
+        }
+
+        h2,
+        .h2 {
+            font-family: var(--cp-font-family-header-alt);
+            font-size: 1.8rem;
+        }
+
+        h3,
+        .h3,
+        dt {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        h4,
+        .h4 {
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h5,
+        .h5 {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h6 {
+            font-weight: bold;
+        }
+
+        p,
+        pre,
+        blockquote {
+            margin: 0 0 1em 0;
+        }
+
+        p:empty,
+        pre:empty,
+        blockquote:empty {
+            display: none;
+        }
+        p {
+            font-size: 0.8rem;
+        }
+
 
         .sidebar {
             height: 100vh;
@@ -58,7 +149,7 @@
         }
 
         .sidebar a:hover {
-            background-color:rgb(5, 4, 4);
+            background-color: rgb(5, 4, 4);
         }
 
         .toggle-sidebar {
@@ -90,14 +181,150 @@
         footer.bg-primary {
             background-color: #000 !important;
         }
+        .product-card {
+        width: 320px;
+        position: relative;
+        box-shadow: 0 2px 7px #dfdfdf;
+        margin: 5px 5px;
+        background: #fafafa;
+    }
+    .product-tumb {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        /* border-radius: 5px; */
+        /* padding: 50px; */
+        background: #f0f0f0;
+    }
 
-            {
-            % block style %
-        }
+    .product-tumb img {
+        max-width: 100%;
+        object-fit: contain;
+        max-height: 140px;
 
-            {
-            % endblock style %
-        }
+    }
+
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    #filterPanel {
+        position: fixed;
+        top: 70px;
+        right: 0;
+        width: 280px;
+        max-height: 90vh;
+        overflow-y: auto;
+        background: #fff;
+        border-left: 1px solid #ccc;
+        padding: 20px;
+        display: none;
+        z-index: 1030;
+    }
+
+    #toggleFilterBtn {
+        position: fixed;
+        top: 80px;
+        right: 10px;
+        z-index: 1040;
+    }
+
+    
+
+
+    .badge {
+        position: absolute;
+        left: 0;
+        top: 20px;
+        text-transform: uppercase;
+        font-size: 13px;
+        font-weight: 700;
+        border-radius: 0px;
+        background: red;
+        color: #fff;
+        padding: 3px 10px;
+    }
+
+    
+
+    .product-details {
+        padding: 30px;
+    }
+
+    .product-catagory {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #ccc;
+        margin-bottom: 18px;
+    }
+
+    .product-details h4 a {
+        font-weight: 500;
+        display: block;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        color: #363636;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .product-details h4 a:hover {
+        color: #f5a70b;
+    }
+
+    .product-details p {
+        /* font-size: 15px; */
+        line-height: 22px;
+        margin-bottom: 18px;
+        color: #999;
+    }
+
+    .product-bottom-details {
+        overflow: hidden;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+
+    .product-bottom-details div {
+        float: left;
+        width: 50%;
+    }
+
+    .product-price {
+        font-size: 18px;
+        color: #fbb72c;
+        font-weight: 600;
+    }
+
+    .product-price small {
+        font-size: 80%;
+        font-weight: 400;
+        text-decoration: line-through;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .product-links {
+        text-align: right;
+    }
+
+    .product-links a {
+        display: inline-block;
+        margin-left: 5px;
+        color: #e1e1e1;
+        transition: 0.3s;
+        font-size: 17px;
+    }
+
+    .product-links a:hover {
+        color: #fbb72c;
+    }
+
+        {% block style %}{% endblock style %}
     </style>
 </head>
 
@@ -150,7 +377,8 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in books_subcategories %}
-                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{
+                            sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -166,7 +394,8 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in mi_subcategories %}
-                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{
+                            sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -182,7 +411,8 @@
                     data-bs-parent="#categoryAccordion">
                     <div class="accordion-body">
                         {% for sub in ele_subcategories %}
-                            <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{ sub.name }}</a>
+                        <a href="{% url 'sub-category-wise-products' %}?subcategory={{ sub.name|urlencode }}">{{
+                            sub.name }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -262,7 +492,7 @@
     {% if messages %}
     <script>
         {% for message in messages %}
-            toastr["{{ message.tags }}"]("{{ message|escapejs }}");
+        toastr["{{ message.tags }}"]("{{ message|escapejs }}");
         {% endfor %}
     </script>
     {% endif %}
