@@ -73,6 +73,10 @@ class AddressSerializer(serializers.ModelSerializer):
         model = BillingAddress
         fields = '__all__'
 
+class BookAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = '__all__'
 
 class BookSerializer(serializers.ModelSerializer):
     category_name = serializers.SerializerMethodField()

@@ -116,7 +116,7 @@ class ItemGetDetailAPI(APIView):
 class ItemPostAPI(generics.CreateAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = Book.objects.all()
-    serializer_class = ItemSerializer
+    serializer_class = BookAddSerializer
 
 class BookVariantAPI(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticated,)
