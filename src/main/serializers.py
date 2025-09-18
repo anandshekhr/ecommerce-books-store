@@ -46,6 +46,8 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+
+
 class ItemOrderSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     class Meta:
@@ -77,15 +79,30 @@ class BookSerializer(serializers.ModelSerializer):
         model = Book
         fields = ['id', 'name', 'description', 'price','slug' ,'image','category','stock']
 
+class BookVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookVariant
+        fields = '__all__'
+
 class ElectronicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Electronic
         fields = ['id', 'name', 'description', 'price','slug', 'image','category','stock','brand','warranty_period','sub_category']
+    
+class ElectronicVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ElectronicsVariant
+        fields = '__all__'
 
 class MusicalInstrumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicalInstrument
         fields = ['id', 'name', 'description', 'price','slug', 'image','category','stock']
+
+class MusicalInstrumentVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MusicalInstrumentVariant
+        fields = '__all__'
 
 class ItemAllCategorySerializer(serializers.Serializer):
     type = serializers.CharField()
