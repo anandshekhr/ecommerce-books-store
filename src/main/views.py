@@ -103,8 +103,8 @@ def item_list(request):
         # 'ele_subcategories':ele_subcategory
     })
 
-def category_wise_products(request, categoryId: int):
-    category = Category.objects.get(pk=categoryId)
+def category_wise_products(request, categorySlug: string):
+    category = Category.objects.get(slug=categorySlug)
     context = {
         'category':category
     }
