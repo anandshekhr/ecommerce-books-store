@@ -112,8 +112,8 @@
                             {% else %}
                                 <span class="badge bg-secondary">{{ product.get_format_display }}</span>
                             {% endif %}
-                        {% else %}
-                            <span class="badge">{{ product.product.category.name }}</span>
+                        {% comment %} {% else %}
+                            <span class="badge">{{ product.product.category.name }}</span> {% endcomment %}
 
                         {% endif %}
 
