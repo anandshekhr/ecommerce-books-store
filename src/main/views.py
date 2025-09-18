@@ -219,7 +219,7 @@ def product_detail(request, category_slug, product_slug):
         qs = qs.filter(brand=product.brand)
     # (Add more conditions depending on your model fields)
 
-    relevant_products = qs[:10]
+    relevant_products = qs[:4]
 
     return render(request, 'store/item.html', {
         'product': product,
