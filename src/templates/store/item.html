@@ -76,26 +76,93 @@
 
     <!-- MIDDLE -->
     <div class="col-md-6">
-      <h1 class="mb-3">{{ product.name }}</h1>
-      <p class="text-muted">{{ product.description }}</p>
+      {% comment %} <h1 class="mb-3">{{ product.name }}</h1> {% endcomment %}
+
+    {% if selected_variant.product.category.name == 'Books' %}
+      <h3>
+        {{ selected_variant.product.name }} <small style="color: grey; ">{{ selected_variant.get_format_display }} – {{ selected_variant.product.publication_date }}</small>
+      </h3>
+      <p>
+        by {{ selected_variant.product.author }} (Author)
+      </p>
+    {% else %}
+      <h3>
+        {{ selected_variant.product.name }}
+      </h3>
+    {% endif %}
+
+      <p class="text-muted">{{ selected_variant.product.description }}</p>
       <hr>
 
-      {% if product.category.name == 'Books' %}
-      <p><strong>Author:</strong> {{ product.author }}</p>
-      <p><strong>ISBN-10:</strong> {{ product.isbn_10 }} | <strong>ISBN-13:</strong> {{ product.isbn_13 }}</p>
-      <p><strong>Edition:</strong> {{ product.edition }}</p>
-      <p><strong>Publisher:</strong> {{ product.publisher }}</p>
-      <p><strong>Publication Date:</strong> {{ product.publication_date }}</p>
-      <p><strong>Rating:</strong> {{ product.rating }}</p>
-      {% elif product.category.name in 'Musical Instruments,Electronics' %}
-      <p><strong>Brand:</strong> {{ product.brand }}</p>
-      <p><strong>Model:</strong> {{ product.model }}</p>
-      {% if product.category.name == 'Musical Instruments' %}
-      <p><strong>Instrument Type:</strong> {{ product.instrument_type }}</p>
-      <p><strong>Material:</strong> {{ product.material }}</p>
-      {% else %}
-      <p><strong>Warranty:</strong> {{ product.warranty_period }}</p>
-      {% endif %}
+      {% if selected_variant.product.category.name == 'Books' %}
+        <!-- Horizontal scroll info section -->
+        <div style="display:flex;overflow-x:auto;gap:20px;padding:10px 0;">
+
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>Publisher</small><br>
+            <i class="fa-solid fa-building fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.publisher }}</p><br>
+          </div>
+
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>Publication date</small><br>
+            <i class="fa-regular fa-calendar fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.publication_date }}</p><br>
+          </div>
+
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>ISBN-10</small><br>
+            <i class="fa-solid fa-barcode fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.isbn_10 }}</p><br>
+          </div>
+
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>ISBN-13</small><br>
+            <i class="fa-solid fa-barcode fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.isbn_13 }}</p><br>
+          </div>
+        </div>
+
+        <!-- Other book fields below -->
+        <p><strong>Author:</strong> {{ selected_variant.product.author }}</p>
+        <p><strong>ISBN-13:</strong> {{ selected_variant.product.isbn_13 }}</p>
+        <p><strong>Edition:</strong> {{ selected_variant.product.edition }}</p>
+        <p><strong>Rating:</strong> {{ selected_variant.product.rating }}</p>
+
+      {% elif selected_variant.product.category.name in 'Musical Instruments,Electronics' %}
+        <!-- Horizontal scroll info section -->
+        <div style="display:flex;overflow-x:auto;gap:20px;padding:10px 0;">
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>Brand</small><br>
+            <i class="fa-solid fa-tags fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.brand }}</p><br>
+          </div>
+
+          <div style="flex:0 0 auto;text-align:center;">
+            <small>Model</small><br>
+            <i class="fa-solid fa-barcode fa-2x"></i><br>
+            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.model }}</p><br>
+          </div>
+
+          {% if selected_variant.product.category.name == 'Musical Instruments' %}
+            <div style="flex:0 0 auto;text-align:center;">
+              <small>Instrument Type</small><br>
+              <i class="fa-solid fa-guitar fa-2x"></i><br>
+              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.instrument_type }}</p><br>
+            </div>
+            <div style="flex:0 0 auto;text-align:center;">
+              <small>Material</small><br>
+              <i class="fa-solid fa-box fa-2x"></i><br>
+              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.material }}</p><br>
+            </div>
+          {% else %}
+            <div style="flex:0 0 auto;text-align:center;">
+              <small>Warranty</small><br>
+              <i class="fa-solid fa-shield-halved fa-2x"></i><br>
+              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.warranty_period }}</p><br>
+            </div>
+          {% endif %}
+        </div>
       {% endif %}
 
       {% if selected_variant %}

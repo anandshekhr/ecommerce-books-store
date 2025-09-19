@@ -177,7 +177,7 @@ class Book(Product):
     isbn_13 = models.CharField(_("ISBN-13"), max_length=20, blank=True)
     edition = models.CharField(_("Edition"), max_length=50, blank=True)
     publisher = models.CharField(_("Publisher"), max_length=100, blank=True)
-    publication_date = models.CharField(_("Publication Date"), max_length=50, blank=True)
+    publication_date = models.DateField(_("Publication Date"), auto_now=False, auto_now_add=False,null=True,blank=True)
     rating = models.DecimalField(_("Ratings"), max_digits=2, decimal_places=1, default=5.0)
 
     def __str__(self):

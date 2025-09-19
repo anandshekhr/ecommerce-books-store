@@ -214,9 +214,9 @@ def product_detail(request, category_slug, product_slug):
 
     # Example: filter by author for Books, brand for Electronics, etc.
     if hasattr(product, 'author') and product.author:
-        qs = qs.filter(author=product.author)
+        qs = qs.filter(product__author=product.author)
     elif hasattr(product, 'brand') and product.brand:
-        qs = qs.filter(brand=product.brand)
+        qs = qs.filter(brand=selected_variant.product.brand)
     # (Add more conditions depending on your model fields)
 
     relevant_products = qs[:4]
