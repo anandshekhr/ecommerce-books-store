@@ -16,48 +16,144 @@
 <meta name="keywords" content="{{ product.name }}, VAMS Store, Product">
 <meta name="author" content="VAMS Store">
 <link rel="canonical" href="{{ request.build_absolute_uri }}">
-<link href="{% static "assets/css/base.css" %}" rel="stylesheet">
-<link href="{% static "assets/css/item.css" %}" rel="stylesheet">
+<link href="{% static " assets/css/base.css" %}" rel="stylesheet">
+<link href="{% static " assets/css/item.css" %}" rel="stylesheet">
 <style>
-  /* keep related product images uniform */
-  .related-img {
-    width: 100%;
-    height: 150px;
-    object-fit: contain;
+  :root {
+    --vams-light: #e9e3df;
+    /* light grey */
+    --vams-accent: #ff7a32;
+    /* orange */
+    --vams-dark: #43567f;
+    /* dark blue */
+    --vams-black: #000000;
   }
+
+  /* Title / subtitle */
+  .product-title h3 {
+    font-weight: 600;
+    margin-bottom: .25rem;
+  }
+
+  .product-subline {
+    color: var(--vams-dark);
+    font-size: 0.95rem;
+  }
+
+  .product-author {
+    color: var(--vams-black);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Price + button */
+  .product-price {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--vams-accent);
+  }
+
+  .btn-add-to-cart {
+    background-color: var(--vams-accent);
+    border: none;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .btn-add-to-cart:hover {
+    background-color: #e56724;
+  }
+
+  /* Horizontal info cards */
+  .info-strip {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0;
+  }
+
+  .info-card {
+    flex: 0 0 auto;
+    text-align: center;
+    background-color: var(--vams-light);
+    padding: .75rem;
+    border-radius: .5rem;
+    min-width: 110px;
+  }
+
+  .info-card i {
+    color: var(--vams-dark);
+    margin-bottom: .25rem;
+  }
+
+  .info-card small {
+    display: block;
+    font-size: .75rem;
+    color: #555;
+  }
+
+  .info-card p {
+    font-size: .8rem;
+    font-weight: 500;
+    margin-bottom: 0;
+  }
+
+  /* shipping icons list */
+  .policy-list i {
+    color: var(--vams-dark);
+    margin-right: .5rem;
+  }
+
+  .policy-list li {
+    margin-bottom: .5rem;
+  }
+
+  /* Variant cards */
   .variant-badge {
     position: absolute;
-    top: .5rem;
-    left: .5rem;
+    top: 10px;
+    right: 10px;
   }
+  .preview-btn {
+  position: absolute;
+  top: 10px;           /* adjust vertical placement */
+  right: 10px;         /* adjust horizontal placement */
+  font-size: 0.7rem;   /* small text */
+  text-transform: uppercase;
+  background-color: rgba(128,128,128,0.5); /* semi-transparent grey */
+  color: #fff;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  backdrop-filter: blur(2px); /* subtle blur behind */
+  z-index: 2;
+}
+.preview-btn:hover {
+  background-color: rgba(128,128,128,0.7);
+  color:#fff;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  transition: all .2s ease-in-out;
+}
+
+
 </style>
 {% endblock head %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="row g-4">
-    <!-- LEFT -->
-    <div class="col-md-3">
-      <div class="text-center">
-        <img id="main-product-image"
-             src="{{ product.image.url }}"
-             class="img-fluid rounded shadow-sm mb-3"
-             style="max-height:250px;object-fit:contain"
-             alt="{{ product.name }}">
-      </div>
-      {% if product.images.all %}
-      <div class="d-flex overflow-auto">
-        {% for image in product.images.all %}
-        <img src="{{ image.image.url }}"
-             class="img-thumbnail me-2 thumb-image"
-             style="width:64px;height:64px;cursor:pointer;object-fit:cover"
-             onclick="document.getElementById('main-product-image').src='{{ image.image.url }}'">
-        {% endfor %}
-      </div>
-      {% endif %}
+<div class="container my-5">
+  <div class="row">
+    <!-- Left: product image -->
+    <div class="col-md-4 text-center">
+  <div class="position-relative d-inline-block">
+    {% if selected_variant and selected_variant.format == 'ebook' %}
+      <button class="btn preview-btn"
+        data-bs-toggle="modal" data-bs-target="#pdfModal">
+        PREVIEW
+      </button>
 
-      {% if selected_variant and selected_variant.format == 'ebook' %}
-      <button class="btn btn-primary mt-3 w-100" data-bs-toggle="modal" data-bs-target="#pdfModal">Preview PDF</button>
       <div class="modal fade" id="pdfModal" tabindex="-1">
         <div class="modal-dialog modal-xl modal-dialog-centered">
           <div class="modal-content">
@@ -71,149 +167,109 @@
           </div>
         </div>
       </div>
-      {% endif %}
-    </div>
-
-    <!-- MIDDLE -->
-    <div class="col-md-6">
-      {% comment %} <h1 class="mb-3">{{ product.name }}</h1> {% endcomment %}
-
-    {% if selected_variant.product.category.name == 'Books' %}
-      <h3>
-        {{ selected_variant.product.name }} <small style="color: grey; ">{{ selected_variant.get_format_display }} – {{ selected_variant.product.publication_date }}</small>
-      </h3>
-      <p>
-        by {{ selected_variant.product.author }} (Author)
-      </p>
-    {% else %}
-      <h3>
-        {{ selected_variant.product.name }}
-      </h3>
     {% endif %}
+
+    <img src="{{ selected_variant.image.url }}" alt="{{ selected_variant.product.name }}" class="img-fluid rounded">
+  </div>
+</div>
+
+
+    <!-- Middle: details -->
+    <div class="col-md-5">
+      {% if selected_variant.product.category.name == 'Books' %}
+      <div class="product-title">
+        <h3>{{ selected_variant.product.name }}</h3>
+        <div class="product-subline">
+          {{ selected_variant.get_format_display }} – {{ selected_variant.product.publication_date }}
+        </div>
+        <div class="product-author">
+          by {{ selected_variant.product.author }} (Author)
+        </div>
+      </div>
+      {% else %}
+      <div class="product-title">
+        <h3>{{ selected_variant.product.name }}</h3>
+      </div>
+      {% endif %}
 
       <p class="text-muted">{{ selected_variant.product.description }}</p>
       <hr>
 
       {% if selected_variant.product.category.name == 'Books' %}
-        <!-- Horizontal scroll info section -->
-        <div style="display:flex;overflow-x:auto;gap:20px;padding:10px 0;">
-
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>Publisher</small><br>
-            <i class="fa-solid fa-building fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.publisher }}</p><br>
-          </div>
-
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>Publication date</small><br>
-            <i class="fa-regular fa-calendar fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.publication_date }}</p><br>
-          </div>
-
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>ISBN-10</small><br>
-            <i class="fa-solid fa-barcode fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.isbn_10 }}</p><br>
-          </div>
-
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>ISBN-13</small><br>
-            <i class="fa-solid fa-barcode fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.isbn_13 }}</p><br>
-          </div>
+      <!-- Horizontal scroll info cards -->
+      <div class="info-strip">
+        <div class="info-card">
+          <i class="fa-solid fa-building fa-2x"></i>
+          <small>Publisher</small>
+          <p>{{ selected_variant.product.publisher }}</p>
         </div>
-
-        <!-- Other book fields below -->
-        <p><strong>Author:</strong> {{ selected_variant.product.author }}</p>
-        <p><strong>ISBN-13:</strong> {{ selected_variant.product.isbn_13 }}</p>
-        <p><strong>Edition:</strong> {{ selected_variant.product.edition }}</p>
-        <p><strong>Rating:</strong> {{ selected_variant.product.rating }}</p>
-
+        <div class="info-card">
+          <i class="fa-regular fa-calendar fa-2x"></i>
+          <small>Publication date</small>
+          <p>{{ selected_variant.product.publication_date }}</p>
+        </div>
+        <div class="info-card">
+          <i class="fa-solid fa-barcode fa-2x"></i>
+          <small>ISBN-10</small>
+          <p>{{ selected_variant.product.isbn_10 }}</p>
+        </div>
+        <div class="info-card">
+          <i class="fa-solid fa-barcode fa-2x"></i>
+          <small>ISBN-13</small>
+          <p>{{ selected_variant.product.isbn_13 }}</p>
+        </div>
+      </div>
       {% elif selected_variant.product.category.name in 'Musical Instruments,Electronics' %}
-        <!-- Horizontal scroll info section -->
-        <div style="display:flex;overflow-x:auto;gap:20px;padding:10px 0;">
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>Brand</small><br>
-            <i class="fa-solid fa-tags fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.brand }}</p><br>
-          </div>
-
-          <div style="flex:0 0 auto;text-align:center;">
-            <small>Model</small><br>
-            <i class="fa-solid fa-barcode fa-2x"></i><br>
-            <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.model }}</p><br>
-          </div>
-
-          {% if selected_variant.product.category.name == 'Musical Instruments' %}
-            <div style="flex:0 0 auto;text-align:center;">
-              <small>Instrument Type</small><br>
-              <i class="fa-solid fa-guitar fa-2x"></i><br>
-              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.instrument_type }}</p><br>
-            </div>
-            <div style="flex:0 0 auto;text-align:center;">
-              <small>Material</small><br>
-              <i class="fa-solid fa-box fa-2x"></i><br>
-              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.material }}</p><br>
-            </div>
-          {% else %}
-            <div style="flex:0 0 auto;text-align:center;">
-              <small>Warranty</small><br>
-              <i class="fa-solid fa-shield-halved fa-2x"></i><br>
-              <p style="font-size: small; font-weight: 500;">{{ selected_variant.product.warranty_period }}</p><br>
-            </div>
-          {% endif %}
-        </div>
+      <!-- Add other info cards here -->
       {% endif %}
 
-      {% if selected_variant %}
-      <h5 class="mt-3">Price: ₹{{ selected_variant.price|floatformat:"0" }}</h5>
-      {% else %}
-      <h5 class="mt-3">Price: ₹{{ product.price|floatformat:"0" }}</h5>
-      {% endif %}
-
-      <a href="{% url 'add_to_cart' product.category.id %}?variant={{ selected_variant.id }}"
-         class="btn btn-success mt-2">
-        <i class="fa fa-shopping-cart me-1"></i>Add to Cart
-      </a>
+      <!-- Price + Add to Cart -->
+      <div class="mt-4">
+        <div class="product-price">₹{{ selected_variant.price|floatformat:"0" }}</div>
+        <a href="{% url 'add_to_cart' product.category.id %}?variant={{ selected_variant.id }}"
+          class="btn btn-add-to-cart mt-2">
+          <i class="fa fa-shopping-cart me-1"></i> Add to Cart
+        </a>
+      </div>
 
       {% if product.variants.all.count > 1 %}
-      <hr class="my-4">
-      <h4 class="mb-3">Available Variants</h4>
-      <div class="row row-cols-2 g-3">
-        {% for variant in product.variants.all %}
-        <div class="col">
-          <div class="card h-100 position-relative">
-            <div class="card-body">
-              <span class="badge bg-info variant-badge">{{ variant.get_format_display|default:variant.sku }}</span>
-              <p class="card-text mt-4">₹{{ variant.price|floatformat:"0" }}</p>
-              <p class="text-muted small">Stock: {{ variant.stock }}</p>
-              <a href="{% url 'product-detail' product.category.slug product.slug %}?variant={{ variant.id }}"
-                 class="btn btn-outline-primary btn-sm">View</a>
-            </div>
+  <hr class="my-4">
+  <h4 class="mb-3">Available Variants</h4>
+
+  <div class="row row-cols-2 g-3">
+    {% for variant in product.variants.all %}
+      <div class="col">
+        <div class="card h-100 border-0 shadow-sm rounded-3 position-relative">
+          <!-- badge as ribbon -->
+          <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2 rounded-pill px-3 py-1">
+            {{ variant.get_format_display|default:variant.sku }}
+          </span>
+
+          <div class="card-body d-flex flex-column justify-content-between text-center p-3">
+            <h6 class="fw-bold mb-2 text-dark" style="margin-top: 15px;">₹{{ variant.price|floatformat:"0" }}</h6>
+            <p class="text-muted small mb-3">Stock: {{ variant.stock }}</p>
+
+            <a href="{% url 'product-detail' product.category.slug product.slug %}?variant={{ variant.id }}"
+               class="btn btn-sm px-3 py-1 text-uppercase fw-semibold"
+               style="background-color:#FF7A29;color:#fff;border:none;border-radius:50px;">
+              View
+            </a>
           </div>
         </div>
-        {% endfor %}
       </div>
-      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
 
-      <hr class="my-4">
-      <div>
-        <h5>More Details</h5>
-        <p>{{ product.long_description|default:product.description }}</p>
-      </div>
     </div>
 
-    <!-- RIGHT -->
+    <!-- Right: policies/shipping -->
     <div class="col-md-3">
-      <div class="border rounded p-3 bg-light shadow-sm">
-        <h5 class="mb-3">Shipping & Delivery</h5>
-        <ul class="list-unstyled mb-0">
-          <li><strong>Delivery:</strong> 3-7 Business Days</li>
-          <li><strong>Free Shipping:</strong> on orders over ₹499</li>
-          <li><strong>Return Policy:</strong> 7-Day Easy Returns</li>
-        </ul>
-        <p class="text-muted small mt-2">Delivery times may vary by location and availability.</p>
-      </div>
+      <ul class="list-unstyled policy-list">
+        <li><i class="fa-solid fa-truck"></i> Delivery: 3-7 Business Days</li>
+        <li><i class="fa-solid fa-box-open"></i> Free Shipping: on orders over ₹499</li>
+        <li><i class="fa-solid fa-rotate-left"></i> Return Policy: 7-Day Easy Returns</li>
+      </ul>
     </div>
   </div>
 
@@ -222,46 +278,46 @@
   <h4 class="mb-3">Related Products</h4>
   <div class="d-flex overflow-auto">
     {% for rel in relevant_products %}
-     <div class="product-card me-3 position-relative">
-  {% if rel.format %}
-    <div class="badge">
-      {{ rel.get_format_display }}
-    </div>
-  {% endif %}
-
-  <a href="{% url 'product-detail' rel.product.category.slug rel.product.slug %}?variant={{ rel.id }}">
-    <div class="product-tumb">
-      <img src="{{ rel.image.url }}" alt="{{ rel.name }}">
-    </div>
-
-    <div class="product-details">
-      <span class="product-catagory">{{ rel.product.category.name }}</span>
-
-      <h4>
-        <a href="{% url 'product-detail' rel.product.category.slug rel.product.slug %}?variant={{ rel.id }}">
-          {{ rel.product.name|truncatechars:40 }}
-        </a>
-      </h4>
-
-      <p class="text-muted small">
-        {{ rel.product.description|truncatechars:50 }}
-      </p>
-
-      <div class="product-bottom-details">
-        <div class="product-price">
-          ₹{{ rel.price|floatformat:"0" }}
-        </div>
-        <div class="product-links">
-          <a href="{% url 'add_to_cart' rel.product.category.id %}?variant={{rel.id}}">
-            <i class="fa fa-shopping-cart"></i>
-          </a>
-        </div>
+    <div class="product-card me-3 position-relative">
+      {% if rel.format %}
+      <div class="badge">
+        {{ rel.get_format_display }}
       </div>
-    </div>
-  </a>
-</div>
+      {% endif %}
 
-      {% endfor %}
+      <a href="{% url 'product-detail' rel.product.category.slug rel.product.slug %}?variant={{ rel.id }}">
+        <div class="product-tumb">
+          <img src="{{ rel.image.url }}" alt="{{ rel.name }}">
+        </div>
+
+        <div class="product-details">
+          <span class="product-catagory">{{ rel.product.category.name }}</span>
+
+          <h4>
+            <a href="{% url 'product-detail' rel.product.category.slug rel.product.slug %}?variant={{ rel.id }}">
+              {{ rel.product.name|truncatechars:40 }}
+            </a>
+          </h4>
+
+          <p class="text-muted small">
+            {{ rel.product.description|truncatechars:50 }}
+          </p>
+
+          <div class="product-bottom-details">
+            <div class="product-price">
+              ₹{{ rel.price|floatformat:"0" }}
+            </div>
+            <div class="product-links">
+              <a href="{% url 'add_to_cart' rel.product.category.id %}?variant={{rel.id}}">
+                <i class="fa fa-shopping-cart"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    {% endfor %}
   </div>
   {% endif %}
 </div>
