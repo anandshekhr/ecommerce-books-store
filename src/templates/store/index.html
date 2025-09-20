@@ -112,8 +112,8 @@
                             {% else %}
                                 <span class="badge bg-secondary">{{ product.get_format_display }}</span>
                             {% endif %}
-                        {% comment %} {% else %}
-                            <span class="badge">{{ product.product.category.name }}</span> {% endcomment %}
+                        {% else %}
+                            <span class="badge">New</span>
 
                         {% endif %}
 
@@ -124,7 +124,7 @@
                         <div class="product-bottom-details">
                             <div class="product-price">
                                 {% if not product.is_free %}
-                                    <small>₹{{ product.product.price|floatformat:"0" }}</small>₹{{ product.price|floatformat:"0" }}
+                                    ₹{{ product.price|floatformat:"0" }}
                                 {% else %}
                                     Free
                                 {% endif %}

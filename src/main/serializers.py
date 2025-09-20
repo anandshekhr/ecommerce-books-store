@@ -94,9 +94,13 @@ class BookVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ElectronicSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
+    def get_category_name(self, obj):
+        return obj.category.name
     class Meta:
         model = Electronic
-        fields = ['id', 'name', 'description', 'price','slug', 'image','category','stock','brand','warranty_period','sub_category']
+        fields = ['id', 'name', 'description', 'price','slug', 'image','category','category_name','stock','brand','warranty_period','sub_category']
     
 class ElectronicVariantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -104,9 +108,13 @@ class ElectronicVariantSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class MusicalInstrumentSerializer(serializers.ModelSerializer):
+    category_name = serializers.SerializerMethodField()
+
+    def get_category_name(self, obj):
+        return obj.category.name
     class Meta:
         model = MusicalInstrument
-        fields = ['id', 'name', 'description', 'price','slug', 'image','category','stock']
+        fields = ['id', 'name', 'description', 'price','slug', 'image','category','category_name','stock']
 
 class MusicalInstrumentVariantSerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,3 +124,34 @@ class MusicalInstrumentVariantSerializer(serializers.ModelSerializer):
 class ItemAllCategorySerializer(serializers.Serializer):
     type = serializers.CharField()
     data = serializers.DictField()
+
+
+class VariantSerializer(serializers.Serializer):
+    format = serializers.CharField(required=False)
+    is_free = serializers.BooleanField(default=False)
+    is_downloadable = serializers.BooleanField(default=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+    stock = serializers.IntegerField(default=0)
+    sku = serializers.CharField(required=False)
+    pdf_file = serializers.FileField(required=False, allow_null=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+
+class ProductSerializer(serializers.Serializer):
+    category = serializers.CharField()
+    sub_category = serializers.IntegerField(required=True)
+    name = serializers.CharField()
+    description = serializers.CharField(required=False, allow_blank=True)
+    price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    stock = serializers.IntegerField()
+    slug = serializers.CharField(required=False, allow_blank=True)
+    image = serializers.ImageField(required=False, allow_null=True)
+    # Book specific:
+    author = serializers.CharField(required=False, allow_blank=True)
+    isbn_10 = serializers.CharField(required=False, allow_blank=True)
+    isbn_13 = serializers.CharField(required=False, allow_blank=True)
+    edition = serializers.CharField(required=False, allow_blank=True)
+    publisher = serializers.CharField(required=False, allow_blank=True)
+    publication_date = serializers.DateField(required=False, allow_null=True)
+    rating = serializers.DecimalField(max_digits=2, decimal_places=1, required=False)
+    # Variant nested:
+    variant = VariantSerializer()

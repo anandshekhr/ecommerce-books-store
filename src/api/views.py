@@ -412,3 +412,99 @@ class CategoryWiseProductList(APIView):
 
         return paginator.get_paginated_response(serializer.data)
 
+class ProductVariantCreateView(APIView):
+    """
+    Accepts multipart/form-data with product info and variant info.
+    Creates base product if not exists, then creates variant.
+    """
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,SessionAuthentication)
+
+    category_map = {
+        'Books': Book,
+        'Electronics': Electronic,
+        'Musical Instruments': MusicalInstrument
+    }
+
+    category_variant_map = {
+        'Books': BookVariant,
+        'Electronics': ElectronicsVariant,
+        'Musical Instruments': MusicalInstrumentVariant
+    }
+
+    def post(self, request, *args, **kwargs):
+        serializer = ProductSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        category_name = data['category']
+        sub_category = data['sub_category']
+        ProductModel = self.category_map.get(category_name)
+        VariantModel = self.category_variant_map.get(category_name)
+
+        if not ProductModel or not VariantModel:
+            return Response({"error": "Invalid category"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Try to find existing product by name & category
+        product_qs = ProductModel.objects.filter(name=data['name'], category__name=category_name)
+        if product_qs.exists():
+            product = product_qs.first()
+        else:
+            # Create new product
+            product_fields = {
+                'name': data['name'],
+                'category': product_qs.model.category.field.related_model.objects.get(name=category_name),
+                'sub_category' : product_qs.model.sub_category.field.related_model.objects.get(id=sub_category),
+                'description': data.get('description', ''),
+                'price': data['price'],
+                'stock': data['stock'],
+                'image': data.get('image'),
+            }
+
+            # add book-specific fields
+            if category_name == 'Books':
+                product_fields.update({
+                    'author': data.get('author', ''),
+                    'isbn_10': data.get('isbn_10', ''),
+                    'isbn_13': data.get('isbn_13', ''),
+                    'edition': data.get('edition', ''),
+                    'publisher': data.get('publisher', ''),
+                    'publication_date': data.get('publication_date'),
+                    'rating': data.get('rating', 5.0),
+                })
+
+            product = ProductModel.objects.create(**product_fields)
+
+        # Create Variant
+        variant_data = data['variant']
+        if category_name == 'Books':
+                variant = VariantModel.objects.create(
+            product=product,
+            stock=variant_data.get('stock', 0),
+            price=variant_data.get('price'),
+            color=variant_data.get('color'),
+            image=variant_data.get('image'),
+            
+        
+                format=variant_data.get('format', ''),
+                is_free=variant_data.get('is_free', False),
+                is_downloadable=variant_data.get('is_downloadable', True),
+                sku=variant_data.get('sku'),
+                pdf_file=variant_data.get('pdf_file')
+            )
+        else:
+            variant = VariantModel.objects.create(
+                product=product,
+                stock=variant_data.get('stock', 0),
+                price=variant_data.get('price'),
+                color=variant_data.get('color'),
+                image=variant_data.get('image')
+
+                
+            )
+
+        return Response({
+            "product_id": product.id,
+            "variant_id": variant.id,
+            "message": "Product & Variant saved successfully"
+        }, status=status.HTTP_201_CREATED)

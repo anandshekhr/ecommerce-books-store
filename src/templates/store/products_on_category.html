@@ -118,7 +118,7 @@
                         <h4><a href="/product/{{category.slug}}/${item.slug}/">${item.name}</a></h4>
                         <p>${item.description?.slice(0, 60) || ''}</p>
                         <div class="product-bottom-details">
-                            <div class="product-price"><small>₹${item.price}</small>₹${item.price}</div>
+                            <div class="product-price">₹${item.price}</div>
                             <div class="product-links">
                                 <a href="#" onclick="addToCart(${item.category}, ${item.id})"><i class="fa fa-heart"></i></a>
                                 <a href="/cart/add/${item.category}/?variant=${item.id}"><i class="fa fa-shopping-cart"></i></a>

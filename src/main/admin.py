@@ -49,7 +49,7 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(SubCategory)
 class SubCategoryAdmin(admin.ModelAdmin):
     list_display = ('id','name','parent_category')
-    search_fields = ('id','name','parent_category')
+    search_fields = ('id','name')
     sortable_by = ('id','name','parent_category')
 
 @admin.register(Banner)
