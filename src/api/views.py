@@ -160,7 +160,7 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
     queryset = SubCategory.objects.all()
     serializer_class = SubCategorySerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['name'] 
+    filterset_fields = ['name','parent_category'] 
 
 from main.services.cart_service import CartService
 
