@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bulk Upload Books</title>
+  <link rel="stylesheet" href="{% static 'assets/css/book_form.css' %}">
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar">
+      <h2>Book Management</h2>
+      <ul>
+        <li><a href="{% url 'add-book' %}">➕ Add New Book</a></li>
+        <li><a href="{% url 'bulk-upload' %}" class="active">📦 Bulk Upload</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <h1>Bulk Upload Books</h1>
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="alert {{ msg.tags }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Upload CSV/Excel File:</label>
+        <input type="file" name="file" accept=".csv,.xlsx" required>
+        <button type="submit" class="btn">Upload</button>
+      </form>
+      <p><b>Expected columns:</b> name, category_id, sub_category_id, author, price, stock, publication_date, etc.</p>
+    </main>
+  </div>
+</body>
+</html>

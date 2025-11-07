@@ -54,6 +54,8 @@ urlpatterns = [
     path('educator/admin/category',views.adminCategoryList,name="educator-admin-category"),
     path('educator/admin/add-product/', views.add_product, name='educator-admin-add-product'),
     path('educator/admin/earnings/', views.adminEarnings, name='educator-admin-earnings'),
+    path('books/add/', views.BookCreateView.as_view(), name='add-book'),
+    path('books/bulk-upload/', views.BookBulkUploadView.as_view(), name='bulk-upload'),
 
     # api common
 
