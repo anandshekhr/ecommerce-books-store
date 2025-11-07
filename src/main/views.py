@@ -701,3 +701,67 @@ def select_billing_address(request, address_id):
 
 
 # class 
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+from django.views import View
+from .forms import BookForm, BookVariantForm
+from .models import Book
+import pandas as pd
+
+class BookCreateView(View):
+    def get(self, request):
+        form = BookForm()
+        variant_form = BookVariantForm()
+        return render(request, 'books/add_book.html', {
+            'form': form,
+            'variant_form': variant_form
+        })
+
+    def post(self, request):
+        form = BookForm(request.POST, request.FILES)
+        variant_form = BookVariantForm(request.POST, request.FILES)
+
+        if form.is_valid() and variant_form.is_valid():
+            book = form.save()
+            variant = variant_form.save(commit=False)
+            variant.product = book
+            variant.save()
+            messages.success(request, "Book and Variant added successfully!")
+            return redirect('add-book')
+        else:
+            messages.error(request, "Please correct the errors below.")
+        return render(request, 'books/add_book.html', {'form': form, 'variant_form': variant_form})
+
+
+class BookBulkUploadView(View):
+    def get(self, request):
+        return render(request, 'books/bulk_upload.html')
+
+    def post(self, request):
+        file = request.FILES.get('file')
+        if not file:
+            messages.error(request, "Please upload a file.")
+            return redirect('bulk-upload')
+
+        try:
+            df = pd.read_excel(file) if file.name.endswith('.xlsx') else pd.read_csv(file)
+            for _, row in df.iterrows():
+                Book.objects.create(
+                    name=row.get('name'),
+                    category_id=row.get('category_id'),
+                    sub_category_id=row.get('sub_category_id'),
+                    author=row.get('author'),
+                    isbn_10=row.get('isbn_10', ''),
+                    isbn_13=row.get('isbn_13', ''),
+                    edition=row.get('edition', ''),
+                    publisher=row.get('publisher', ''),
+                    publication_date=row.get('publication_date'),
+                    description=row.get('description', ''),
+                    price=row.get('price', 0),
+                    stock=row.get('stock', 0)
+                )
+            messages.success(request, "Bulk upload completed successfully!")
+        except Exception as e:
+            messages.error(request, f"Error: {str(e)}")
+
+        return redirect('bulk-upload')

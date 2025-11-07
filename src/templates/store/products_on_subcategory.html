@@ -149,6 +149,26 @@
 
             data.results.forEach(item => {
                 const card = `<div class="product-card">
+                <a href="/product/{{category.slug}}/${item.slug}/">
+                    <div class="badge">New</div>
+                    <div class="product-tumb">
+                        <img src="${item.image}" alt="${item.name}">
+                    </div>
+                    <div class="product-details">
+                        <span class="product-catagory">${item.category_name}</span>
+                        <h4><a href="/product/{{category.slug}}/${item.slug}/">${item.name}</a></h4>
+                        <p>${item.description?.slice(0, 60) || ''}</p>
+                        <div class="product-bottom-details">
+                            <div class="product-price">₹${item.price}</div>
+                            <div class="product-links">
+                                <a href="#" onclick="addToCart(${item.category}, ${item.id})"><i class="fa fa-heart"></i></a>
+                                <a href="/cart/add/${item.category}/?variant=${item.id}"><i class="fa fa-shopping-cart"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    </a>
+                </div>`;
+                /*const card = `<div class="product-card">
                     <a href="/product/{{category.slug}}/${item.slug}/">
                         <img src="${item.image}" alt="${item.name}">
                         <div class="product-name">${item.name}</div>
@@ -159,7 +179,7 @@
                             <a href="/cart/add/${item.category}/${item.id}/" class="btn btn-sm btn-outline-primary">Buy Now</a>
                         </div>
                     </a>
-                </div>`;
+                </div>`;*/
                 document.getElementById('productContainer').insertAdjacentHTML('beforeend', card);
             });
         })
@@ -211,12 +231,22 @@
                 quantity: quantity
             }),
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                // Handle 401 or any other error status
+                if (response.status === 401) {
+                    toastr.error("You must be logged in to add items to the cart.");
+                } else {
+                    toastr.error(`Error ${response.status}: Failed to add item to cart.`);
+                }
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             toastr.success(data.message || "Item added to cart!");
         })
         .catch(error => {
-            toastr.error("Failed to add item to cart.");
             console.error("Error:", error);
         });
     }
