@@ -185,6 +185,24 @@ class AddToCartView(APIView):
 
         return Response({'message': message, 'total_price': order.total_price}, status=status.HTTP_200_OK)
 
+class UpdateToCartView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = (TokenAuthentication, BasicAuthentication, SessionAuthentication)
+
+    def post(self, request):
+        variant_id = request.data.get('item_id')
+        quantity = request.data.get('quantity',1)
+
+        if not variant_id:
+            return Response({'message': 'item_id are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            order, message = CartService.update_item(request.user, item_id=variant_id, quantity=int(quantity))
+        except ValueError as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'message': message, 'total_price': order.total_price}, status=status.HTTP_200_OK)
+
 from main.services.cart_service import CartService
 
 class RemoveFromCartView(APIView):

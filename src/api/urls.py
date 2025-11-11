@@ -20,10 +20,10 @@ urlpatterns = [
     path( 'list-items', views.FilterItemsView.as_view()),
     path( 'checkout', views.CheckoutView.as_view()),
     path( 'cart/add', views.AddToCartView.as_view(),name="add-to-cart-api"),
+    path( 'cart/update', views.UpdateToCartView.as_view()),
     path( 'cart/delete/<int:category_id>/<int:item_id>', views.RemoveFromCartView.as_view()),
     path( 'razorpay/confirm-payment', views.PaymentSuccessRazorpay.as_view()),
     path( 'unsubscribe/', views.UnsubscribeView.as_view(), name='unsubscribe'),
     path( 'category/<int:categoryId>/items/', views.CategoryWiseProductList.as_view(), name='category-products-api'),
     path( 'products/add/', views.ProductVariantCreateView.as_view(), name='add-product-variant'),
-
 ]

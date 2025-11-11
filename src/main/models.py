@@ -350,6 +350,23 @@ class OrderItem(models.Model):
 
     def get_total_price(self):
         return self.price_at_order_time * self.quantity
+    
+    def get_product_name(self):
+        """
+        Returns a human-readable name of the related product.
+        Works safely across different product variant models.
+        """
+        try:
+            # Some variant models have a related 'product' with a 'name'
+            if hasattr(self.product, 'product') and hasattr(self.product.product, 'name'):
+                return self.product.product.name
+            # Some models may have 'name' directly
+            elif hasattr(self.product, 'name'):
+                return self.product.name
+            else:
+                return str(self.product)
+        except Exception:
+            return "Unknown Product"
 
     def __str__(self):
         return f"{self.product} x {self.quantity}"
