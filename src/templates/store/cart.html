@@ -94,10 +94,10 @@ $('.update-quantity').on('change', function() {
     const itemId = $(this).data('item-id');
     const quantity = $(this).val();
     $.ajax({
-        url: `/api/v1/cart/update/${itemId}/`,
+        url: `/api/v1/cart/update`,
         method: 'POST',
         headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-        data: { quantity },
+        data: { item_id: itemId, quantity: quantity },
         success: function(response) {
             location.reload();
         },

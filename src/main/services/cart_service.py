@@ -56,3 +56,27 @@ class CartService:
         order_item.delete()
         order.update_total_price()
         return order
+
+    @classmethod
+    def update_item(cls, user, item_id, quantity):
+        """
+        Update the quantity of an item in the user's active cart.
+        - If quantity <= 0, the item will be removed.
+        - Otherwise, the item's quantity will be updated and total price recalculated.
+        """
+        order = Order.objects.filter(user=user, payment_status=False).first()
+        if not order:
+            raise ValueError("No active cart")
+
+        order_item = get_object_or_404(order.items, id=item_id)
+
+        if quantity <= 0:
+            order_item.delete()
+            message = f"{order_item.get_product_name()} removed from cart."
+        else:
+            order_item.quantity = quantity
+            order_item.save()
+            message = f"{order_item.get_product_name()} quantity updated to {quantity}."
+
+        order.update_total_price()
+        return order, message
