@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Uploader - VAMS Bookstore</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f7f7;
+    padding: 30px;
+  }
+  .container {
+    background: white;
+    max-width: 550px;
+    margin: auto;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input[type="text"],
+  input[type="number"],
+  input[type="file"],
+  input[type="date"],
+  textarea {
+    width: 97%;
+    padding: 8px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  select {
+     width: 100%;
+    padding: 8px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+  button {
+    background: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 20px;
+    width: 100%;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+  .message {
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📚 Upload New Book</h2>
+  <form id="bookForm">
+    <label>Book Title</label>
+    <input type="text" id="title" required>
+
+    <label>Description</label>
+    <textarea id="description" placeholder="Enter short book description..."></textarea>
+
+    <label>Price (₹)</label>
+    <input type="number" id="price" required>
+
+    <label>Category</label>
+    <select id="category" required>
+      <option value="">-- Select Category --</option>
+    </select>
+
+    <label>Sub Category</label>
+    <select id="subcategory" required>
+      <option value="">-- Select Sub Category --</option>
+    </select>
+
+    <label>Book Type</label>
+    <select id="bookType" required>
+      <option value="paperback">Paperback</option>
+      <option value="hardcover">Hardcover</option>
+      <option value="ebook">eBook</option>
+    </select>
+
+    <label>Book Image</label>
+    <input type="file" id="image" accept="image/*" required>
+
+    <label for="pubDate">Publication Date</label>
+    <input type="date" id="pubDate">
+
+    <label for="pdfUpload">Upload PDF</label>
+    <input type="file" id="pdfUpload" accept=".pdf">
+
+
+    <button type="submit">Upload Book</button>
+  </form>
+
+  <div class="message" id="msg"></div>
+</div>
+
+<script>
+const BASE_URL = "https://www.vamsbookstore.in/api/v1";
+const itemUrl = `${BASE_URL}/items/book/add`;
+const itemVariantUrl = `${BASE_URL}/items/book/variant`;
+const TOKEN = "3a930c1de33da1c980d9a94f5d6d2bf86f821ad5";
+
+const categorySelect = document.getElementById("category");
+const subCategorySelect = document.getElementById("subcategory");
+const msg = document.getElementById("msg");
+
+// ✅ Load Categories
+async function loadCategories() {
+  try {
+    const res = await fetch(`${BASE_URL}/categories/`);
+    const data = await res.json();
+    categorySelect.innerHTML = '<option value="">-- Select Category --</option>';
+    data.results.forEach(cat => {
+      const opt = document.createElement("option");
+      opt.value = cat.id;
+      opt.textContent = cat.name;
+      categorySelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load categories", err);
+  }
+}
+
+// ✅ Load Subcategories when Category selected
+async function loadSubCategories(categoryId) {
+  subCategorySelect.innerHTML = '<option value="">-- Select Sub Category --</option>';
+  if (!categoryId) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/sub-categories/?parent_category=${categoryId}`);
+    const data = await res.json();
+    data.results.forEach(sub => {
+      const opt = document.createElement("option");
+      opt.value = sub.id;
+      opt.textContent = sub.name;
+      subCategorySelect.appendChild(opt);
+    });
+  } catch (err) {
+    console.error("Failed to load subcategories", err);
+  }
+}
+
+// 🔁 On Category Change → Load Subcategories
+categorySelect.addEventListener("change", (e) => {
+  loadSubCategories(e.target.value);
+});
+
+// 📤 Submit Form
+document.getElementById("bookForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  msg.textContent = "📦 Uploading book... please wait.";
+
+  const title = document.getElementById("title").value;
+  const desc = document.getElementById("description").value;
+  const price = parseFloat(document.getElementById("price").value);
+  const category = parseInt(document.getElementById("category").value);
+  const subCategory = parseInt(document.getElementById("subcategory").value);
+  const image = document.getElementById("image").files[0];
+  const bookType = document.getElementById("bookType").value;
+  const pubDate = document.getElementById('pubDate').value;
+  const pdf = document.getElementById('pdfUpload').files[0]?.name || 'No file uploaded';
+
+
+  // Step 1️⃣: Add Book
+  const formData = new FormData();
+  formData.append("name", title);
+  formData.append("description", desc);
+  formData.append("category", category);
+  formData.append("sub_category", subCategory);
+  formData.append("price", price);
+  formData.append("stock", 10);
+  formData.append("image", image);
+  
+
+  try {
+    const res = await fetch(itemUrl, {
+      method: "POST",
+      headers: { Authorization: "Token " + TOKEN },
+      body: formData
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      msg.textContent = "❌ Book Add Failed: " + JSON.stringify(data);
+      return;
+    }
+
+    const productId = data.id;
+    console.log("✅ Book Added:", data);
+
+    // Step 2️⃣: Add Variant
+    const variantForm = new FormData();
+    variantForm.append("product", productId);
+    variantForm.append("price", price);
+    variantForm.append("stock", 10);
+    variantForm.append("format", bookType);
+    variantForm.append("image", image);
+    variantForm.append("publication_date", pubDate);
+    variantForm.append("pdf_file", image);
+
+    const res2 = await fetch(itemVariantUrl, {
+      method: "POST",
+      headers: { Authorization: "Token " + TOKEN },
+      body: variantForm
+    });
+
+    const data2 = await res2.json();
+    if (!res2.ok) {
+      msg.textContent = "❌ Variant Add Failed: " + JSON.stringify(data2);
+      return;
+    }
+
+    msg.textContent = "✅ Book and Variant Added Successfully!";
+    document.getElementById("bookForm").reset();
+  } catch (error) {
+    msg.textContent = "❌ Error: " + error.message;
+  }
+});
+
+// Initialize on load
+loadCategories();
+</script>
+</body>
+</html>
