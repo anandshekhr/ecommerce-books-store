@@ -84,7 +84,7 @@ class Command(BaseCommand):
         except EmailSendRequestLog.DoesNotExist:
             start = 0
 
-        end = start + limit
+        end = start + int(limit)
 
         EmailSendRequestLog.objects.create(
             name=log_name,
