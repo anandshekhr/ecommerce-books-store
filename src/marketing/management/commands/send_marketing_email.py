@@ -131,7 +131,7 @@ class Command(BaseCommand):
             msg['Date'] = timezone.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
             msg['Subject'] = Header(subject, 'utf-8')
 
-            msg.attach(MIMEText(body, 'plain'))
+            msg.attach(MIMEText(body, 'html', 'utf-8'))
 
             try:
                 server.sendmail(
