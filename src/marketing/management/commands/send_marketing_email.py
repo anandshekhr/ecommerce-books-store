@@ -118,7 +118,7 @@ class Command(BaseCommand):
         return server
 
     def _send_emails(self, server, content, recipients):
-        subject = content.subject
+        subject = str(content.subject)
         body = content.content.read().decode('utf-8')
 
         for row in recipients:
