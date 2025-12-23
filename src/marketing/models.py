@@ -28,10 +28,12 @@ class EmailWhatsappTable(models.Model):
 
 # Create your models here.
 class EmailContent(models.Model):
-    subject = models.CharField(_("Subject"), max_length=50)
+    subject = models.CharField(_("Subject"), max_length=100)
     text = models.CharField(_("Text body"), max_length=50,null=True,blank=True)
     header = models.CharField(_("Header"), max_length=50,null=True, blank=True)
-    content = models.TextField(_("Body Content"))
+    # content = models.TextField(_("Body Content"))
+    content = models.FileField(_("Content"), upload_to='email-content/', max_length=100)
+    sender_name = models.CharField(_("sender_name"), max_length=50,null=True, blank=True)
     sender_email = models.CharField(_("sender_email"), max_length=50,null=True, blank=True)
     sender_password = models.CharField(_("sender_password"), max_length=50,null=True, blank=True)
     smtp_server = models.CharField(_("smtp_server"), max_length=50,null=True, blank=True)

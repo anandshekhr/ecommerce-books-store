@@ -7,70 +7,140 @@ from datetime import datetime
 from email.utils import formataddr
 from email.header import Header
 import smtplib
+from django.utils import timezone
+
+
+DEFAULT_BATCH_SIZE = 100
+
 
 class Command(BaseCommand):
-    help = 'Send Marketing Emails to 100 emails every day'
+    help = "Send marketing emails in daily batches"
 
-    def handle(self, *args, **kwargs):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--limit',
+            type=int,
+            default=DEFAULT_BATCH_SIZE,
+            help='Number of emails to send per run'
+        )
+        parser.add_argument(
+            '--log-name',
+            type=str,
+            required=True,
+            help='Name for EmailSendRequestLog entry'
+        )
+
+    def handle(self, *args, **options):
+        limit = options['limit']
+        log_name = options['log_name']
+        server = None
+
+        self.stdout.write(self.style.SUCCESS(
+            f"Email job started at {timezone.now()}"
+        ))
+
         try:
-            self.stdout.write(self.style.SUCCESS(f'Emails sending job starts at {datetime.now()}'))
-            try:
-                email_log_previous = EmailSendRequestLog.objects.latest()
-                if email_log_previous:
-                    start = int(email_log_previous.end_index) + 1
-                    end = start + 5
-            except EmailSendRequestLog.DoesNotExist:
-                start = 0
-                end = 5
+            start, end = self._get_batch_range(limit, log_name)
+            recipients = self._get_recipients(start, end)
 
-            EmailSendRequestLog.objects.create(name='scheduled-email-teachers',start_index=start,end_index=end)
-            # email_list= GoogleSearchResult.objects.raw(f'Select id, email, phone from tb_google_search_results where email is not null LIMIT {limit} OFFSET {offset}')
-            sql = 'SELECT id, email, mobile FROM marketing_emailwhatsapptable WHERE email IS NOT NULL LIMIT %s'
-            email_list = EmailWhatsappTable.objects.raw(sql, [int(end)])
-            email_list = email_list[int(start):]
-            
-            # get template
-            try:
-                e_content = EmailContent.objects.latest()
-            except EmailContent.DoesNotExist:
-                self.stdout.write(self.style.ERROR('Email Content Does Not Exists.'))
+            if not recipients:
+                self.stdout.write(self.style.WARNING("No recipients found."))
                 return
-            
-            if e_content:
-                subject = e_content.subject
 
+            email_content = self._get_email_content()
+            server = self._get_smtp_server(email_content)
 
-            # Set up the SMTP server
-            server = smtplib.SMTP(e_content.smtp_server, e_content.smtp_port)
-            server.starttls()
-            server.login(e_content.sender_email, e_content.sender_password)
+            self._send_emails(server, email_content, recipients)
 
-            # Send emails
-            for index, row in enumerate(email_list):
-                a = row.email.split('@')
-                b = a[1].split('.') if len(a) > 1 else a[0]
-                if not b[0].startswith('yahoo'):
-                    
-                    # Create a new message object for each email
-                    msg = MIMEMultipart()
-                    msg['From'] = "Books Store <"+e_content.sender_email+">"
-                    msg['To'] = row.email
-                    msg['Date'] = datetime.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
-                    msg['Subject'] = Header(subject, 'utf-8')
-
-                    # Attach the plain text and HTML parts
-                    part1 = MIMEText(e_content.content, 'plain')
-                    msg.attach(part1)
-
-                    try:
-                        server.sendmail(e_content.sender_email, row.email, msg.as_string())
-                        TbEmailSentLog.objects.create(email=row.email)
-                    except Exception as e:
-                        self.stdout.write(self.style.ERROR(f"Failed: {row.email}: {e}"))
-
-            
         except Exception as e:
-            self.stdout.write(self.style.ERROR(f'Some Errors Occurred: {str(e)}'))
+            self.stdout.write(self.style.ERROR(f"Job failed: {e}"))
+
         finally:
-            self.stdout.write(self.style.SUCCESS(f"Emails Sending job completed at: {datetime.now()}"))
-            server.quit()
+            if server:
+                server.quit()
+
+            self.stdout.write(self.style.SUCCESS(
+                f"Email job finished at {timezone.now()}"
+            ))
+
+    # -------------------------
+    # Helper Methods
+    # -------------------------
+
+    def _get_batch_range(self, limit, log_name):
+        try:
+            last_log = EmailSendRequestLog.objects.filter(
+                name=log_name
+            ).latest()
+            start = last_log.end_index + 1
+        except EmailSendRequestLog.DoesNotExist:
+            start = 0
+
+        end = start + limit
+
+        EmailSendRequestLog.objects.create(
+            name=log_name,
+            start_index=start,
+            end_index=end
+        )
+
+        return start, end
+
+
+    def _get_recipients(self, start, end):
+        sql = """
+            SELECT id, email, mobile
+            FROM marketing_emailwhatsapptable
+            WHERE email IS NOT NULL
+            LIMIT %s
+        """
+        queryset = EmailWhatsappTable.objects.raw(sql, [end])
+        return queryset[start:end]
+
+    def _get_email_content(self):
+        try:
+            return EmailContent.objects.latest()
+        except EmailContent.DoesNotExist:
+            raise Exception("EmailContent does not exist.")
+
+    def _get_smtp_server(self, content):
+        server = smtplib.SMTP(content.smtp_server, int(content.smtp_port))
+        server.starttls()
+        server.login(content.sender_email, content.sender_password)
+        return server
+
+    def _send_emails(self, server, content, recipients):
+        subject = content.subject
+        body = content.content.read().decode('utf-8')
+
+        for row in recipients:
+            if not self._is_allowed_domain(row.email):
+                continue
+
+            msg = MIMEMultipart()
+            msg['From'] = f"{content.sender_name} <{content.sender_email}>"
+            msg['To'] = row.email
+            msg['Date'] = timezone.now().strftime('%a, %d %b %Y %H:%M:%S +0000')
+            msg['Subject'] = Header(subject, 'utf-8')
+
+            msg.attach(MIMEText(body, 'plain'))
+
+            try:
+                server.sendmail(
+                    content.sender_email,
+                    row.email,
+                    msg.as_string()
+                )
+                TbEmailSentLog.objects.create(email=row.email)
+
+            except Exception as e:
+                self.stdout.write(
+                    self.style.ERROR(f"Failed {row.email}: {e}")
+                )
+
+    def _is_allowed_domain(self, email):
+        try:
+            domain = email.split('@')[1].lower()
+            return not domain.startswith('yahoo')
+        except IndexError:
+            return False
