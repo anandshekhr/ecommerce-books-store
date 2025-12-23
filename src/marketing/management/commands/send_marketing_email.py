@@ -81,7 +81,7 @@ class Command(BaseCommand):
             last_log = EmailSendRequestLog.objects.filter(
                 name=log_name
             ).latest()
-            start = int(last_log.end_index) + 1
+            start = int(last_log.end_index)
         except EmailSendRequestLog.DoesNotExist:
             start = 0
 
