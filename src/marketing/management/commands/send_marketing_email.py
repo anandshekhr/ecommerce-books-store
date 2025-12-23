@@ -61,7 +61,7 @@ class Command(BaseCommand):
             self._send_emails(server, email_content, recipients)
 
         except Exception as e:
-            raise
+            # raise
             self.stdout.write(self.style.ERROR(f"Job failed: {e}"))
 
         finally:
@@ -81,7 +81,7 @@ class Command(BaseCommand):
             last_log = EmailSendRequestLog.objects.filter(
                 name=log_name
             ).latest()
-            start = last_log.end_index + 1
+            start = int(last_log.end_index) + 1
         except EmailSendRequestLog.DoesNotExist:
             start = 0
 
