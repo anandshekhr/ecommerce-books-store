@@ -61,7 +61,7 @@ class Command(BaseCommand):
             self._send_emails(server, email_content, recipients)
 
         except Exception as e:
-            print(e)
+            raise
             self.stdout.write(self.style.ERROR(f"Job failed: {e}"))
 
         finally:
