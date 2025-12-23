@@ -30,9 +30,17 @@ class Command(BaseCommand):
             help='Name for EmailSendRequestLog entry'
         )
 
+        parser.add_argument(
+            '--template-id',
+            type=str,
+            required=True,
+            help='Id for EmailContent entry'
+        )
+
     def handle(self, *args, **options):
         limit = options['limit']
         log_name = options['log_name']
+        template_id = options['template_id']
         server = None
 
         self.stdout.write(self.style.SUCCESS(
@@ -47,7 +55,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING("No recipients found."))
                 return
 
-            email_content = self._get_email_content()
+            email_content = self._get_email_content(template_id=template_id)
             server = self._get_smtp_server(email_content)
 
             self._send_emails(server, email_content, recipients)
@@ -97,9 +105,9 @@ class Command(BaseCommand):
         queryset = EmailWhatsappTable.objects.raw(sql, [end])
         return queryset[start:end]
 
-    def _get_email_content(self):
+    def _get_email_content(self, template_id):
         try:
-            return EmailContent.objects.latest()
+            return EmailContent.objects.get(id=template_id)
         except EmailContent.DoesNotExist:
             raise Exception("EmailContent does not exist.")
 
