@@ -53,6 +53,7 @@ class Command(BaseCommand):
 
             if not recipients:
                 self.stdout.write(self.style.WARNING("No recipients found."))
+                self._update_last_index(log_name=log_name, start=start)
                 return
 
             email_content = self._get_email_content(template_id=template_id)
@@ -94,6 +95,17 @@ class Command(BaseCommand):
         )
 
         return start, end
+    
+    def _update_last_index(self,  log_name,start=0):
+        try:
+            last_log = EmailSendRequestLog.objects.filter(
+                name=log_name
+            ).latest()
+            last_log.end_index = start
+        except EmailSendRequestLog.DoesNotExist:
+            pass
+        
+        return 
 
 
     def _get_recipients(self, start, end):
