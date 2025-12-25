@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
             if not recipients:
                 self.stdout.write(self.style.WARNING("No recipients found."))
-                self._update_last_index(log_name=log_name, start=start)
+                self._update_last_index(log_name=log_name, start=len(recipients))
                 return
 
             email_content = self._get_email_content(template_id=template_id)
