@@ -194,3 +194,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
         instance.update_total_price()
         return instance
+
+class UnapplyCouponSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [] 

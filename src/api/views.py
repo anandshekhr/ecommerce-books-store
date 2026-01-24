@@ -594,3 +594,40 @@ class ApplyCouponAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+class UnapplyCouponAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,SessionAuthentication)
+    def post(self, request, order_id):
+        order = get_object_or_404(
+            Order,
+            id=order_id,
+            user=request.user
+        )
+
+        if order.payment_status:
+            return Response(
+                {"message": "Cannot remove coupon after payment"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not order.coupon:
+            return Response(
+                {"message": "No coupon applied to this order"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Remove coupon
+        order.coupon = None
+        order.discount_amount = 0
+        order.update_total_price()
+
+        return Response(
+            {
+                "message": "Coupon removed successfully",
+                "subtotal": order.subtotal,
+                "discount": 0,
+                "total": order.total_price
+            },
+            status=status.HTTP_200_OK
+        )

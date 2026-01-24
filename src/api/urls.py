@@ -31,5 +31,11 @@ urlpatterns = [
     views.ApplyCouponAPIView.as_view(),
     name="apply-coupon"
 ),
+path(
+        "orders/<int:order_id>/unapply-coupon/",
+        views.UnapplyCouponAPIView.as_view(),
+        name="unapply-coupon"
+    ),
+
 
 ]
