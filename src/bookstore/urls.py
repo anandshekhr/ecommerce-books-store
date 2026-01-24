@@ -78,7 +78,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('robots.txt', v.robots_txt),
     path('sitemap.xml', cache_page(0)(sitemap), {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
-    path('ebook/admin/', admin.site.urls),
+    # path('ebook/admin/', admin.site.urls),
     path('volt/', include('admin_volt.urls')),
     path('educator/accounts/', include('accounts.urls')),
     path( API_URL, include('api.urls')),

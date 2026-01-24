@@ -4,59 +4,85 @@
 
 {% block content %}
 <div class="container mt-4">
+
     {% if order %}
+    <!-- ================= BILLING ADDRESS ================= -->
     <div class="billing-address-section mt-4">
-        <h5>Billing Address 
-            <a><i class="fa-solid fa-pen" id="editBillingAddressButton" title="Edit/Add Address"  data-bs-toggle="modal" data-bs-target="#billingAddressModal"></i></a></h5> 
-            {% if billing_address %}
-            <p>{{ billing_address.full_name }}<br>
-                {{ billing_address.street_address }}, {{ billing_address.city }}, {{ billing_address.state }}, {{ billing_address.postal_code }}<br>
-                {{ billing_address.country }}<br>
-                Phone: {{ billing_address.phone_number }}
-            </p>
-            {% else %}
-            <p>No billing address selected.</p>
-            {% endif %}
+        <h5>
+            Billing Address
+            <a>
+                <i class="fa-solid fa-pen"
+                   id="editBillingAddressButton"
+                   title="Edit/Add Address"
+                   data-bs-toggle="modal"
+                   data-bs-target="#billingAddressModal"></i>
+            </a>
+        </h5>
+
+        {% if billing_address %}
+        <p>
+            {{ billing_address.full_name }}<br>
+            {{ billing_address.street_address }},
+            {{ billing_address.city }},
+            {{ billing_address.state }},
+            {{ billing_address.postal_code }}<br>
+            {{ billing_address.country }}<br>
+            Phone: {{ billing_address.phone_number }}
+        </p>
+        {% else %}
+        <p>No billing address selected.</p>
+        {% endif %}
     </div>
     {% endif %}
 
+    <!-- ================= HEADER ================= -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3 class="fw-normal mb-0">Shopping Cart</h3>
-        <!-- Left column: Cart items -->
-        <p class="mb-0 d-flex" style="float:right;">
-        <span class="text-muted">Sort by:</span> 
-        <a href="#" class="text-body">price <i class="fas fa-angle-down mt-1"></i>
-        </a>
-        </p>
-        
     </div>
 
     <div class="row">
-        
-         
+
+        <!-- ================= LEFT: CART ITEMS ================= -->
         <div class="col-lg-9" style="max-height: 70vh; overflow-y: auto;">
-            
             {% if order %}
             {% for item in order.items.all %}
             <div class="card rounded-3 mb-4" data-id="{{ item.id }}">
                 <div class="card-body p-4">
                     <div class="row d-flex justify-content-between align-items-center">
-                        <div class="col-md-2 col-lg-2 col-xl-2">
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.product.name }}" class="img-fluid rounded-3">
+
+                        <div class="col-md-2">
+                            <img src="{{ item.product.image.url }}"
+                                 alt="{{ item.get_product_name }}"
+                                 class="img-fluid rounded-3">
                         </div>
-                        <div class="col-md-3 col-lg-3 col-xl-3">
-                            <p class="lead fw-normal mb-2">{{ item.product.product.name }}</p>
-                            <p><span class="text-muted">{{ item.product.product.description|slice:":100" }}{% if item.product.description|length > 100 %}...{% endif %}</span></p>
+
+                        <div class="col-md-3">
+                            <p class="lead fw-normal mb-2">
+                                {{ item.get_product_name }}
+                            </p>
+                            <p class="text-muted">
+                                {{ item.product.product.description|slice:":100" }}
+                            </p>
                         </div>
-                        <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                            <input min="1" name="quantity" value="{{ item.quantity }}" type="number" class="form-control form-control-sm update-quantity" data-item-id="{{ item.id }}" />
+
+                        <div class="col-md-3">
+                            <input min="1"
+                                   type="number"
+                                   value="{{ item.quantity }}"
+                                   class="form-control form-control-sm update-quantity"
+                                   data-item-id="{{ item.id }}">
                         </div>
-                        <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                            <h5 class="mb-0">₹{{ item.price_at_order_time|floatformat:0 }}</h5>
+
+                        <div class="col-md-2">
+                            <h5>₹{{ item.price_at_order_time|floatformat:0 }}</h5>
                         </div>
-                        <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                            <a href="{% url "delete_from_cart" item.id %}"class="text-danger remove-item"><i class="fas fa-trash fa-lg"></i></a>
+
+                        <div class="col-md-1 text-end">
+                            <a href="{% url 'delete_from_cart' item.id %}" class="text-danger">
+                                <i class="fas fa-trash fa-lg"></i>
+                            </a>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -64,170 +90,159 @@
             {% endif %}
         </div>
 
-        <!-- Right column: Summary -->
+        <!-- ================= RIGHT: SUMMARY ================= -->
         <div class="col-lg-3">
             {% if order %}
             <div class="cart-summary card p-4">
-                <div class="discount-wrapper mb-3 d-flex flex-column">
-                    <input type="text" class="form-control mb-2" id="discount-form" placeholder="Discount coupon"/>
-                    <button type="button" class="btn btn-success w-100">Apply</button>
-                </div>
+
+                <!-- Coupon -->
+                <div class="discount-wrapper mb-3">
+    <div class="row g-2">
+        <div class="col-12">
+            <input type="text"
+                   class="form-control"
+                   id="couponCode"
+                   placeholder="Discount coupon">
+        </div>
+
+        <div class="col-12">
+            <button class="btn btn-success w-100"
+                    id="applyCouponBtn">
+                Apply Coupon
+            </button>
+        </div>
+
+        <div class="col-12">
+            <small id="couponError"
+                   class="text-danger d-none"></small>
+        </div>
+    </div>
+</div>
+
+
                 <h5>Summary</h5>
-                <p id="subTotal">Subtotal: ₹{{ order.total_price|floatformat:0 }}</p>
-                <a type="button" href="#" class="btn btn-primary w-100" id="rzp-button1">Proceed to Checkout</a>
+                <p id="subtotalText">
+                    Subtotal: ₹{{ order.subtotal|floatformat:0 }}
+                </p>
+
+                <p id="discountText"
+                   class="{% if not order.discount_amount %}d-none{% endif %}">
+                    Discount: -₹{{ order.discount_amount|floatformat:0 }}
+                </p>
+
+                <hr>
+
+                <h6 id="totalText">
+                    Total: ₹{{ order.total_price|floatformat:0 }}
+                </h6>
+
+                <a href="#"
+                   class="btn btn-primary w-100 mt-2"
+                   id="rzp-button1">
+                    Proceed to Checkout
+                </a>
             </div>
             {% else %}
             <p>Your cart is empty.</p>
             {% endif %}
         </div>
+
     </div>
 
     {% include "store/billing_address_modal.html" %}
-
 </div>
 {% endblock content %}
+
 {% block MoreJs %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- ================= UPDATE QUANTITY ================= -->
 <script>
-// Quantity update handler
-$('.update-quantity').on('change', function() {
-    const itemId = $(this).data('item-id');
-    const quantity = $(this).val();
+$('.update-quantity').on('change', function () {
+    $.post(
+        '/api/v1/cart/update',
+        {
+            item_id: $(this).data('item-id'),
+            quantity: $(this).val(),
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
+        function () { location.reload(); }
+    );
+});
+</script>
+
+<!-- ================= APPLY COUPON ================= -->
+<script>
+const orderId = "{{ order.id }}";
+
+$('#applyCouponBtn').on('click', function () {
+    const code = $('#couponCode').val().trim();
+    $('#couponError').addClass('d-none');
+
+    if (!code) {
+        $('#couponError').text('Enter a coupon code').removeClass('d-none');
+        return;
+    }
+
     $.ajax({
-        url: `/api/v1/cart/update`,
+        url: `/api/v1/orders/${orderId}/apply-coupon/`,
         method: 'POST',
         headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-        data: { item_id: itemId, quantity: quantity },
-        success: function(response) {
-            location.reload();
+        data: { coupon_code: code },
+        success: function (res) {
+            $('#subtotalText').text(`Subtotal: ₹${Math.round(res.subtotal)}`);
+            $('#discountText')
+                .text(`Discount: -₹${Math.round(res.discount)}`)
+                .removeClass('d-none');
+            $('#totalText').text(`Total: ₹${Math.round(res.total)}`);
+
+            options.amount = res.total * 100; // Razorpay update
+            createRazorpayInstance(res.total);
         },
-        error: function() {
-            alert('Failed to update quantity');
+        error: function (xhr) {
+            $('#couponError')
+                .text(xhr.responseJSON?.message || 'Invalid coupon')
+                .removeClass('d-none');
         }
     });
 });
 </script>
+
+<!-- ================= RAZORPAY ================= -->
 <script>
-    var domain = window.location.origin;
-    var razorpay_order_id = "{{ razorpay_order_id }}";
-    var order_id = "{{ order_id }}";
-    var options = {
-        "key": "{{razorpay_key_id}}",
-        "amount": {{ total_amount }} * 100,
-            "currency": "INR",
-                "name": "VAMS eBook Store Pvt. Ltd.",
-                    "description": "Payment for Order: {{ order_id }}",
-                        "image": "{% static 'assets/img/logo.png' %}",
-                            "order_id": "{{razorpay_order_id}}",
-                                "theme": {
-        "color": "#012652"
+var options = {
+    key: "{{ razorpay_key_id }}",
+    amount: {{ order.total_price }} * 100,
+    currency: "INR",
+    name: "VAMS eBook Store Pvt. Ltd.",
+    description: "Payment for Order {{ order.id }}",
+    image: "{% static 'assets/img/logo.png' %}",
+    order_id: "{{ razorpay_order_id }}",
+    handler: function (response) {
+        window.location.href =
+            `/payment/success?razorpay_order_id={{ razorpay_order_id }}&razorpay_payment_id=${response.razorpay_payment_id}&order_id={{ order.id }}`;
     },
-    "handler": function (response) {
-        window.location.href = domain + `/payment/success?razorpay_order_id=${razorpay_order_id}&razorpay_payment_id=${response.razorpay_payment_id}&order_id=${order_id}`;
-    }
-     };
-    var rzp1 = new Razorpay(options);
-    rzp1.on('payment.failed', function (response) {
-        window.location.href = domain + `/`;
-    });
-    $('#rzp-button1').on('click', function () {
-        rzp1.open();
-        e.preventDefault();
-    });
+    theme: { color: "#012652" }
+};
 
-    document.getElementById('editBillingAddressButton').addEventListener('click', function() {
-        // Fetch saved addresses from the server
-        fetchSavedAddresses();
-        $('#billingAddressModal').modal('show');
-    });
-    
-    function fetchSavedAddresses() {
-        fetch('/api/v1/billing-addresses/')  // Adjust API endpoint as needed
-            .then(response => response.json())
-            .then(data => {
-                const addressList = document.getElementById('addressList');
-                addressList.innerHTML = ''; // Clear existing items
-    
-                data.forEach(address => {
-                    const listItem = document.createElement('li');
-                    listItem.classList.add('list-group-item', 'd-flex', 'align-items-center', 'justify-content-between');
-    
-                    // Radio button to select address
-                    const radio = document.createElement('input');
-                    radio.type = 'radio';
-                    radio.name = 'selected_address';
-                    radio.value = address.id;
-                    radio.classList.add('mr-2');
-    
-                    // Address details
-                    const addressDetails = document.createElement('span');
-                    addressDetails.innerText = `${address.full_name}, ${address.street_address}, ${address.city}, ${address.state}, ${address.postal_code}, ${address.country}`;
-    
-                    // Select button
-                    const selectButton = document.createElement('button');
-                    selectButton.innerText = 'Select';
-                    selectButton.classList.add('btn', 'btn-primary', 'ml-2');
-                    selectButton.onclick = () => selectAddress(address.id);
-    
-                    // Append radio button, address details, and select button
-                    listItem.appendChild(radio);
-                    listItem.appendChild(addressDetails);
-                    listItem.appendChild(selectButton);
-                    addressList.appendChild(listItem);
-                });
-            })
-            .catch(error => console.error('Error fetching addresses:', error));
-    }
-    
-    
-    document.getElementById('billingAddressForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        const isDefaultCheckbox = document.getElementById('isDefault');
-        formData.set('is_default', isDefaultCheckbox.checked ? 'true' : 'false');
-        fetch('/api/v1/billing-addresses/', {  // Adjust API endpoint as needed
-            method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            $('#billingAddressModal').modal('hide');
-            location.reload();
-        });
-    });
-    
-    function selectAddress(addressId) {
-        fetch(`/api/v1/billing-addresses/${addressId}/select/`, {  // Endpoint to set the address as selected
-            method: 'POST',
-            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-        }).then(() => {
-            $('#billingAddressModal').modal('hide');
-            location.reload();
-        });
-    }
+{% comment %} var rzp1 = new Razorpay(options); {% endcomment %}
+let rzp1 = null;
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const addNewAddressBtn = document.getElementById('addNewAddressBtn');
-        const newAddressForm = document.getElementById('newAddressForm');
-        const cancelNewAddressBtn = document.getElementById('cancelNewAddressBtn');
-        const existingAddresses = document.getElementById('existingAddresses');
-    
-        // Show the New Address form when "Add New Address" is clicked
-        addNewAddressBtn.addEventListener('click', () => {
-            newAddressForm.style.display = 'block';
-            existingAddresses.style.display = 'none';
-        });
-    
-        // Hide the New Address form when "Cancel" is clicked
-        cancelNewAddressBtn.addEventListener('click', () => {
-            newAddressForm.style.display = 'none';
-            existingAddresses.style.display = 'block';
-        });
-    });
-    
-    
+function createRazorpayInstance(amount) {
+    options.amount = amount * 100;
+    rzp1 = new Razorpay(options);
+}
+
+createRazorpayInstance({{ order.total_price }});
+
+
+$('#rzp-button1').on('click', function (e) {
+    e.preventDefault();
+    if (!rzp1) {
+        alert("Payment not initialized");
+        return;
+    }
+    rzp1.open();
+});
 </script>
-{% comment %} {% endblock MoreJs %} {% endcomment %}
-
 {% endblock MoreJs %}

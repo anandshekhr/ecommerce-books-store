@@ -88,7 +88,11 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(Earning)
 class EarningAdmin(admin.ModelAdmin):
     pass
-    
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    pass
+
 
 
 @admin.register(Payment)

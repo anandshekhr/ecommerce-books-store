@@ -298,6 +298,12 @@ class PaymentSuccessRazorpay(APIView):
             billing_address = get_object_or_404(BillingAddress, pk=billing_address_id, user=request.user)
 
         PaymentService.mark_payment_success(order, razorpay_order_id, razorpay_payment_id, billing_address)
+        # payment success view
+        CouponUsage.objects.create(
+            coupon=order.coupon,
+            user=order.user
+        )
+
 
         return Response({'message': 'Payment Successful. Redirecting to Order Summary.'}, status=status.HTTP_200_OK)
 class OrderHistory(APIView):
@@ -526,3 +532,65 @@ class ProductVariantCreateView(APIView):
             "variant_id": variant.id,
             "message": "Product & Variant saved successfully"
         }, status=status.HTTP_201_CREATED)
+
+def is_coupon_valid_for_user(coupon, user, order_total):
+    now = timezone.now()
+
+    if not coupon.is_active:
+        return False, "Coupon is inactive"
+
+    if not (coupon.valid_from <= now <= coupon.valid_to):
+        return False, "Coupon expired"
+
+    if CouponUsage.objects.filter(coupon=coupon, user=user).exists():
+        return False, "Coupon already used"
+
+    return True, None
+
+class ApplyCouponAPIView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,SessionAuthentication)
+    def post(self, request, order_id):
+        code = request.data.get("coupon_code")
+
+        if not code:
+            return Response(
+                {"message": "Coupon code is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+
+        try:
+            coupon = Coupon.objects.get(code=code)
+        except Coupon.DoesNotExist:
+            return Response(
+                {"message": "Invalid coupon"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not coupon.is_valid(order.subtotal):
+            return Response(
+                {"message": "Coupon not applicable"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if CouponUsage.objects.filter(coupon=coupon, user=request.user).exists():
+            return Response(
+                {"message": "You have already used this coupon"},
+                status=400
+            )
+
+
+        order.coupon = coupon
+        order.update_total_price()
+
+        return Response(
+            {
+                "message": "Coupon applied successfully",
+                "subtotal": order.subtotal,
+                "discount": order.discount_amount,
+                "total": order.total_price
+            },
+            status=status.HTTP_200_OK
+        )

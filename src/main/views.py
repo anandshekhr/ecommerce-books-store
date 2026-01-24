@@ -306,6 +306,11 @@ def razorpay_success_redirect(request):
     if request.user and order_id:
         order = get_object_or_404(Order, user=request.user, payment__status=False, pk=order_id)
         PaymentService.mark_payment_success(order, razorpay_order_id, razorpay_payment_id, selected_billing_address)
+        CouponUsage.objects.create(
+            coupon=order.coupon,
+            user=order.user
+        )
+
 
     messages.success(request, "Your order was successful!")
     return redirect("order-summary", pk=order.id)

@@ -26,4 +26,10 @@ urlpatterns = [
     path( 'unsubscribe/', views.UnsubscribeView.as_view(), name='unsubscribe'),
     path( 'category/<int:categoryId>/items/', views.CategoryWiseProductList.as_view(), name='category-products-api'),
     path( 'products/add/', views.ProductVariantCreateView.as_view(), name='add-product-variant'),
+    path(
+    "orders/<int:order_id>/apply-coupon/",
+    views.ApplyCouponAPIView.as_view(),
+    name="apply-coupon"
+),
+
 ]

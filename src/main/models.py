@@ -315,30 +315,89 @@ class BillingAddress(models.Model):
 
 
 # ---------- ORDER ----------
+class Coupon(models.Model):
+    DISCOUNT_TYPE_CHOICES = (
+        ('flat', 'Flat Amount'),
+        ('percent', 'Percentage'),
+    )
+
+    code = models.CharField(max_length=50, unique=True)
+    discount_type = models.CharField(max_length=10, choices=DISCOUNT_TYPE_CHOICES)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    max_discount_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    is_active = models.BooleanField(default=True)
+    valid_from = models.DateTimeField()
+    valid_to = models.DateTimeField()
+
+    def is_valid(self, order_total):    
+        now = timezone.now()
+        return (
+            self.is_active
+            and self.valid_from <= now <= self.valid_to
+            and order_total >= self.min_order_amount
+        )
+
+    def __str__(self):
+        return self.code
+
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    address = models.ForeignKey(BillingAddress, verbose_name=_("Billing Address"), on_delete=models.CASCADE, null=True, blank=True)
-    payment_status = models.BooleanField(_("Payment Status"), default=False)
+    address = models.ForeignKey(
+        BillingAddress, on_delete=models.CASCADE, null=True, blank=True
+    )
+    coupon = models.ForeignKey(
+        Coupon, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    payment_status = models.BooleanField(default=False)
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f'Order {self.id} by {self.user.username}'
-
     def update_total_price(self):
-        total = sum(item.get_total_price() for item in self.items.all())
-        self.total_price = total
+        subtotal = sum(item.get_total_price() for item in self.items.all())
+        discount = self.calculate_discount(subtotal)
+
+        self.subtotal = subtotal
+        self.discount_amount = discount
+        self.total_price = subtotal - discount
         self.save()
+
+    def calculate_discount(self, subtotal):
+        if not self.coupon or not self.coupon.is_valid(subtotal):
+            return 0
+
+        if self.coupon.discount_type == 'flat':
+            discount = self.coupon.discount_value
+        else:
+            discount = (self.coupon.discount_value / 100) * subtotal
+
+        if self.coupon.max_discount_amount:
+            discount = min(discount, self.coupon.max_discount_amount)
+
+        return discount
 
     @property
     def sid(self):
         return f"VAMS/{date.today().strftime('%Y/%m%d')}/{self.id}"
 
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"
+
+class CouponUsage(models.Model):
+    coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    used_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        verbose_name = _("Order")
-        verbose_name_plural = _("Orders")
+        unique_together = ('coupon', 'user')  
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -370,6 +429,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.product} x {self.quantity}"
+
 
 class Payment(models.Model):
     GATEWAY_CHOICES = [

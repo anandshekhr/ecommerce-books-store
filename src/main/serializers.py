@@ -155,3 +155,42 @@ class ProductSerializer(serializers.Serializer):
     rating = serializers.DecimalField(max_digits=2, decimal_places=1, required=False)
     # Variant nested:
     variant = VariantSerializer()
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='get_product_name', read_only=True)
+    total_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            'id', 'product_name', 'quantity',
+            'price_at_order_time', 'total_price'
+        ]
+
+    def get_total_price(self, obj):
+        return obj.get_total_price()
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True, read_only=True)
+    coupon_code = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Order
+        fields = [
+            'id', 'sid', 'items',
+            'subtotal', 'discount_amount', 'total_price',
+            'coupon_code', 'payment_status'
+        ]
+
+    def update(self, instance, validated_data):
+        coupon_code = validated_data.pop('coupon_code', None)
+
+        if coupon_code:
+            try:
+                coupon = Coupon.objects.get(code=coupon_code)
+                instance.coupon = coupon
+            except Coupon.DoesNotExist:
+                raise serializers.ValidationError({"coupon": "Invalid coupon code"})
+
+        instance.update_total_price()
+        return instance
